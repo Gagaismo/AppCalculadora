@@ -20,20 +20,24 @@ Estas no se negocian. Son las que hacen que la app sea defendible.
    [`docs/research/formulas-comunicaciones.md`](docs/research/formulas-comunicaciones.md), donde cada
    fórmula cita la página de su Presentación de unidad. No agregues fórmulas desde conocimiento
    general de la materia, por obvias que parezcan. Si falta una, se decide primero si entra en alcance.
-2. **Toda fórmula implementada lleva un test contra su Ejemplo resuelto.** El catálogo trae 164
+2. **No todas las 140 son calculadoras.** Antes de cargar una Fórmula, mirá su clase en
+   [`docs/research/clasificacion-formulas.md`](docs/research/clasificacion-formulas.md): 105 son
+   calculables, 20 lo son con una restricción que va escrita en `condiciones`, y 15 entran como
+   ficha de consulta sin campos de entrada. No decidas la clase por tu cuenta.
+3. **Toda fórmula implementada lleva un test contra su Ejemplo resuelto.** El catálogo trae 164
    ejemplos con entradas y resultado esperado, sacados de las diapositivas. Ese test es la prueba de
    que la transcripción es correcta; sin él la fórmula no está terminada.
-3. **Las fórmulas marcadas ⚠️ ya tienen su observación resuelta.** Las decisiones están en
+4. **Las fórmulas marcadas ⚠️ ya tienen su observación resuelta.** Las decisiones están en
    [`docs/research/observaciones-resueltas.md`](docs/research/observaciones-resueltas.md): al cargar
    una de esas 16, aplicá lo que dice ahí y no la vuelvas a decidir. Si aparece una observación
    nueva, resolvela explícitamente y dejá registro; nunca la apliques en silencio.
-4. **`Unidad` y `Unidad de medida` son cosas distintas.** La primera es una de las diez divisiones
+5. **`Unidad` y `Unidad de medida` son cosas distintas.** La primera es una de las diez divisiones
    temáticas de la materia; la segunda es Hz, dBm, bit/s. Nunca llames `unidad` a una unidad de medida
    en el código. Ver [`CONTEXT.md`](CONTEXT.md).
-5. **Los múltiplos importan.** Cargar MHz donde la fórmula espera Hz da un resultado un millón de
+6. **Los múltiplos importan.** Cargar MHz donde la fórmula espera Hz da un resultado un millón de
    veces mayor sin ningún error visible. Cada Variable expone selector de múltiplo con su unidad
    canónica preseleccionada.
-6. **Escribí en español**: código comentado, documentos, mensajes de commit e interfaz.
+7. **Escribí en español**: código comentado, documentos, mensajes de commit e interfaz.
 
 ## Stack
 
