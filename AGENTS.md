@@ -42,8 +42,10 @@ Estas no se negocian. Son las que hacen que la app sea defendible.
 ## Stack
 
 - **Expo** + React Native + TypeScript. Desarrollo con **Expo Go** (no hace falta Android Studio).
-- El **APK** se compila con **EAS Build** en la nube. _Los límites del plan gratuito de EAS todavía
-  no se verificaron: confirmarlos contra la documentación oficial antes de depender de ellos._
+- El **APK** se compila con **EAS Build** en la nube: 15 builds por mes y 10 simultáneos, relevados
+  sobre la cuenta real. Ver [`docs/research/limites-eas.md`](docs/research/limites-eas.md).
+  De ahí sale una regla: **`eas build` no va en integración continua**. El APK se compila en hitos,
+  no en cada push; el día a día va contra Expo Go, que no consume cuota.
 - Objetivo primario **Android**; iOS después, solo si la cátedra lo pide.
 
 ## Arquitectura
