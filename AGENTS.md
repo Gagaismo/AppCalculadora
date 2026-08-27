@@ -109,6 +109,20 @@ Tres cosas que importan al escribirlas:
 
 Comandos: `npm test`, `npm run typecheck`, `npm start` (Expo Go).
 
+## Diseño de la interfaz
+
+El diseño visual se trabaja con **Impeccable**, instalado a nivel del proyecto. No está versionado
+—son 148 archivos de un vendor y el historial de este repo es parte del entregable—, así que en un
+clon nuevo hay que reinstalarlo:
+
+```
+npx impeccable install
+```
+
+Después, `/impeccable init` en el chat del agente escribe el contexto de diseño que leen los demás
+comandos. Trae variantes nativas (`adapt.native`, `audit.native`, `android`), que es lo que importa
+acá: esto es React Native, no una web.
+
 ## Convenciones del repositorio
 
 - **Issues**: GitHub Issues vía `gh`. Ver `docs/agents/issue-tracker.md`.

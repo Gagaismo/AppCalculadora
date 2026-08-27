@@ -44,3 +44,6 @@ example
 
 # wizard de EAS (valores locales, no van al repo)
 .eas-wizard.env
+
+# Impeccable: skill de diseño, se instala con `npx impeccable install`
+.claude/skills/impeccable/
