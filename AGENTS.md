@@ -72,6 +72,31 @@ resolver una observación ⚠️, o decidir algo que se defiende en el oral, no.
 Lo que vuelve de agy se revisa contra las reglas duras antes de commitear. El test contra el Ejemplo
 resuelto es la primera revisión y no es opcional.
 
+## Cómo se agrega una Fórmula
+
+El patrón ya está establecido en `src/formulas/unidad-10.ts` con `U10-F07`. Leelo antes de cargar
+una Unidad: es la referencia, no este resumen.
+
+Dónde va cada cosa:
+
+- `src/dominio/` — el tipo de la Fórmula, los múltiplos, el motor de cálculo. **No se toca** al
+  cargar Fórmulas. Si una Fórmula parece necesitar un cambio acá, es una escalación, no una edición.
+- `src/formulas/unidad-N.ts` — las Fórmulas de esa Unidad y sus Ejemplos resueltos, como datos.
+- `src/formulas/index.ts` — el registro único. Es el único otro archivo que se toca al sumar una Unidad.
+- Los tests van **al lado** del archivo que prueban (`unidad-10.test.ts`), no en `__tests__/`.
+
+Tres cosas que importan al escribirlas:
+
+1. **`calcular()` recibe los valores ya en unidad canónica.** La conversión de múltiplos la hace el
+   motor, una sola vez, para todas. Una fórmula que convierte por su cuenta está mal.
+2. **Los símbolos pertenecen a la Fórmula, no a la Unidad.** No hay tabla compartida. `T_s` es el
+   período de muestreo en `U05-F13` y la duración del símbolo en `U05-F04`: compartirlos alimentaría
+   una fórmula con la magnitud equivocada sin ningún síntoma.
+3. **En `@testing-library/react-native` 14, `render` y `fireEvent` devuelven Promesas.** Sin `await`,
+   el test falla con «`render` function has not been called», que no dice nada sobre la causa.
+
+Comandos: `npm test`, `npm run typecheck`, `npm start` (Expo Go).
+
 ## Convenciones del repositorio
 
 - **Issues**: GitHub Issues vía `gh`. Ver `docs/agents/issue-tracker.md`.
