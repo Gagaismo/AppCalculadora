@@ -9,6 +9,7 @@ export { InfoUnidad, UNIDADES, obtenerUnidad } from './datos';
 
 export interface PantallaUnidadesProps {
   readonly onSeleccionarUnidad?: (numero: number) => void;
+  readonly onBuscar?: () => void;
 }
 
 /** Formatea el texto de cantidad de fórmulas según corresponda (singular/plural). */
@@ -25,7 +26,7 @@ export function formatearCantidadFormulas(cantidad: number): string {
  * Muestra el número de Unidad, el tema y la cantidad de Fórmulas disponibles.
  * Para la Unidad 1, muestra explícitamente la nota explicativa de por qué tiene 0 fórmulas.
  */
-export function PantallaUnidades({ onSeleccionarUnidad }: PantallaUnidadesProps) {
+export function PantallaUnidades({ onSeleccionarUnidad, onBuscar }: PantallaUnidadesProps) {
   const manejarSeleccion = (numero: number) => {
     if (onSeleccionarUnidad) {
       onSeleccionarUnidad(numero);
@@ -34,6 +35,14 @@ export function PantallaUnidades({ onSeleccionarUnidad }: PantallaUnidadesProps)
         pathname: '/unidad/[numero]',
         params: { numero: String(numero) },
       });
+    }
+  };
+
+  const manejarBusqueda = () => {
+    if (onBuscar) {
+      onBuscar();
+    } else {
+      router.push('/buscar');
     }
   };
 
@@ -49,6 +58,19 @@ export function PantallaUnidades({ onSeleccionarUnidad }: PantallaUnidadesProps)
           Seleccioná una Unidad para ver y calcular sus fórmulas
         </Text>
       </View>
+
+      <Pressable
+        testID="boton-buscar-inicio"
+        accessibilityRole="button"
+        accessibilityLabel="Buscar fórmulas por nombre o símbolo"
+        style={({ pressed }) => [estilos.barraBusqueda, pressed && estilos.barraBusquedaPresionada]}
+        onPress={manejarBusqueda}
+      >
+        <Text style={estilos.iconoBusqueda}>🔍</Text>
+        <Text style={estilos.textoBarraBusqueda}>
+          Buscar por nombre o símbolo (ej. AB, f_sup)...
+        </Text>
+      </Pressable>
 
       {UNIDADES.map((unidad) => {
         const cantidad = formulasDeUnidad(unidad.numero).length;
@@ -106,6 +128,28 @@ const estilos = StyleSheet.create({
   subtituloPrincipal: {
     fontSize: 14,
     color: '#64748B',
+  },
+  barraBusqueda: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 8,
+    marginBottom: 4,
+  },
+  barraBusquedaPresionada: {
+    backgroundColor: '#F1F5F9',
+  },
+  iconoBusqueda: {
+    fontSize: 15,
+  },
+  textoBarraBusqueda: {
+    fontSize: 14,
+    color: '#94A3B8',
   },
   tarjeta: {
     backgroundColor: '#FFFFFF',

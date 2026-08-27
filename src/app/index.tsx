@@ -6,7 +6,7 @@ import { PantallaUnidades } from '@/screens/unidades';
  * Pantalla de inicio de la aplicación.
  *
  * Muestra el catálogo de las diez Unidades de la materia con la cantidad
- * de Fórmulas disponibles en cada una.
+ * de Fórmulas disponibles en cada una y acceso a la búsqueda global.
  */
 export default function Inicio() {
   return (
@@ -18,6 +18,9 @@ export default function Inicio() {
             pathname: '/unidad/[numero]',
             params: { numero: String(numero) },
           });
+        }}
+        onBuscar={() => {
+          router.push('/buscar');
         }}
       />
     </>

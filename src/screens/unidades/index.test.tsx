@@ -62,4 +62,13 @@ describe('PantallaUnidades', () => {
     expect(onSeleccionarUnidad).toHaveBeenCalledTimes(2);
     expect(onSeleccionarUnidad).toHaveBeenCalledWith(1);
   });
+
+  it('llama a onBuscar al presionar la barra de acceso a búsqueda', async () => {
+    const onBuscar = jest.fn();
+    await render(<PantallaUnidades onBuscar={onBuscar} />);
+
+    expect(screen.getByTestId('boton-buscar-inicio')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('boton-buscar-inicio'));
+    expect(onBuscar).toHaveBeenCalledTimes(1);
+  });
 });
