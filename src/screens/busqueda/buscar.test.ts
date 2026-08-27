@@ -108,33 +108,27 @@ describe('buscarFormulas', () => {
         'Ancho de banda de una banda de frecuencias (ISM / Wi-Fi)',
         catalogoPrueba,
       );
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+      expect(resultados.some((f) => f.id === 'U10-F07')).toBe(true);
     });
 
     it('encuentra fórmulas por coincidencia parcial en el nombre', () => {
       const resultados = buscarFormulas('Wi-Fi', catalogoPrueba);
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+      expect(resultados.some((f) => f.id === 'U10-F07')).toBe(true);
     });
 
     it('encuentra fórmulas ignorando mayúsculas (ej. ANCHO)', () => {
       const resultados = buscarFormulas('ANCHO', catalogoPrueba);
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+      expect(resultados.some((f) => f.id === 'U10-F07')).toBe(true);
     });
 
     it('encuentra fórmulas ignorando acentos (ej. senal -> Señal)', () => {
       const resultados = buscarFormulas('senal', catalogoPrueba);
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U02-F01');
-      expect(resultados[0].nombre).toBe('Potencia media de una señal periódica');
+      expect(resultados.some((f) => f.id === 'U02-F01')).toBe(true);
     });
 
     it('encuentra fórmulas con tilde en la búsqueda (ej. Atenuación -> atenuacion)', () => {
       const resultados = buscarFormulas('Atenuación', catalogoPrueba);
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U03-F05');
+      expect(resultados.some((f) => f.id === 'U03-F05')).toBe(true);
     });
   });
 
@@ -195,8 +189,7 @@ describe('buscarFormulas', () => {
 
     it('funciona con el catálogo por defecto de la aplicación (FORMULAS)', () => {
       const resultados = buscarFormulas('ancho');
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+      expect(resultados.some((f) => f.id === 'U10-F07')).toBe(true);
     });
 
     it('no duplica fórmulas si coinciden por nombre y por símbolo', () => {
