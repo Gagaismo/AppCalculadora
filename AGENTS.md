@@ -23,8 +23,10 @@ Estas no se negocian. Son las que hacen que la app sea defendible.
 2. **Toda fórmula implementada lleva un test contra su Ejemplo resuelto.** El catálogo trae 164
    ejemplos con entradas y resultado esperado, sacados de las diapositivas. Ese test es la prueba de
    que la transcripción es correcta; sin él la fórmula no está terminada.
-3. **Las fórmulas marcadas ⚠️ tienen una observación de verificación sin resolver.** Resolvela
-   explícitamente antes de implementarla y dejá registro de qué se decidió. No la apliques en silencio.
+3. **Las fórmulas marcadas ⚠️ ya tienen su observación resuelta.** Las decisiones están en
+   [`docs/research/observaciones-resueltas.md`](docs/research/observaciones-resueltas.md): al cargar
+   una de esas 16, aplicá lo que dice ahí y no la vuelvas a decidir. Si aparece una observación
+   nueva, resolvela explícitamente y dejá registro; nunca la apliques en silencio.
 4. **`Unidad` y `Unidad de medida` son cosas distintas.** La primera es una de las diez divisiones
    temáticas de la materia; la segunda es Hz, dBm, bit/s. Nunca llames `unidad` a una unidad de medida
    en el código. Ver [`CONTEXT.md`](CONTEXT.md).
