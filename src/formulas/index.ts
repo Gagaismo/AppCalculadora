@@ -1,5 +1,6 @@
 import type { EjemploResuelto, Formula } from '@/dominio/formula';
 
+import { EJEMPLOS_UNIDAD_04, FORMULAS_UNIDAD_04 } from './unidad-04';
 import { EJEMPLOS_UNIDAD_10, FORMULAS_UNIDAD_10 } from './unidad-10';
 
 /**
@@ -13,9 +14,12 @@ import { EJEMPLOS_UNIDAD_10, FORMULAS_UNIDAD_10 } from './unidad-10';
  * El hueco está verificado, no asumido.
  */
 
-export const FORMULAS: readonly Formula[] = [...FORMULAS_UNIDAD_10];
+export const FORMULAS: readonly Formula[] = [...FORMULAS_UNIDAD_04, ...FORMULAS_UNIDAD_10];
 
-export const EJEMPLOS_RESUELTOS: readonly EjemploResuelto[] = [...EJEMPLOS_UNIDAD_10];
+export const EJEMPLOS_RESUELTOS: readonly EjemploResuelto[] = [
+  ...EJEMPLOS_UNIDAD_04,
+  ...EJEMPLOS_UNIDAD_10,
+];
 
 export function buscarFormula(id: string): Formula | undefined {
   return FORMULAS.find((formula) => formula.id === id);

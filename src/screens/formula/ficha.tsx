@@ -75,9 +75,13 @@ export function FichaFormula({ formula, ejemplos }: FichaFormulaProps) {
                 {formula.entradas.map((variable) => {
                   const cargado = ejemplo.entradas[variable.simbolo];
                   if (!cargado) return null;
+                  const escrito =
+                    'valores' in cargado
+                      ? cargado.valores.map(formatearNumero).join('; ')
+                      : formatearNumero(cargado.valor);
                   return (
                     <Text key={variable.simbolo} style={estilos.ejemploValorItem}>
-                      • {variable.simbolo} = {formatearNumero(cargado.valor)}{' '}
+                      • {variable.simbolo} = {escrito}{' '}
                       {conMultiplo(cargado.multiplo, variable.unidadDeMedida)}
                     </Text>
                   );

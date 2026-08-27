@@ -25,6 +25,17 @@ export interface Variable {
   readonly unidadDeMedida: string;
   /** El múltiplo que viene preseleccionado. El camino sin pensar es el camino correcto. */
   readonly multiploCanonico: Multiplo;
+  /**
+   * Presente y en `true` cuando la Variable recibe una **lista** de valores en vez de
+   * uno solo. Es el caso de las Fórmulas que suman sobre N términos: la entropía
+   * `H = Σ P_j log₂(1/P_j)` recibe las probabilidades de los N símbolos, no una.
+   *
+   * El múltiplo es uno para toda la lista, no uno por elemento: las magnitudes que
+   * se cargan así son homogéneas —las probabilidades de una fuente, las duraciones
+   * de sus símbolos— y un selector por elemento sería una forma cara de invitar al
+   * error que la regla dura 6 quiere evitar.
+   */
+  readonly esLista?: true;
 }
 
 /** Un valor tal como lo carga quien usa la app: número más múltiplo, sin convertir. */
@@ -33,8 +44,26 @@ export interface ValorCargado {
   readonly multiplo: Multiplo;
 }
 
-/** Valores ya llevados a la Unidad de medida canónica, indexados por símbolo. */
+/** Lo mismo para una Variable de lista: N valores bajo un mismo múltiplo. */
+export interface ValoresCargados {
+  readonly valores: readonly number[];
+  readonly multiplo: Multiplo;
+}
+
+/**
+ * Lo que se carga en una Variable, sea escalar o lista.
+ *
+ * Se distinguen por su forma —`valor` contra `valores`— y no por una etiqueta, así
+ * el compilador estrecha el tipo solo con `'valores' in entrada` y las Fórmulas
+ * escalares, que son la enorme mayoría, no cambian ni una línea.
+ */
+export type EntradaCargada = ValorCargado | ValoresCargados;
+
+/** Valores escalares ya llevados a la Unidad de medida canónica, por símbolo. */
 export type ValoresCanonicos = Readonly<Record<string, number>>;
+
+/** Listas ya llevadas a la Unidad de medida canónica, por símbolo. */
+export type ListasCanonicas = Readonly<Record<string, readonly number[]>>;
 
 export interface Formula {
   /** El identificador del catálogo: 'U10-F07'. Es la clave de trazabilidad a la fuente. */
@@ -63,8 +92,14 @@ export interface Formula {
    * Recibe los valores YA en Unidad de medida canónica y devuelve el resultado en la
    * unidad canónica de la salida. La conversión de múltiplos no es asunto suyo: la
    * hace el motor, una sola vez, para todas las Fórmulas.
+   *
+   * El segundo parámetro trae las Variables marcadas `esLista`. Una Fórmula que no
+   * tiene ninguna simplemente no lo declara:
+   *
+   *     calcular: ({ f_sup, f_inf }) => f_sup - f_inf
+   *     calcular: (_, { P }) => P.reduce((h, p) => h + p * Math.log2(1 / p), 0)
    */
-  calcular(valores: ValoresCanonicos): number;
+  calcular(valores: ValoresCanonicos, listas: ListasCanonicas): number;
 }
 
 /**
@@ -76,7 +111,7 @@ export interface Formula {
 export interface EjemploResuelto {
   readonly formulaId: string;
   readonly enunciado: string;
-  readonly entradas: Readonly<Record<string, ValorCargado>>;
+  readonly entradas: Readonly<Record<string, EntradaCargada>>;
   readonly esperado: ValorCargado;
   readonly pagina: string;
   /**

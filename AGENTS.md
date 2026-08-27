@@ -100,6 +100,9 @@ Tres cosas que importan al escribirlas:
    una fórmula con la magnitud equivocada sin ningún síntoma.
 3. **En `@testing-library/react-native` 14, `render` y `fireEvent` devuelven Promesas.** Sin `await`,
    el test falla con «`render` function has not been called», que no dice nada sobre la causa.
+4. **Una Variable que suma sobre N términos se declara `esLista`** y llega en el segundo parámetro
+   de `calcular`. El patrón está en `src/formulas/unidad-04.ts` con `U04-F06`, la entropía.
+   El múltiplo es uno para toda la lista, no uno por elemento.
 
 Comandos: `npm test`, `npm run typecheck`, `npm start` (Expo Go).
 

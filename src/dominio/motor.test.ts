@@ -91,3 +91,47 @@ describe('el motor rechaza lo que no puede calcular', () => {
     expect(resultado.error.tipo).toBe('calculo-no-definido');
   });
 });
+
+describe('el motor con Variables de lista', () => {
+  it('resuelve la entropía a partir de la lista de probabilidades', () => {
+    const resultado = calcular('U04-F06', {
+      P: { valores: [0.5, 0.25, 0.125, 0.125], multiplo: '' },
+    });
+
+    expect(resultado.ok).toBe(true);
+    if (!resultado.ok) return;
+    expect(resultado.valor).toBeCloseTo(1.75, 6);
+    expect(resultado.unidadDeMedida).toBe('bit/símbolo');
+  });
+
+  it('aplica el múltiplo a CADA elemento de la lista, no sólo al primero', () => {
+    // Las mismas cuatro probabilidades cargadas en mili: 500m = 0,5.
+    // Si el múltiplo se aplicara sólo al primer elemento, la entropía no daría 1,75.
+    const enMili = calcular('U04-F06', {
+      P: { valores: [500, 250, 125, 125], multiplo: 'm' },
+    });
+    const enBase = calcular('U04-F06', {
+      P: { valores: [0.5, 0.25, 0.125, 0.125], multiplo: '' },
+    });
+
+    expect(enMili).toEqual(enBase);
+  });
+
+  it('trata una lista vacía como Variable faltante', () => {
+    // Sumar sobre una lista vacía daría cero: un resultado plausible y equivocado.
+    const resultado = calcular('U04-F06', { P: { valores: [], multiplo: '' } });
+
+    expect(resultado.ok).toBe(false);
+    if (resultado.ok) return;
+    expect(resultado.error).toEqual({ tipo: 'variables-faltantes', simbolos: ['P'] });
+  });
+
+  it('da entropía cero cuando un símbolo tiene toda la probabilidad', () => {
+    const resultado = calcular('U04-F06', { P: { valores: [1, 0, 0], multiplo: '' } });
+
+    expect(resultado.ok).toBe(true);
+    if (!resultado.ok) return;
+    // Los términos con P = 0 se toman como 0, según las condiciones de la cátedra.
+    expect(resultado.valor).toBeCloseTo(0, 10);
+  });
+});

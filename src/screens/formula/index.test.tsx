@@ -168,3 +168,55 @@ describe('la pantalla genérica maneja errores y validación', () => {
   });
 });
 
+
+describe('la pantalla genérica con una Variable de lista', () => {
+  const entropia = buscarFormula('U04-F06')!;
+
+  it('arranca con un solo campo y el botón de agregar', async () => {
+    await render(<PantallaFormula formula={entropia} />);
+
+    expect(screen.getByTestId('entrada-P-0')).toBeTruthy();
+    expect(screen.queryByTestId('entrada-P-1')).toBeNull();
+    expect(screen.getByTestId('agregar-P')).toBeTruthy();
+  });
+
+  it('agrega y quita campos', async () => {
+    await render(<PantallaFormula formula={entropia} />);
+
+    await fireEvent.press(screen.getByTestId('agregar-P'));
+    await fireEvent.press(screen.getByTestId('agregar-P'));
+    expect(screen.getByTestId('entrada-P-2')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('quitar-P-2'));
+    expect(screen.queryByTestId('entrada-P-2')).toBeNull();
+  });
+
+  it('nunca deja la lista sin ningún campo', async () => {
+    await render(<PantallaFormula formula={entropia} />);
+
+    await fireEvent.press(screen.getByTestId('quitar-P-0'));
+
+    // Quitar el último deja uno vacío: sin campos no habría cómo volver a cargar.
+    expect(screen.getByTestId('entrada-P-0')).toBeTruthy();
+  });
+
+  it('reproduce el Ejemplo resuelto de la entropía cargando las cuatro probabilidades', async () => {
+    await render(<PantallaFormula formula={entropia} />);
+
+    for (let i = 1; i < 4; i++) await fireEvent.press(screen.getByTestId('agregar-P'));
+
+    const probabilidades = ['0,5', '0,25', '0,125', '0,125'];
+    for (const [i, p] of probabilidades.entries()) {
+      await fireEvent.changeText(screen.getByTestId(`entrada-P-${i}`), p);
+    }
+
+    // Ejemplo 07 de la página 28: H = 1,75 bit/símbolo.
+    expect(screen.getByTestId('resultado')).toHaveTextContent('1,75 bit/símbolo');
+  });
+
+  it('pide la Variable mientras la lista está vacía', async () => {
+    await render(<PantallaFormula formula={entropia} />);
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Falta: P');
+  });
+});

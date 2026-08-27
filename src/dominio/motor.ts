@@ -1,6 +1,6 @@
 import { buscarFormula } from '@/formulas';
 
-import type { ValorCargado } from './formula';
+import type { EntradaCargada } from './formula';
 import { aCanonico, desdeCanonico, elegirMultiplo, type Multiplo } from './multiplos';
 
 /**
@@ -14,7 +14,7 @@ import { aCanonico, desdeCanonico, elegirMultiplo, type Multiplo } from './multi
  * falta: el error de múltiplo no da ningún síntoma por sí solo.
  */
 
-export type Entradas = Readonly<Record<string, ValorCargado>>;
+export type Entradas = Readonly<Record<string, EntradaCargada>>;
 
 export type ErrorDeCalculo =
   | { readonly tipo: 'formula-desconocida'; readonly id: string }
@@ -36,20 +36,33 @@ export function calcular(idFormula: string, entradas: Entradas): Resultado {
     return { ok: false, error: { tipo: 'formula-desconocida', id: idFormula } };
   }
 
+  // Una Variable de lista sin ningún elemento cargado falta igual que una escalar
+  // vacía: sumar sobre una lista vacía daría cero, que es un resultado plausible y
+  // equivocado.
   const faltantes = formula.entradas
-    .filter((variable) => entradas[variable.simbolo] === undefined)
+    .filter((variable) => {
+      const cargado = entradas[variable.simbolo];
+      if (cargado === undefined) return true;
+      return 'valores' in cargado && cargado.valores.length === 0;
+    })
     .map((variable) => variable.simbolo);
   if (faltantes.length > 0) {
     return { ok: false, error: { tipo: 'variables-faltantes', simbolos: faltantes } };
   }
 
   const valores: Record<string, number> = {};
+  const listas: Record<string, readonly number[]> = {};
   for (const variable of formula.entradas) {
     const cargado = entradas[variable.simbolo];
-    valores[variable.simbolo] = aCanonico(cargado.valor, cargado.multiplo);
+    const multiplo = cargado.multiplo;
+    if ('valores' in cargado) {
+      listas[variable.simbolo] = cargado.valores.map((v) => aCanonico(v, multiplo));
+    } else {
+      valores[variable.simbolo] = aCanonico(cargado.valor, multiplo);
+    }
   }
 
-  const canonico = formula.calcular(valores);
+  const canonico = formula.calcular(valores, listas);
   if (!Number.isFinite(canonico)) {
     return {
       ok: false,

@@ -25,21 +25,26 @@ Son 15, y trece de esas quince están en la Unidad 2.
 Que la Unidad 2 concentre casi todas las no calculables tiene sentido: es la unidad de Fourier, y
 Fourier se enseña con integrales y series, no con cuentas de una línea.
 
-## Dos huecos del modelo que esta clasificación destapó
+## Los dos huecos del modelo que esta clasificación destapó
 
 Estos **no son decisiones de quien carga las Fórmulas**. Son cambios al tipo `Formula`, que vive en
 `src/dominio/` y nadie toca sin escalarlo. Están anotados acá porque aparecieron al clasificar.
 
-**1. Variables de lista.** Diez Fórmulas suman sobre una lista de términos —la entropía
-`H = Σ P_j log₂(1/P_j)`, la longitud promedio `L̄ = Σ P_i L_i`, la duración promedio del símbolo—
-y hoy cada Variable es un escalar. No hay forma de cargar «las probabilidades de los N símbolos».
+**1. Variables de lista — resuelto.** Diez Fórmulas suman sobre una lista de términos —la entropía
+`H = Σ P_j log₂(1/P_j)`, la longitud promedio `L̄ = Σ P_i L_i`, la duración promedio del símbolo— y
+cada Variable era un escalar. No había forma de cargar «las probabilidades de los N símbolos».
 
-Las diez son: `U03-F03`, `U04-F02`, `U04-F05`, `U04-F06`, `U04-F09`, `U04-F14`, `U05-F02`,
-`U05-F03`, `U05-F07`, `U06-F10`.
+El tipo `Variable` admite ahora `esLista`, y `U04-F06` (la entropía) está implementada de punta a
+punta con sus cuatro Ejemplos resueltos como referencia. Las nueve restantes se cargan en el ticket
+de su Unidad, siguiendo ese patrón: `U03-F03`, `U04-F02`, `U04-F05`, `U04-F09`, `U04-F14`,
+`U05-F02`, `U05-F03`, `U05-F07` y `U06-F10`.
 
-No es un detalle: la entropía y la longitud promedio son el corazón de las Unidades 4 y 5. Hasta que
-el tipo admita una Variable de lista, esas diez quedan sin implementar aunque estén clasificadas
-como implementables.
+El múltiplo es **uno para toda la lista**, no uno por elemento. Las magnitudes que se cargan así son
+homogéneas —las probabilidades de una fuente, las duraciones de sus símbolos— y un selector por
+elemento sería una forma cara de invitar al error que la regla dura 6 quiere evitar.
+
+Una lista sin ningún elemento cargado cuenta como Variable faltante: sumar sobre nada daría cero,
+que es justo la clase de resultado plausible y equivocado que esta app existe para evitar.
 
 **2. Entradas no numéricas.** Tres Fórmulas de la Unidad 6 no reciben números: la distancia de
 Hamming compara dos palabras binarias, la distancia mínima recorre un conjunto de palabras, y el CRC
@@ -83,7 +88,7 @@ dos dependen de si se decide admitir una Variable de texto.
 | `U02-F29` | Densidad espectral (módulo al cuadrado) del pulso re | calculable |  |
 | `U03-F01` | Relación de potencias en decibeles (atenuación / gan | calculable |  |
 | `U03-F02` | Pérdida total de un medio con atenuación específica  | calculable |  |
-| `U03-F03` | Suma algebraica de decibeles en una cadena de transm | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U03-F03` | Suma algebraica de decibeles en una cadena de transm | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U03-F04` | Nivel de potencia absoluto en dBm (referido a 1 mW) | calculable |  |
 | `U03-F05` | Ganancia (directividad) de antena en dBi | calculable |  |
 | `U03-F06` | Pérdida en el espacio libre (frecuencia en MHz) | calculable |  |
@@ -99,28 +104,28 @@ dos dependen de si se decide admitir una Variable de texto.
 | `U03-F16` | Factor de ruido (f) | calculable |  |
 | `U03-F17` | Índice de ruido (factor de ruido en dB) | calculable |  |
 | `U04-F01` | Autoinformación (cantidad de información de un event | calculable |  |
-| `U04-F02` | Información total de un mensaje formado por símbolos | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U04-F02` | Información total de un mensaje formado por símbolos | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U04-F03` | Normalización: la suma de las probabilidades de la f | no calculable | Es una condición de normalización, no un cálculo. |
 | `U04-F04` | Información aportada por el símbolo j en una secuenc | calculable |  |
-| `U04-F05` | Información total contenida en una secuencia larga d | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
-| `U04-F06` | Entropía de la fuente (información promedio por símb | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U04-F05` | Información total contenida en una secuencia larga d | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
+| `U04-F06` | Entropía de la fuente (información promedio por símb | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U04-F07` | Entropía máxima (fuente con símbolos equiprobables) | calculable |  |
 | `U04-F08` | Redundancia de una fuente (porcentual) | calculable |  |
-| `U04-F09` | Duración promedio del símbolo | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U04-F09` | Duración promedio del símbolo | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U04-F10` | Tasa de información de una fuente discreta | calculable |  |
 | `U04-F11` | Velocidad de símbolos (símbolos por segundo) | calculable |  |
 | `U04-F12` | Tasa de información con símbolos de igual duración | calculable |  |
 | `U04-F13` | Tasa de información con símbolos equiprobables e igu | calculable |  |
-| `U04-F14` | Longitud promedio de la palabra código | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U04-F14` | Longitud promedio de la palabra código | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U04-F15` | Longitud promedio del código a partir de los bits to | calculable |  |
 | `U04-F16` | Eficiencia del codificador de fuente | calculable |  |
 | `U05-F01` | Cantidad de informacion de un simbolo (informacion p | calculable |  |
-| `U05-F02` | Entropia de la fuente H(x) | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
-| `U05-F03` | Duracion promedio de un simbolo | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U05-F02` | Entropia de la fuente H(x) | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
+| `U05-F03` | Duracion promedio de un simbolo | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U05-F04` | Velocidad de simbolos (tasa de senalizacion) | calculable |  |
 | `U05-F05` | Velocidad de transmision de informacion (velocidad d | calculable |  |
 | `U05-F06` | Velocidad de transmision para simbolos equiprobables | calculable |  |
-| `U05-F07` | Longitud promedio de una palabra codigo | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U05-F07` | Longitud promedio de una palabra codigo | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U05-F08` | Eficiencia de un codificador de fuente | calculable |  |
 | `U05-F09` | Probabilidad de un nivel equiprobable | calculable |  |
 | `U05-F10` | Cantidad de simbolos contenidos en la senal | calculable |  |
@@ -148,7 +153,7 @@ dos dependen de si se decide admitir una Variable de texto.
 | `U06-F07` | Capacidad de correccion de errores segun la distanci | calculable |  |
 | `U06-F08` | Reparto entre capacidad de deteccion y de correccion | con restricciones | Es una desigualdad: la salida es una cota, no una igualdad, y hay que rotularla como tal. |
 | `U06-F09` | Cantidad de bits de paridad en la codificacion Hammi | con restricciones | Es una desigualdad: la salida es una cota, no una igualdad, y hay que rotularla como tal. |
-| `U06-F10` | Posicion del bit erroneo (sindrome de Hamming) | con restricciones | Suma sobre una lista de términos: necesita una Variable de lista, que el modelo todavía no tiene. |
+| `U06-F10` | Posicion del bit erroneo (sindrome de Hamming) | con restricciones | Suma sobre una lista de términos: la Variable se declara `esLista`. |
 | `U06-F11` | Codigo de Redundancia Ciclica (CRC): resto y trama a | no calculable | La entrada no es numérica (palabras binarias o polinomios): el modelo sólo admite Variables numéricas. |
 | `U07-F01` | Número de bits por elemento de señal (bits por símbo | calculable |  |
 | `U07-F02` | Velocidad de transmisión (tasa de bits) a partir de  | calculable |  |

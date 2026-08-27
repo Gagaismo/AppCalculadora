@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Formula } from '@/dominio/formula';
-import { calcular, type Entradas } from '@/dominio/motor';
+import type { EntradaCargada, Formula } from '@/dominio/formula';
+import { calcular } from '@/dominio/motor';
 import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
 
 import { FichaFormula } from './ficha';
@@ -14,24 +14,40 @@ import { formatearNumero, parsearEntrada } from './numeros';
  * Es una sola para las 140 Fórmulas: recibe la Fórmula como dato y arma la pantalla
  * a partir de sus Variables. Escribir una pantalla por Fórmula no termina nunca.
  */
+/** Los campos de una Variable: uno solo si es escalar, N si es de lista. */
+function camposIniciales(formula: Formula): Record<string, string[]> {
+  return Object.fromEntries(formula.entradas.map((v) => [v.simbolo, ['']]));
+}
+
 export function PantallaFormula({ formula }: { formula: Formula }) {
-  const [textos, setTextos] = useState<Record<string, string>>({});
+  // Toda Variable guarda un arreglo de textos. Una escalar simplemente tiene uno,
+  // así el resto de la pantalla no necesita dos caminos para cada cosa.
+  const [textos, setTextos] = useState<Record<string, string[]>>(() => camposIniciales(formula));
   const [multiplos, setMultiplos] = useState<Record<string, Multiplo>>(() =>
     Object.fromEntries(formula.entradas.map((v) => [v.simbolo, v.multiploCanonico])),
   );
 
   const noNumericos: string[] = [];
-  const entradas: Record<string, { valor: number; multiplo: Multiplo }> = {};
+  const entradas: Record<string, EntradaCargada> = {};
 
   for (const variable of formula.entradas) {
-    const entrada = parsearEntrada(textos[variable.simbolo]);
-    if (entrada.estado === 'invalida') {
+    const crudos = textos[variable.simbolo] ?? [''];
+    const parseadas = crudos.map(parsearEntrada);
+
+    if (parseadas.some((e) => e.estado === 'invalida')) {
       noNumericos.push(variable.simbolo);
-    } else if (entrada.estado === 'cargada') {
-      entradas[variable.simbolo] = {
-        valor: entrada.valor,
-        multiplo: multiplos[variable.simbolo],
-      };
+      continue;
+    }
+
+    const cargados = parseadas.flatMap((e) => (e.estado === 'cargada' ? [e.valor] : []));
+    const multiplo = multiplos[variable.simbolo];
+
+    if (variable.esLista) {
+      // Una lista vacía la resuelve el motor como Variable faltante, que es lo
+      // correcto: sumar sobre nada daría cero, un resultado plausible y equivocado.
+      entradas[variable.simbolo] = { valores: cargados, multiplo };
+    } else if (cargados.length > 0) {
+      entradas[variable.simbolo] = { valor: cargados[0], multiplo };
     }
   }
 
@@ -67,11 +83,27 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
   }
 
   const limpiarCampos = () => {
-    setTextos({});
+    setTextos(camposIniciales(formula));
     setMultiplos(
       Object.fromEntries(formula.entradas.map((v) => [v.simbolo, v.multiploCanonico])),
     );
   };
+
+  const escribir = (simbolo: string, indice: number, texto: string) =>
+    setTextos((previos) => {
+      const campos = [...(previos[simbolo] ?? [''])];
+      campos[indice] = texto;
+      return { ...previos, [simbolo]: campos };
+    });
+
+  const agregarCampo = (simbolo: string) =>
+    setTextos((previos) => ({ ...previos, [simbolo]: [...(previos[simbolo] ?? []), ''] }));
+
+  const quitarCampo = (simbolo: string, indice: number) =>
+    setTextos((previos) => {
+      const campos = (previos[simbolo] ?? ['']).filter((_, i) => i !== indice);
+      return { ...previos, [simbolo]: campos.length > 0 ? campos : [''] };
+    });
 
   return (
     <ScrollView style={estilos.pantalla} contentContainerStyle={estilos.contenido}>
@@ -86,18 +118,52 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
             <Text style={estilos.simbolo}>{variable.simbolo}</Text>
             <Text style={estilos.significado}>{variable.significado}</Text>
 
-            <TextInput
-              testID={`entrada-${variable.simbolo}`}
-              style={[estilos.input, esInvalido && estilos.inputError]}
-              keyboardType="numeric"
-              inputMode="decimal"
-              placeholder="0"
-              accessibilityLabel={`${variable.simbolo}, ${variable.significado}`}
-              value={textos[variable.simbolo] ?? ''}
-              onChangeText={(texto) =>
-                setTextos((previos) => ({ ...previos, [variable.simbolo]: texto }))
-              }
-            />
+            {(textos[variable.simbolo] ?? ['']).map((texto, indice) => (
+              <View key={indice} style={estilos.fila}>
+                <TextInput
+                  testID={
+                    variable.esLista
+                      ? `entrada-${variable.simbolo}-${indice}`
+                      : `entrada-${variable.simbolo}`
+                  }
+                  style={[estilos.input, estilos.inputFlexible, esInvalido && estilos.inputError]}
+                  keyboardType="numeric"
+                  inputMode="decimal"
+                  placeholder={variable.esLista ? `${variable.simbolo}${indice + 1}` : '0'}
+                  accessibilityLabel={
+                    variable.esLista
+                      ? `${variable.simbolo} ${indice + 1}, ${variable.significado}`
+                      : `${variable.simbolo}, ${variable.significado}`
+                  }
+                  value={texto}
+                  onChangeText={(nuevo) => escribir(variable.simbolo, indice, nuevo)}
+                />
+
+                {variable.esLista && (
+                  <Pressable
+                    testID={`quitar-${variable.simbolo}-${indice}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Quitar el valor ${indice + 1} de ${variable.simbolo}`}
+                    style={estilos.botonQuitar}
+                    onPress={() => quitarCampo(variable.simbolo, indice)}
+                  >
+                    <Text style={estilos.botonQuitarTexto}>−</Text>
+                  </Pressable>
+                )}
+              </View>
+            ))}
+
+            {variable.esLista && (
+              <Pressable
+                testID={`agregar-${variable.simbolo}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Agregar otro valor a ${variable.simbolo}`}
+                style={estilos.botonAgregar}
+                onPress={() => agregarCampo(variable.simbolo)}
+              >
+                <Text style={estilos.botonAgregarTexto}>+ Agregar valor</Text>
+              </Pressable>
+            )}
 
             {esInvalido && (
               <Text testID={`error-campo-${variable.simbolo}`} style={estilos.errorCampo}>
@@ -181,6 +247,27 @@ const estilos = StyleSheet.create({
   inputError: {
     borderColor: '#D32F2F',
   },
+  inputFlexible: { flex: 1 },
+  fila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  botonQuitar: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#8886',
+    borderRadius: 8,
+  },
+  botonQuitarTexto: { fontSize: 20, fontWeight: '600', opacity: 0.7 },
+  botonAgregar: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#8886',
+    borderRadius: 999,
+  },
+  botonAgregarTexto: { fontSize: 13, fontWeight: '600' },
   errorCampo: {
     fontSize: 12,
     color: '#D32F2F',
