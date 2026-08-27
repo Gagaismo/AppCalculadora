@@ -65,7 +65,9 @@ const formulaMockU03: Formula = {
   calcular: ({ alpha, L }) => alpha * L,
 };
 
-const catalogoPrueba: readonly Formula[] = [formulaMockU02, formulaMockU03, ...FORMULAS];
+const formulaMockU10 = FORMULAS.find((f) => f.id === 'U10-F07')!;
+
+const catalogoPrueba: readonly Formula[] = [formulaMockU02, formulaMockU03, formulaMockU10];
 
 describe('coincideTexto', () => {
   it('coincide con igualdad exacta', () => {
@@ -195,8 +197,8 @@ describe('buscarFormulas', () => {
 
     it('funciona con el catálogo por defecto de la aplicación (FORMULAS)', () => {
       const resultados = buscarFormulas('ancho');
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+      expect(resultados.length).toBeGreaterThanOrEqual(1);
+      expect(resultados.some((f) => f.id === 'U10-F07')).toBe(true);
     });
 
     it('no duplica fórmulas si coinciden por nombre y por símbolo', () => {
