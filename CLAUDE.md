@@ -1,15 +1,7 @@
 # CLAUDE.md
 
-## Agent skills
+Las instrucciones de este proyecto viven en [`AGENTS.md`](AGENTS.md) — leelo primero.
 
-### Issue tracker
-
-Issues live as GitHub issues, managed with the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The five canonical roles, each label string equal to its name (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context — one `CONTEXT.md` and one `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Se usa el formato abierto porque en este repositorio trabaja más de un agente: Claude orquesta y un
+agente Gemini (vía Google Antigravity) implementa. Mantener un solo archivo evita que las dos copias
+se desincronicen.
