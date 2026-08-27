@@ -5,6 +5,8 @@ import type { Formula } from '@/dominio/formula';
 import { calcular, type Entradas } from '@/dominio/motor';
 import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
 
+import { FichaFormula } from './ficha';
+
 /**
  * La pantalla genérica.
  *
@@ -155,6 +157,8 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
           {mensajeResultado}
         </Text>
       </View>
+
+      <FichaFormula formula={formula} />
     </ScrollView>
   );
 }
