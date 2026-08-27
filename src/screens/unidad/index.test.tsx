@@ -13,7 +13,7 @@ describe('PantallaUnidad', () => {
 
       expect(screen.getByText('Unidad 10')).toBeTruthy();
       expect(screen.getByText('Capa Física de Redes de Datos')).toBeTruthy();
-      expect(screen.getByText('1 fórmula')).toBeTruthy();
+      expect(screen.getByText('8 fórmulas')).toBeTruthy();
     });
 
     it('lista las fórmulas con su identificador, nombre y expresión', async () => {

@@ -33,8 +33,8 @@ describe('PantallaUnidades', () => {
   it('muestra la cantidad de fórmulas para cada Unidad', async () => {
     await render(<PantallaUnidades />);
 
-    // Unidad 10 tiene 1 fórmula cargada actualmente
-    expect(screen.getByTestId('unidad-conteo-10')).toHaveTextContent('1 fórmula');
+    // Unidad 10 tiene 8 fórmulas cargadas actualmente
+    expect(screen.getByTestId('unidad-conteo-10')).toHaveTextContent('8 fórmulas');
 
     // Unidad 1 tiene 0 fórmulas
     expect(screen.getByTestId('unidad-conteo-1')).toHaveTextContent('0 fórmulas');
