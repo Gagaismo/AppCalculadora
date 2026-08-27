@@ -62,6 +62,12 @@ describe('la pantalla genérica renderiza la Fórmula', () => {
     expect(screen.getByText(formula.salida.significado)).toBeTruthy();
     expect(screen.getByTestId('resultado')).toHaveTextContent('—');
   });
+
+  it('renderiza la ficha de la Fórmula', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    expect(screen.getByTestId('ficha-formula')).toBeTruthy();
+  });
 });
 
 describe('la pantalla genérica calcula', () => {
