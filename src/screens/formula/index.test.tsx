@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { buscarFormula } from '@/formulas';
 
-import { PantallaFormula } from '.';
+import { formatearNumero, PantallaFormula, parsearNumero } from '.';
 
 /**
  * Tests de la pantalla genérica.
@@ -18,6 +18,43 @@ import { PantallaFormula } from '.';
  */
 
 const formula = buscarFormula('U10-F07')!;
+
+describe('parsearNumero', () => {
+  it('parsea números enteros y decimales con punto', () => {
+    expect(parsearNumero('42')).toBe(42);
+    expect(parsearNumero('2.4835')).toBe(2.4835);
+  });
+
+  it('acepta coma como separador decimal', () => {
+    expect(parsearNumero('2,4')).toBe(2.4);
+    expect(parsearNumero('2,4835')).toBe(2.4835);
+    expect(parsearNumero('-15,8')).toBe(-15.8);
+  });
+
+  it('devuelve undefined para entradas vacías o compuestas solo por espacios', () => {
+    expect(parsearNumero(undefined)).toBeUndefined();
+    expect(parsearNumero('')).toBeUndefined();
+    expect(parsearNumero('   ')).toBeUndefined();
+  });
+
+  it('devuelve NaN para entradas no numéricas', () => {
+    expect(parsearNumero('abc')).toBeNaN();
+    expect(parsearNumero('1.2.3')).toBeNaN();
+    expect(parsearNumero('2,4,5')).toBeNaN();
+    expect(parsearNumero('-')).toBeNaN();
+  });
+});
+
+describe('formatearNumero', () => {
+  it('formatea el número usando coma decimal', () => {
+    expect(formatearNumero(83.5)).toBe('83,5');
+    expect(formatearNumero(2.4835)).toBe('2,4835');
+  });
+
+  it('remueve la basura del punto flotante', () => {
+    expect(formatearNumero(0.1 + 0.2)).toBe('0,3');
+  });
+});
 
 describe('la pantalla genérica renderiza la Fórmula', () => {
   it('muestra el identificador, el nombre y la expresión', async () => {
@@ -55,21 +92,37 @@ describe('la pantalla genérica renderiza la Fórmula', () => {
     }
   });
 
-  it('muestra la Variable de salida y todavía no un resultado', async () => {
+  it('muestra la Variable de salida e indica cuáles Variables faltan al inicio', async () => {
     await render(<PantallaFormula formula={formula} />);
 
     expect(screen.getByTestId('salida')).toBeTruthy();
     expect(screen.getByText(formula.salida.significado)).toBeTruthy();
-    expect(screen.getByTestId('resultado')).toHaveTextContent('—');
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Faltan: f_sup, f_inf');
+  });
+
+  it('ofrece el botón para limpiar campos', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    expect(screen.getByTestId('boton-limpiar')).toBeTruthy();
+    expect(screen.getByText('Limpiar campos')).toBeTruthy();
   });
 });
 
 describe('la pantalla genérica calcula', () => {
-  it('reproduce el Ejemplo resuelto de la banda ISM cargando GHz', async () => {
+  it('reproduce el Ejemplo resuelto de la banda ISM cargando GHz con coma', async () => {
     await render(<PantallaFormula formula={formula} />);
 
     await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
     await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 MHz');
+  });
+
+  it('acepta punto decimal en la entrada', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2.4');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2.4835');
 
     expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 MHz');
   });
@@ -86,14 +139,60 @@ describe('la pantalla genérica calcula', () => {
 
     expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 kHz');
   });
+});
 
-  it('vuelve a no mostrar resultado si se borra una Variable', async () => {
+describe('la pantalla genérica maneja errores y validación', () => {
+  it('indica qué Variable falta cuando solo se carga una de ellas', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Falta: f_sup');
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Falta: f_inf');
+  });
+
+  it('muestra mensaje de error cuando una entrada no es numérica', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), 'abc');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Entrada no numérica en f_inf');
+    expect(screen.getByTestId('error-campo-f_inf')).toHaveTextContent('Debe ser un número válido');
+  });
+
+  it('indica múltiples campos con entrada no numérica', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), 'xxx');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), 'yyy');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Entrada no numérica en: f_sup, f_inf');
+  });
+
+  it('permite limpiar todos los campos con una sola acción para encadenar ejercicios', async () => {
     await render(<PantallaFormula formula={formula} />);
 
     await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
     await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
-    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '');
+    await fireEvent.press(screen.getByTestId('multiplo-f_inf-M'));
+    await fireEvent.press(screen.getByTestId('multiplo-f_sup-M'));
+    expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 kHz');
 
-    expect(screen.getByTestId('resultado')).toHaveTextContent('—');
+    await fireEvent.press(screen.getByTestId('boton-limpiar'));
+
+    // Los campos de texto quedan vacíos
+    expect(screen.getByTestId('entrada-f_inf').props.value).toBe('');
+    expect(screen.getByTestId('entrada-f_sup').props.value).toBe('');
+
+    // Los selectores de múltiplo vuelven a sus valores canónicos (G)
+    expect(screen.getByTestId('multiplo-f_inf-G').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId('multiplo-f_sup-G').props.accessibilityState.selected).toBe(true);
+
+    // El resultado indica que faltan todas las Variables
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Faltan: f_sup, f_inf');
   });
 });
+
