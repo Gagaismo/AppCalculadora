@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { UNIDADES } from './datos';
+import { formulasDeUnidad } from '@/formulas';
+
 import { formatearCantidadFormulas, PantallaUnidades } from './index';
 
 describe('formatearCantidadFormulas', () => {
@@ -33,8 +35,12 @@ describe('PantallaUnidades', () => {
   it('muestra la cantidad de fórmulas para cada Unidad', async () => {
     await render(<PantallaUnidades />);
 
-    // Unidad 10 tiene 1 fórmula cargada actualmente
-    expect(screen.getByTestId('unidad-conteo-10')).toHaveTextContent('1 fórmula');
+    // Se deriva del dato en vez de fijar un número: el conteo crece con cada Unidad
+    // que se carga, y un número escrito a mano acá obliga a editar este test cada vez.
+    const cargadasEnU10 = formulasDeUnidad(10).length;
+    expect(screen.getByTestId('unidad-conteo-10')).toHaveTextContent(
+      formatearCantidadFormulas(cargadasEnU10),
+    );
 
     // Unidad 1 tiene 0 fórmulas
     expect(screen.getByTestId('unidad-conteo-1')).toHaveTextContent('0 fórmulas');

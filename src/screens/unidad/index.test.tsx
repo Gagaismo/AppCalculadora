@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { formulasDeUnidad } from '@/formulas';
+
 
 import { buscarFormula } from '@/formulas';
 
@@ -13,7 +15,8 @@ describe('PantallaUnidad', () => {
 
       expect(screen.getByText('Unidad 10')).toBeTruthy();
       expect(screen.getByText('Capa Física de Redes de Datos')).toBeTruthy();
-      expect(screen.getByText('1 fórmula')).toBeTruthy();
+      // Derivado del dato: el conteo crece al cargar la Unidad.
+      expect(screen.getByText(`${formulasDeUnidad(10).length} fórmula${formulasDeUnidad(10).length === 1 ? '' : 's'}`)).toBeTruthy();
     });
 
     it('lista las fórmulas con su identificador, nombre y expresión', async () => {

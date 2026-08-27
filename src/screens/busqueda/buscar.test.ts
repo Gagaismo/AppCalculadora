@@ -65,7 +65,46 @@ const formulaMockU03: Formula = {
   calcular: ({ alpha, L }) => alpha * L,
 };
 
-const catalogoPrueba: readonly Formula[] = [formulaMockU02, formulaMockU03, ...FORMULAS];
+const formulaMockU10: Formula = {
+  id: 'U10-F07',
+  unidad: 10,
+  nombre: 'Ancho de banda de una banda de frecuencias (ISM / Wi-Fi)',
+  expresion: 'AB = f_sup − f_inf',
+  entradas: [
+    {
+      simbolo: 'f_sup',
+      significado: 'Frecuencia superior del rango de la banda',
+      unidadDeMedida: 'Hz',
+      multiploCanonico: 'G',
+    },
+    {
+      simbolo: 'f_inf',
+      significado: 'Frecuencia inferior del rango de la banda',
+      unidadDeMedida: 'Hz',
+      multiploCanonico: 'G',
+    },
+  ],
+  salida: {
+    simbolo: 'AB',
+    significado: 'Ancho de banda de la banda de frecuencias',
+    unidadDeMedida: 'Hz',
+    multiploCanonico: 'M',
+  },
+  condiciones: 'Bandas no licenciadas.',
+  paginas: '34, 35',
+  confianza: 'media',
+  calcular: ({ f_sup, f_inf }) => f_sup - f_inf,
+};
+
+/**
+ * Catálogo fijo, deliberadamente independiente de `FORMULAS`.
+ *
+ * Antes incluía el catálogo vivo con `...FORMULAS`, y eso hacía que estos tests se
+ * rompieran cada vez que se cargaba una Unidad: las aserciones de cantidad dejaban de
+ * valer porque aparecían coincidencias nuevas. Un test de la búsqueda tiene que probar
+ * la búsqueda, no cuántas Fórmulas hay cargadas hoy.
+ */
+const catalogoPrueba: readonly Formula[] = [formulaMockU02, formulaMockU03, formulaMockU10];
 
 describe('coincideTexto', () => {
   it('coincide con igualdad exacta', () => {
@@ -194,9 +233,14 @@ describe('buscarFormulas', () => {
     });
 
     it('funciona con el catálogo por defecto de la aplicación (FORMULAS)', () => {
+      // Contra el catálogo vivo no se asertan cantidades: crecen con cada Unidad que
+      // se carga. Lo que se verifica es que la búsqueda lo alcanza y encuentra algo
+      // conocido.
       const resultados = buscarFormulas('ancho');
-      expect(resultados).toHaveLength(1);
-      expect(resultados[0].id).toBe('U10-F07');
+
+      expect(resultados.length).toBeGreaterThan(0);
+      expect(resultados.some((formula) => formula.id === 'U10-F07')).toBe(true);
+      expect(FORMULAS.length).toBeGreaterThan(0);
     });
 
     it('no duplica fórmulas si coinciden por nombre y por símbolo', () => {
