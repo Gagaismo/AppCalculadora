@@ -86,3 +86,16 @@ export const EJEMPLOS_UNIDAD_04: readonly EjemploResuelto[] = [
     tolerancia: 0.01,
   },
 ];
+
+/**
+ * Fórmulas de esta Unidad que todavía **no** están cargadas.
+ *
+ * Es la deuda declarada de la Unidad 4, y su único destino es encogerse hasta quedar
+ * vacía. Al incorporar una Fórmula hay que sacar su identificador de acá, o el
+ * invariante de cobertura falla nombrándolo.
+ */
+export const PENDIENTES_UNIDAD_04: readonly string[] = [
+  'U04-F01', 'U04-F02', 'U04-F03', 'U04-F04', 'U04-F05', 'U04-F07',
+  'U04-F08', 'U04-F09', 'U04-F10', 'U04-F11', 'U04-F12', 'U04-F13',
+  'U04-F14', 'U04-F15', 'U04-F16',
+];

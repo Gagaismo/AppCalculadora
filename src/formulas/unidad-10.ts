@@ -75,3 +75,15 @@ export const EJEMPLOS_UNIDAD_10: readonly EjemploResuelto[] = [
       'otros dos casos de la misma página verifican exactamente. Se implementa el valor correcto.',
   },
 ];
+
+/**
+ * Fórmulas de esta Unidad que todavía **no** están cargadas.
+ *
+ * Es la deuda declarada de la Unidad 10, y su único destino es encogerse hasta quedar
+ * vacía. Al incorporar una Fórmula hay que sacar su identificador de acá, o el
+ * invariante de cobertura falla nombrándolo.
+ */
+export const PENDIENTES_UNIDAD_10: readonly string[] = [
+  'U10-F01', 'U10-F02', 'U10-F03', 'U10-F04', 'U10-F05', 'U10-F06',
+  'U10-F08',
+];

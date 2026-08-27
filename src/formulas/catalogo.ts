@@ -14,44 +14,6 @@ export const FORMULAS_DIVIDIDAS: Readonly<Record<string, readonly string[]>> = {
 
 
 /**
- * Fórmulas del catálogo que todavía **no** están cargadas en la app.
- *
- * Esta lista es una deuda declarada, y su único destino es encogerse hasta quedar
- * vacía. Cada ticket de carga de una Unidad tiene que sacar de acá los
- * identificadores que incorpora; si no lo hace, el invariante falla y avisa.
- *
- * Existe por una razón práctica: el invariante compara contra esto en vez de contra
- * la lista vacía. Un test rojo de forma permanente deja de dar señal —una falla nueva
- * y real se vuelve indistinguible del ruido de fondo— y además haría imposible pedirle
- * a nadie que `npm test` pase antes de commitear.
- */
-export const PENDIENTES_DE_CARGA: readonly string[] = [
-  'U02-F01', 'U02-F02', 'U02-F03', 'U02-F04', 'U02-F05', 'U02-F06',
-  'U02-F07', 'U02-F08', 'U02-F09', 'U02-F10', 'U02-F11', 'U02-F12',
-  'U02-F13', 'U02-F14', 'U02-F15', 'U02-F16', 'U02-F17', 'U02-F18',
-  'U02-F19', 'U02-F20', 'U02-F21', 'U02-F22', 'U02-F23', 'U02-F24',
-  'U02-F25', 'U02-F26', 'U02-F27', 'U02-F28', 'U02-F29', 'U03-F01',
-  'U03-F02', 'U03-F03', 'U03-F04', 'U03-F05', 'U03-F06', 'U03-F07',
-  'U03-F08', 'U03-F09', 'U03-F10', 'U03-F11', 'U03-F12', 'U03-F13',
-  'U03-F14', 'U03-F15', 'U03-F16', 'U03-F17', 'U04-F01', 'U04-F02',
-  'U04-F03', 'U04-F04', 'U04-F05', 'U04-F07', 'U04-F08', 'U04-F09',
-  'U04-F10', 'U04-F11', 'U04-F12', 'U04-F13', 'U04-F14', 'U04-F15',
-  'U04-F16', 'U05-F01', 'U05-F02', 'U05-F03', 'U05-F04', 'U05-F05',
-  'U05-F06', 'U05-F07', 'U05-F08', 'U05-F09', 'U05-F10', 'U05-F11',
-  'U05-F12', 'U05-F13', 'U05-F14', 'U05-F15', 'U05-F16', 'U05-F17',
-  'U05-F18', 'U05-F19', 'U05-F20', 'U05-F21', 'U05-F22', 'U05-F23',
-  'U05-F24', 'U05-F25', 'U06-F01', 'U06-F02', 'U06-F03', 'U06-F04',
-  'U06-F05', 'U06-F06', 'U06-F07', 'U06-F08', 'U06-F09', 'U06-F10',
-  'U06-F11', 'U07-F01', 'U07-F02', 'U07-F03', 'U07-F04', 'U08-F01',
-  'U08-F02', 'U08-F03', 'U08-F04', 'U08-F05', 'U08-F06', 'U08-F07',
-  'U08-F08', 'U08-F09', 'U08-F10', 'U08-F11', 'U08-F12', 'U08-F13',
-  'U08-F14', 'U08-F15', 'U08-F16', 'U08-F17', 'U08-F18', 'U08-F19',
-  'U08-F20', 'U08-F21', 'U09-F01', 'U09-F02', 'U09-F03', 'U09-F04',
-  'U09-F05', 'U09-F06', 'U09-F07', 'U09-F08', 'U09-F09', 'U10-F01',
-  'U10-F02', 'U10-F03', 'U10-F04', 'U10-F05', 'U10-F06', 'U10-F08',
-];
-
-/**
  * Ruta por defecto al catálogo de fórmulas de Comunicaciones (`formulas-comunicaciones.md`).
  */
 export const RUTA_CATALOGO_POR_DEFECTO = path.resolve(

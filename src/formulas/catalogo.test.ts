@@ -1,9 +1,8 @@
-import { FORMULAS } from './index';
+import { FORMULAS, PENDIENTES_DE_CARGA } from './index';
 import {
   extraerIdentificadoresCatalogo,
   identificadoresFaltantes,
   leerIdentificadoresCatalogo,
-  PENDIENTES_DE_CARGA,
 } from './catalogo';
 
 /**
@@ -88,10 +87,20 @@ describe('invariante de cobertura del catálogo', () => {
     expect(declaradasDeMas).toEqual([]);
   });
 
-  it('la deuda se va a terminar: hoy son 138 de 140', () => {
-    // Cuando este número llegue a cero, PENDIENTES_DE_CARGA queda vacía y el
-    // invariante pasa a comparar contra la lista vacía sin cambiar una línea.
-    expect(PENDIENTES_DE_CARGA.length).toBe(138);
-    expect(leerIdentificadoresCatalogo()).toHaveLength(140);
+  it('la deuda sólo nombra identificadores que existen en el catálogo', () => {
+    // Atrapa el error de tipeo al editar la deuda de una Unidad: un identificador
+    // mal escrito ahí desactivaría en silencio la cobertura de la Fórmula real.
+    const delCatalogo = new Set(leerIdentificadoresCatalogo());
+    const inventados = PENDIENTES_DE_CARGA.filter((id) => !delCatalogo.has(id));
+
+    expect(inventados).toEqual([]);
+  });
+
+  it('la deuda no repite identificadores', () => {
+    const repetidos = PENDIENTES_DE_CARGA.filter(
+      (id, i) => PENDIENTES_DE_CARGA.indexOf(id) !== i,
+    );
+
+    expect(repetidos).toEqual([]);
   });
 });
