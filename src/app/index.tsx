@@ -1,28 +1,25 @@
-import { Stack } from 'expo-router';
-import { Text, View } from 'react-native';
+import { router, Stack } from 'expo-router';
 
-import { buscarFormula } from '@/formulas';
-import { PantallaFormula } from '@/screens/formula';
+import { PantallaUnidades } from '@/screens/unidades';
 
 /**
- * Por ahora la app abre directamente en la Fórmula con la que se estableció el patrón.
- * La navegación por Unidades llega en su propio ticket.
+ * Pantalla de inicio de la aplicación.
+ *
+ * Muestra el catálogo de las diez Unidades de la materia con la cantidad
+ * de Fórmulas disponibles en cada una.
  */
 export default function Inicio() {
-  const formula = buscarFormula('U10-F07');
-
-  if (!formula) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-        <Text>No se encontró la Fórmula.</Text>
-      </View>
-    );
-  }
-
   return (
     <>
-      <Stack.Screen options={{ title: `Unidad ${formula.unidad}` }} />
-      <PantallaFormula formula={formula} />
+      <Stack.Screen options={{ title: 'Comunicaciones' }} />
+      <PantallaUnidades
+        onSeleccionarUnidad={(numero) => {
+          router.push({
+            pathname: '/unidad/[numero]',
+            params: { numero: String(numero) },
+          });
+        }}
+      />
     </>
   );
 }
