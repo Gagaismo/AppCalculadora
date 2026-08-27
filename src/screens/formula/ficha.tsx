@@ -4,6 +4,8 @@ import type { EjemploResuelto, Formula } from '@/dominio/formula';
 import { conMultiplo } from '@/dominio/multiplos';
 import { ejemplosDeFormula } from '@/formulas';
 
+import { formatearNumero } from './numeros';
+
 interface FichaFormulaProps {
   readonly formula: Formula;
   /** Permite inyectar ejemplos en tests o usar los registrados por defecto. */
@@ -109,10 +111,6 @@ export function FichaFormula({ formula, ejemplos }: FichaFormulaProps) {
 function capitalizar(texto: string): string {
   if (!texto) return '';
   return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
-
-function formatearNumero(valor: number): string {
-  return String(Number(valor.toPrecision(10))).replace('.', ',');
 }
 
 const estilos = StyleSheet.create({

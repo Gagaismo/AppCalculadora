@@ -6,6 +6,7 @@ import { calcular, type Entradas } from '@/dominio/motor';
 import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
 
 import { FichaFormula } from './ficha';
+import { formatearNumero, parsearEntrada } from './numeros';
 
 /**
  * La pantalla genérica.
@@ -23,17 +24,14 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
   const entradas: Record<string, { valor: number; multiplo: Multiplo }> = {};
 
   for (const variable of formula.entradas) {
-    const texto = textos[variable.simbolo];
-    const valor = parsearNumero(texto);
-    if (valor !== undefined) {
-      if (Number.isNaN(valor)) {
-        noNumericos.push(variable.simbolo);
-      } else {
-        entradas[variable.simbolo] = {
-          valor,
-          multiplo: multiplos[variable.simbolo],
-        };
-      }
+    const entrada = parsearEntrada(textos[variable.simbolo]);
+    if (entrada.estado === 'invalida') {
+      noNumericos.push(variable.simbolo);
+    } else if (entrada.estado === 'cargada') {
+      entradas[variable.simbolo] = {
+        valor: entrada.valor,
+        multiplo: multiplos[variable.simbolo],
+      };
     }
   }
 
@@ -161,20 +159,6 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
       <FichaFormula formula={formula} />
     </ScrollView>
   );
-}
-
-/** Acepta coma decimal: es como la cátedra escribe los números. */
-export function parsearNumero(texto: string | undefined): number | undefined {
-  if (texto === undefined) return undefined;
-  const limpio = texto.trim().replace(',', '.');
-  if (limpio === '') return undefined;
-  const valor = Number(limpio);
-  return Number.isFinite(valor) ? valor : NaN;
-}
-
-/** Muestra el número con coma decimal y sin la basura del punto flotante. */
-export function formatearNumero(valor: number): string {
-  return String(Number(valor.toPrecision(10))).replace('.', ',');
 }
 
 const estilos = StyleSheet.create({

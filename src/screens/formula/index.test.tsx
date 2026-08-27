@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { buscarFormula } from '@/formulas';
 
-import { formatearNumero, PantallaFormula, parsearNumero } from '.';
+import { PantallaFormula } from '.';
 
 /**
  * Tests de la pantalla genérica.
@@ -19,42 +19,8 @@ import { formatearNumero, PantallaFormula, parsearNumero } from '.';
 
 const formula = buscarFormula('U10-F07')!;
 
-describe('parsearNumero', () => {
-  it('parsea números enteros y decimales con punto', () => {
-    expect(parsearNumero('42')).toBe(42);
-    expect(parsearNumero('2.4835')).toBe(2.4835);
-  });
-
-  it('acepta coma como separador decimal', () => {
-    expect(parsearNumero('2,4')).toBe(2.4);
-    expect(parsearNumero('2,4835')).toBe(2.4835);
-    expect(parsearNumero('-15,8')).toBe(-15.8);
-  });
-
-  it('devuelve undefined para entradas vacías o compuestas solo por espacios', () => {
-    expect(parsearNumero(undefined)).toBeUndefined();
-    expect(parsearNumero('')).toBeUndefined();
-    expect(parsearNumero('   ')).toBeUndefined();
-  });
-
-  it('devuelve NaN para entradas no numéricas', () => {
-    expect(parsearNumero('abc')).toBeNaN();
-    expect(parsearNumero('1.2.3')).toBeNaN();
-    expect(parsearNumero('2,4,5')).toBeNaN();
-    expect(parsearNumero('-')).toBeNaN();
-  });
-});
-
-describe('formatearNumero', () => {
-  it('formatea el número usando coma decimal', () => {
-    expect(formatearNumero(83.5)).toBe('83,5');
-    expect(formatearNumero(2.4835)).toBe('2,4835');
-  });
-
-  it('remueve la basura del punto flotante', () => {
-    expect(formatearNumero(0.1 + 0.2)).toBe('0,3');
-  });
-});
+// Los tests de `parsearEntrada` y `formatearNumero` viven en `numeros.test.ts`,
+// al lado del módulo que prueban.
 
 describe('la pantalla genérica renderiza la Fórmula', () => {
   it('muestra el identificador, el nombre y la expresión', async () => {
