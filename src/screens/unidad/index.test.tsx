@@ -57,20 +57,22 @@ describe('PantallaUnidad', () => {
     });
   });
 
-  describe('Unidad sin fórmulas cargadas aún (ej. Unidad 2)', () => {
-    it('muestra el mensaje genérico de unidad vacía', async () => {
-      await render(<PantallaUnidad numero={2} />);
+  describe('Unidad sin Fórmulas', () => {
+    // Se usa la Unidad 1, que está vacía por naturaleza y no por casualidad: se releyó
+    // su Presentación completa y no tiene ninguna fórmula calculable. Antes este test
+    // usaba la Unidad 2 «que todavía no se cargó», y se rompió apenas se cargó.
+    it('muestra el mensaje de unidad vacía', async () => {
+      await render(<PantallaUnidad numero={1} />);
 
-      expect(screen.getByText('Unidad 2')).toBeTruthy();
-      expect(
-        screen.getByText('Análisis de las Señales (Fourier, filtros)'),
-      ).toBeTruthy();
+      expect(screen.getByText('Unidad 1')).toBeTruthy();
+      expect(screen.getByText('Sistemas de Comunicación')).toBeTruthy();
       expect(screen.getByText('0 fórmulas')).toBeTruthy();
 
       expect(screen.getByTestId('unidad-vacia')).toBeTruthy();
-      expect(
-        screen.getByText('No hay fórmulas cargadas todavía para esta Unidad.'),
-      ).toBeTruthy();
+      // La Unidad 1 tiene nota propia, así que muestra el porqué del hueco en vez
+      // del mensaje genérico. Que diga por qué está vacía es justamente el punto:
+      // el 0 está verificado, y eso se defiende en el oral.
+      expect(screen.getByText(/verificado en sus 79 páginas/i)).toBeTruthy();
     });
   });
 });
