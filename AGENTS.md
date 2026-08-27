@@ -88,7 +88,10 @@ Dónde va cada cosa:
 - `src/dominio/` — el tipo de la Fórmula, los múltiplos, el motor de cálculo. **No se toca** al
   cargar Fórmulas. Si una Fórmula parece necesitar un cambio acá, es una escalación, no una edición.
 - `src/formulas/unidad-N.ts` — las Fórmulas de esa Unidad y sus Ejemplos resueltos, como datos.
-- `src/formulas/index.ts` — el registro único. Es el único otro archivo que se toca al sumar una Unidad.
+- `src/formulas/index.ts` — el registro único. Se toca al sumar una Unidad.
+- `src/formulas/catalogo.ts` — el invariante de cobertura. **Al cargar una Unidad hay que sacar sus
+  identificadores de `PENDIENTES_DE_CARGA`**, o el invariante falla nombrándolos. Es a propósito:
+  esa lista es la deuda declarada y su único destino es encogerse hasta quedar vacía.
 - Los tests van **al lado** del archivo que prueban (`unidad-10.test.ts`), no en `__tests__/`.
 
 Tres cosas que importan al escribirlas:
