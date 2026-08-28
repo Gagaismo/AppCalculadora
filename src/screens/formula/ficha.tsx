@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { EjemploResuelto, Formula } from '@/dominio/formula';
 import { conMultiplo } from '@/dominio/multiplos';
 import { ejemplosDeFormula } from '@/formulas';
+import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { formatearNumero } from './numeros';
 
@@ -87,7 +88,7 @@ export function FichaFormula({ formula, ejemplos }: FichaFormulaProps) {
                   );
                 })}
 
-                <Text style={[estilos.ejemploSubtitulo, { marginTop: 6 }]}>
+                <Text style={estilos.ejemploSubtituloEspaciado}>
                   Resultado esperado:
                 </Text>
                 <Text testID={`ejemplo-esperado-${index}`} style={estilos.ejemploResultado}>
@@ -119,101 +120,103 @@ function capitalizar(texto: string): string {
 
 const estilos = StyleSheet.create({
   ficha: {
-    gap: 16,
+    gap: espacio.lg,
     borderTopWidth: 1,
-    borderTopColor: '#8886',
-    paddingTop: 20,
+    borderTopColor: colores.borde,
+    paddingTop: espacio.xl,
   },
   seccion: {
-    gap: 6,
+    gap: espacio.sm,
   },
   seccionTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...tipografia.subtitulo,
+    color: colores.texto,
   },
   seccionTexto: {
-    fontSize: 14,
-    opacity: 0.85,
-    lineHeight: 20,
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
   },
   confianzaTexto: {
-    fontSize: 13,
-    opacity: 0.75,
-    marginTop: 2,
+    ...tipografia.pie,
+    color: colores.textoSuave,
+    marginTop: espacio.xs,
   },
   confianzaValor: {
-    fontWeight: '600',
+    fontFamily: fuentes.interfazMedia,
+    color: colores.texto,
   },
   observacion: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#F59E0B',
+    backgroundColor: colores.avisoFondo,
+    borderColor: colores.aviso,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    gap: 6,
+    borderRadius: radio.sm,
+    padding: espacio.md,
+    gap: espacio.xs,
   },
   observacionTitulo: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#92400E',
+    ...tipografia.etiqueta,
+    color: colores.aviso,
   },
   observacionTexto: {
-    fontSize: 13,
-    color: '#92400E',
-    lineHeight: 18,
+    ...tipografia.cuerpo,
+    color: colores.aviso,
   },
   ejemploTarjeta: {
     borderWidth: 1,
-    borderColor: '#8884',
-    borderRadius: 8,
-    padding: 12,
-    gap: 8,
-    backgroundColor: '#8881',
+    borderColor: colores.borde,
+    borderRadius: radio.sm,
+    padding: espacio.md,
+    gap: espacio.sm,
+    backgroundColor: colores.superficie,
   },
   ejemploEnunciado: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.interfazMedia,
+    color: colores.texto,
   },
   ejemploPagina: {
-    fontSize: 12,
-    opacity: 0.7,
+    ...tipografia.pie,
+    color: colores.textoSuave,
   },
   ejemploValores: {
-    gap: 4,
-    paddingVertical: 4,
+    gap: espacio.xs,
+    paddingVertical: espacio.xs,
   },
   ejemploSubtitulo: {
-    fontSize: 13,
-    fontWeight: '600',
-    opacity: 0.8,
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
+  },
+  ejemploSubtituloEspaciado: {
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
+    marginTop: espacio.sm,
   },
   ejemploValorItem: {
-    fontSize: 13,
-    fontFamily: 'monospace',
+    ...tipografia.etiqueta,
+    fontFamily: fuentes.nota,
+    color: colores.texto,
   },
   ejemploResultado: {
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'monospace',
+    ...tipografia.etiqueta,
+    fontFamily: fuentes.notaFuerte,
+    color: colores.texto,
   },
   apartamiento: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#EF4444',
+    backgroundColor: colores.errorFondo,
+    borderColor: colores.error,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 4,
-    gap: 4,
+    borderRadius: radio.sm,
+    padding: espacio.md,
+    marginTop: espacio.xs,
+    gap: espacio.xs,
   },
   apartamientoTitulo: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#991B1B',
+    ...tipografia.pie,
+    fontFamily: fuentes.interfazMedia,
+    color: colores.error,
   },
   apartamientoTexto: {
-    fontSize: 12,
-    color: '#991B1B',
-    lineHeight: 16,
+    ...tipografia.pie,
+    color: colores.error,
   },
 });

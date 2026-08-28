@@ -3,7 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import type { EntradaCargada, Formula } from '@/dominio/formula';
 import { calcular } from '@/dominio/motor';
-import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import { aCanonico, conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { FichaFormula } from './ficha';
 import { Expresion } from './expresion';
@@ -22,12 +23,26 @@ function camposIniciales(formula: Formula): Record<string, string[]> {
 }
 
 export function PantallaFormula({ formula }: { formula: Formula }) {
+  const esFicha = formula.entradas.length === 0;
+
   // Toda Variable guarda un arreglo de textos. Una escalar simplemente tiene uno,
   // así el resto de la pantalla no necesita dos caminos para cada cosa.
   const [textos, setTextos] = useState<Record<string, string[]>>(() => camposIniciales(formula));
   const [multiplos, setMultiplos] = useState<Record<string, Multiplo>>(() =>
     Object.fromEntries(formula.entradas.map((v) => [v.simbolo, v.multiploCanonico])),
   );
+
+  if (esFicha) {
+    return (
+      <ScrollView style={estilos.pantalla} contentContainerStyle={estilos.contenido}>
+        <Text style={estilos.rotuloConsulta}>Ficha de consulta — sin cálculo</Text>
+        <Text style={estilos.identificador}>{formula.id}</Text>
+        <Text style={estilos.nombre}>{formula.nombre}</Text>
+        <Expresion formula={formula} altura={26} />
+        <FichaFormula formula={formula} />
+      </ScrollView>
+    );
+  }
 
   const noNumericos: string[] = [];
   const entradas: Record<string, EntradaCargada> = {};
@@ -54,9 +69,12 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
   }
 
   let mensajeResultado: string;
+  let valorCanonico: number | null = null;
   let esExito = false;
+  let esError = false;
 
   if (noNumericos.length > 0) {
+    esError = true;
     mensajeResultado =
       noNumericos.length === 1
         ? `Entrada no numérica en ${noNumericos[0]}`
@@ -66,6 +84,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
     if (resultado.ok) {
       esExito = true;
       mensajeResultado = `${formatearNumero(resultado.valor)} ${conMultiplo(resultado.multiplo, resultado.unidadDeMedida)}`;
+      valorCanonico = aCanonico(resultado.valor, resultado.multiplo);
     } else {
       switch (resultado.error.tipo) {
         case 'variables-faltantes':
@@ -78,6 +97,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
           mensajeResultado = resultado.error.motivo;
           break;
         case 'formula-desconocida':
+          esError = true;
           mensajeResultado = `Fórmula desconocida: ${resultado.error.id}`;
           break;
       }
@@ -132,6 +152,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
                   keyboardType="numeric"
                   inputMode="decimal"
                   placeholder={variable.esLista ? `${variable.simbolo}${indice + 1}` : '0'}
+                  placeholderTextColor={colores.textoTenue}
                   accessibilityLabel={
                     variable.esLista
                       ? `${variable.simbolo} ${indice + 1}, ${variable.significado}`
@@ -202,7 +223,6 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
                 Debe ser un número válido
               </Text>
             )}
-
           </View>
         );
       })}
@@ -218,14 +238,31 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
       </Pressable>
 
       <View testID="salida" style={estilos.salida}>
-        <Text style={estilos.simbolo}>{formula.salida.simbolo}</Text>
-        <Text style={estilos.significado}>{formula.salida.significado}</Text>
-        <Text
-          testID="resultado"
-          style={[estilos.resultado, !esExito && estilos.resultadoIncompleto]}
+        <Text style={estilos.simboloSalida}>{formula.salida.simbolo}</Text>
+        <Text style={estilos.significadoSalida}>{formula.salida.significado}</Text>
+        <View
+          style={[
+            estilos.bloqueResultado,
+            esExito && estilos.bloqueResultadoExito,
+            esError && estilos.bloqueResultadoError,
+          ]}
         >
-          {mensajeResultado}
-        </Text>
+          <Text
+            testID="resultado"
+            style={[
+              estilos.resultado,
+              esExito && estilos.resultadoExito,
+              esError && estilos.resultadoError,
+            ]}
+          >
+            {mensajeResultado}
+          </Text>
+          {esExito && valorCanonico !== null && (
+            <Text style={estilos.resultadoCanonico}>
+              {`= ${formatearNumero(valorCanonico)} ${conMultiplo(formula.salida.multiploCanonico, formula.salida.unidadDeMedida)}`}
+            </Text>
+          )}
+        </View>
       </View>
 
       <FichaFormula formula={formula} />
@@ -234,80 +271,154 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
 }
 
 const estilos = StyleSheet.create({
-  pantalla: { flex: 1 },
-  contenido: { padding: 20, gap: 20 },
-  identificador: { fontSize: 13, opacity: 0.6, fontVariant: ['tabular-nums'] },
-  nombre: { fontSize: 22, fontWeight: '600' },
-  expresion: { fontSize: 18, fontFamily: 'monospace' },
-  campo: { gap: 6 },
-  simbolo: { fontSize: 16, fontWeight: '700', fontFamily: 'monospace' },
-  significado: { fontSize: 14, opacity: 0.75 },
+  pantalla: {
+    flex: 1,
+    backgroundColor: colores.fondo,
+  },
+  contenido: {
+    padding: espacio.xl,
+    gap: espacio.xl,
+  },
+  rotuloConsulta: {
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
+  },
+  identificador: {
+    ...tipografia.etiqueta,
+    color: colores.accion,
+    fontVariant: ['tabular-nums'],
+  },
+  nombre: {
+    ...tipografia.titulo,
+    color: colores.texto,
+  },
+  campo: {
+    gap: espacio.sm,
+  },
+  simbolo: {
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.notaFuerte,
+    color: colores.texto,
+  },
+  significado: {
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#8888',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 18,
+    borderColor: colores.borde,
+    borderRadius: radio.sm,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm,
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.nota,
+    color: colores.texto,
+    backgroundColor: colores.superficie,
   },
   inputError: {
-    borderColor: '#D32F2F',
+    borderColor: colores.error,
   },
-  inputFlexible: { flex: 1 },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  inputFlexible: {
+    flex: 1,
+  },
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.sm,
+  },
   botonQuitar: {
-    width: 40,
-    height: 40,
+    width: espacio.xl * 2,
+    height: espacio.xl * 2,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#8886',
-    borderRadius: 8,
+    borderColor: colores.borde,
+    borderRadius: radio.sm,
+    backgroundColor: colores.superficie,
   },
-  botonQuitarTexto: { fontSize: 20, fontWeight: '600', opacity: 0.7 },
+  botonQuitarTexto: {
+    ...tipografia.subtitulo,
+    color: colores.textoSuave,
+  },
   botonAgregar: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.xs,
     borderWidth: 1,
-    borderColor: '#8886',
-    borderRadius: 999,
+    borderColor: colores.borde,
+    borderRadius: radio.pastilla,
+    backgroundColor: colores.superficie,
   },
-  botonAgregarTexto: { fontSize: 13, fontWeight: '600' },
+  botonAgregarTexto: {
+    ...tipografia.etiqueta,
+    color: colores.accion,
+  },
   errorCampo: {
-    fontSize: 12,
-    color: '#D32F2F',
+    ...tipografia.pie,
+    color: colores.error,
   },
-  multiplos: { gap: 6, paddingVertical: 2 },
-  multiplo: {
-    borderWidth: 1,
-    borderColor: '#8886',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  multiploElegido: { backgroundColor: '#208AEF', borderColor: '#208AEF' },
-  multiploTexto: { fontSize: 13 },
-  multiploTextoElegido: { color: 'white', fontWeight: '600' },
   botonLimpiar: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: '#8888',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderColor: colores.borde,
+    borderRadius: radio.sm,
+    paddingHorizontal: espacio.lg,
+    paddingVertical: espacio.sm,
+    backgroundColor: colores.superficie,
   },
   botonLimpiarTexto: {
-    fontSize: 14,
-    fontWeight: '500',
-    opacity: 0.85,
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.interfazMedia,
+    color: colores.accion,
   },
   salida: {
-    gap: 6,
+    gap: espacio.sm,
     borderTopWidth: 1,
-    borderTopColor: '#8886',
-    paddingTop: 20,
+    borderTopColor: colores.borde,
+    paddingTop: espacio.xl,
   },
-  resultado: { fontSize: 28, fontWeight: '700' },
-  resultadoIncompleto: { fontSize: 18, fontWeight: '400', opacity: 0.75 },
+  simboloSalida: {
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.notaFuerte,
+    color: colores.texto,
+  },
+  significadoSalida: {
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
+  },
+  bloqueResultado: {
+    minHeight: 88,
+    justifyContent: 'center',
+    padding: espacio.lg,
+    borderRadius: radio.md,
+    backgroundColor: colores.superficie,
+    borderWidth: 1,
+    borderColor: colores.borde,
+    gap: espacio.xs,
+  },
+  bloqueResultadoExito: {
+    backgroundColor: colores.exitoFondo,
+    borderColor: colores.exito,
+  },
+  bloqueResultadoError: {
+    backgroundColor: colores.errorFondo,
+    borderColor: colores.error,
+  },
+  resultado: {
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
+  },
+  resultadoExito: {
+    ...tipografia.resultado,
+    color: colores.exito,
+  },
+  resultadoError: {
+    ...tipografia.cuerpo,
+    color: colores.error,
+  },
+  resultadoCanonico: {
+    ...tipografia.pie,
+    fontFamily: fuentes.nota,
+    color: colores.textoSuave,
+  },
 });
