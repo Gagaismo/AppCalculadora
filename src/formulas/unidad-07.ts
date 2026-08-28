@@ -125,6 +125,13 @@ const U07_F04: Formula = {
   nombre: 'Bits extra por segundo por desviación del reloj del receptor',
   expresion: 'b_extra = R · (d / 100)',
   expresionLatex: 'b_{extra} = R \\cdot \\frac{d}{100}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Tasa de bits efectivamente recibida',
+      expresion: 'R_recibida = R · (1 + d / 100)',
+      latex: 'R_{recibida} = R \\cdot \\left(1 + \\frac{d}{100}\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'R',
@@ -148,7 +155,7 @@ const U07_F04: Formula = {
   condiciones:
     'Sólo para reloj del receptor MÁS RÁPIDO que el del emisor (si fuera más lento, el receptor pierde ' +
     'bits en vez de recibir de más). Supone tasa constante durante el segundo considerado y desviación ' +
-    'expresada en porcentaje. La tasa efectivamente recibida es R_recibida = R · (1 + d / 100).',
+    'expresada en porcentaje.',
   paginas: '26',
   confianza: 'baja',
   calcular: ({ R, d }) => R * (d / 100),
