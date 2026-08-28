@@ -175,7 +175,7 @@ const U08_F06: Formula = {
   nombre: 'Ancho de banda de FSK',
   expresion: 'BW_{FSK} = 2 · (Δf + B)',
   // Se transcribe la forma factorizada que implementa el código.
-  expresionLatex: 'BW_{FSK} = 2(\\Delta f + B)',
+  expresionLatex: 'BW_{FSK} = 2(Δf + B)',
   entradas: [
     {
       simbolo: 'delta_f',
@@ -236,7 +236,7 @@ const U08_F08a: Formula = {
   nombre: 'Frecuencia de marca en FSK',
   expresion: 'f_1 = f_p + Δf',
   // Una fila del catálogo partida en dos: frecuencia de marca con f_p en minúscula.
-  expresionLatex: 'f_1 = f_p + \\Delta f',
+  expresionLatex: 'f_1 = f_p + Δf',
   entradas: [
     {
       simbolo: 'f_p',
@@ -271,7 +271,7 @@ const U08_F08b: Formula = {
   nombre: 'Frecuencia de espacio en FSK',
   expresion: 'f_2 = f_p − Δf',
   // Una fila del catálogo partida en dos: frecuencia de espacio con f_p en minúscula.
-  expresionLatex: 'f_2 = f_p - \\Delta f',
+  expresionLatex: 'f_2 = f_p - Δf',
   entradas: [
     {
       simbolo: 'f_p',
