@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formulasDeUnidad } from '@/formulas';
 import { formatearCantidadFormulas, obtenerUnidad } from '@/screens/unidades';
+import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 export { obtenerUnidad } from '@/screens/unidades';
 
@@ -15,6 +16,8 @@ export interface PantallaUnidadProps {
  * Pantalla que muestra las Fórmulas de una Unidad específica.
  *
  * Muestra el número, tema y la lista de Fórmulas con su nombre y expresión matemática.
+ * Las fórmulas que son ficha de consulta (sin entradas calculables) se identifican con
+ * un distintivo sobrio para indicar que no son interactivas como una calculadora.
  * Si la Unidad no tiene fórmulas (como Unidad 1), muestra una nota o mensaje explicativo.
  */
 export function PantallaUnidad({ numero, onSeleccionarFormula }: PantallaUnidadProps) {
@@ -48,24 +51,35 @@ export function PantallaUnidad({ numero, onSeleccionarFormula }: PantallaUnidadP
       </View>
 
       {formulas.length > 0 ? (
-        formulas.map((formula) => (
-          <Pressable
-            key={formula.id}
-            testID={`formula-item-${formula.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${formula.id}: ${formula.nombre}, ${formula.expresion}`}
-            style={({ pressed }) => [estilos.tarjetaFormula, pressed && estilos.tarjetaPresionada]}
-            onPress={() => manejarSeleccionFormula(formula.id)}
-          >
-            <Text style={estilos.identificadorFormula}>{formula.id}</Text>
-            <Text testID={`formula-nombre-${formula.id}`} style={estilos.nombreFormula}>
-              {formula.nombre}
-            </Text>
-            <Text testID={`formula-expresion-${formula.id}`} style={estilos.expresionFormula}>
-              {formula.expresion}
-            </Text>
-          </Pressable>
-        ))
+        formulas.map((formula) => {
+          const esConsulta = formula.entradas.length === 0;
+
+          return (
+            <Pressable
+              key={formula.id}
+              testID={`formula-item-${formula.id}`}
+              accessibilityRole="button"
+              accessibilityLabel={`${formula.id}: ${formula.nombre}, ${formula.expresion}`}
+              style={({ pressed }) => [estilos.tarjetaFormula, pressed && estilos.tarjetaPresionada]}
+              onPress={() => manejarSeleccionFormula(formula.id)}
+            >
+              <View style={estilos.tarjetaEncabezado}>
+                <Text style={estilos.identificadorFormula}>{formula.id}</Text>
+                {esConsulta && (
+                  <View style={estilos.distintivoConsulta}>
+                    <Text style={estilos.textoDistintivoConsulta}>Consulta</Text>
+                  </View>
+                )}
+              </View>
+              <Text testID={`formula-nombre-${formula.id}`} style={estilos.nombreFormula}>
+                {formula.nombre}
+              </Text>
+              <Text testID={`formula-expresion-${formula.id}`} style={estilos.expresionFormula}>
+                {formula.expresion}
+              </Text>
+            </Pressable>
+          );
+        })
       ) : (
         <View testID="unidad-vacia" style={estilos.contenedorVacio}>
           <Text style={estilos.textoVacioTitulo}>Sin fórmulas disponibles</Text>
@@ -81,87 +95,98 @@ export function PantallaUnidad({ numero, onSeleccionarFormula }: PantallaUnidadP
 const estilos = StyleSheet.create({
   pantalla: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colores.fondo,
   },
   contenido: {
-    padding: 16,
-    gap: 12,
-    paddingBottom: 32,
+    padding: espacio.lg,
+    gap: espacio.md,
+    paddingBottom: espacio.xxl,
   },
   encabezado: {
-    marginBottom: 4,
-    gap: 4,
+    marginBottom: espacio.xs,
+    gap: espacio.xs,
   },
   identificadorUnidad: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#208AEF',
+    ...tipografia.etiqueta,
+    color: colores.accion,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   tituloTema: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0F172A',
-    lineHeight: 28,
+    ...tipografia.titulo,
+    color: colores.texto,
   },
   subtituloConteo: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 2,
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
   },
   tarjetaFormula: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colores.superficie,
+    borderRadius: radio.md,
+    padding: espacio.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 8,
+    borderColor: colores.borde,
+    gap: espacio.sm,
   },
   tarjetaPresionada: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colores.superficieEnfasis,
+  },
+  tarjetaEncabezado: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   identificadorFormula: {
-    fontSize: 13,
-    opacity: 0.6,
+    fontFamily: fuentes.nota,
+    fontSize: tipografia.etiqueta.fontSize,
+    lineHeight: tipografia.etiqueta.lineHeight,
+    color: colores.textoSuave,
     fontVariant: ['tabular-nums'],
-    fontWeight: '600',
+  },
+  distintivoConsulta: {
+    backgroundColor: colores.fondo,
+    borderRadius: radio.pastilla,
+    borderWidth: 1,
+    borderColor: colores.borde,
+    paddingHorizontal: espacio.sm,
+    paddingVertical: espacio.xs,
+  },
+  textoDistintivoConsulta: {
+    ...tipografia.pie,
+    color: colores.textoSuave,
   },
   nombreFormula: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1E293B',
-    lineHeight: 22,
+    ...tipografia.subtitulo,
+    color: colores.texto,
   },
   expresionFormula: {
-    fontSize: 15,
-    fontFamily: 'monospace',
-    color: '#0F172A',
-    backgroundColor: '#F8FAFC',
-    padding: 8,
-    borderRadius: 6,
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.nota,
+    color: colores.texto,
+    backgroundColor: colores.fondo,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm,
+    borderRadius: radio.sm,
     overflow: 'hidden',
   },
   contenedorVacio: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: colores.superficie,
+    borderRadius: radio.md,
+    padding: espacio.xl,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colores.borde,
     alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
+    gap: espacio.sm,
+    marginTop: espacio.sm,
   },
   textoVacioTitulo: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#334155',
+    ...tipografia.subtitulo,
+    color: colores.texto,
     textAlign: 'center',
   },
   textoVacioDetalle: {
-    fontSize: 14,
-    color: '#64748B',
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
     textAlign: 'center',
-    lineHeight: 20,
   },
 });
