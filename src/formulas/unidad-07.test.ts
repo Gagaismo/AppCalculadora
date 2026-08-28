@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import React from 'react';
 
 import { calcular } from '@/dominio/motor';
@@ -129,7 +129,7 @@ describe('Unidad 7 — Render en pantalla genérica', () => {
 
     // Cargar 4 kHz y 300 Hz
     await fireEvent.changeText(screen.getByTestId('entrada-f_2'), '4');
-    await fireEvent.press(screen.getByTestId('multiplo-f_2-k'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_2')).getByText('kHz'));
     await fireEvent.changeText(screen.getByTestId('entrada-f_1'), '300');
 
     expect(screen.getByTestId('resultado')).toHaveTextContent('3,7 kHz');

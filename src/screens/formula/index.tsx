@@ -3,9 +3,10 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import type { EntradaCargada, Formula } from '@/dominio/formula';
 import { calcular } from '@/dominio/motor';
-import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
+import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
 
 import { FichaFormula } from './ficha';
+import { SelectorMultiplo } from './selector-multiplo';
 import { formatearNumero, parsearEntrada } from './numeros';
 
 /**
@@ -171,32 +172,14 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
               </Text>
             )}
 
-            <ScrollView
-              horizontal
-              testID={`multiplos-${variable.simbolo}`}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={estilos.multiplos}
-            >
-              {MULTIPLOS.map((multiplo) => {
-                const elegido = multiplos[variable.simbolo] === multiplo;
-                return (
-                  <Pressable
-                    key={multiplo}
-                    testID={`multiplo-${variable.simbolo}-${multiplo || 'base'}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: elegido }}
-                    style={[estilos.multiplo, elegido && estilos.multiploElegido]}
-                    onPress={() =>
-                      setMultiplos((previos) => ({ ...previos, [variable.simbolo]: multiplo }))
-                    }
-                  >
-                    <Text style={[estilos.multiploTexto, elegido && estilos.multiploTextoElegido]}>
-                      {conMultiplo(multiplo, variable.unidadDeMedida)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+            <SelectorMultiplo
+              simbolo={variable.simbolo}
+              unidadDeMedida={variable.unidadDeMedida}
+              elegido={multiplos[variable.simbolo]}
+              onElegir={(multiplo) =>
+                setMultiplos((previos) => ({ ...previos, [variable.simbolo]: multiplo }))
+              }
+            />
           </View>
         );
       })}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 
 import { buscarFormula } from '@/formulas';
 
@@ -45,16 +45,15 @@ describe('la pantalla genérica renderiza la Fórmula', () => {
     await render(<PantallaFormula formula={formula} />);
 
     for (const variable of formula.entradas) {
-      expect(screen.getByTestId(`multiplos-${variable.simbolo}`)).toBeTruthy();
+      const selector = screen.getByTestId(`multiplos-${variable.simbolo}`);
 
-      const canonico = screen.getByTestId(
-        `multiplo-${variable.simbolo}-${variable.multiploCanonico || 'base'}`,
-      );
-      expect(canonico.props.accessibilityState.selected).toBe(true);
-
-      // Los chips se rotulan con la unidad tal como se escribe: GHz, MHz, Hz.
+      // El múltiplo elegido se anuncia sin desplegar nada: es el dato que evita
+      // cargar MHz donde la Fórmula espera Hz.
       const rotulo = `${variable.multiploCanonico}${variable.unidadDeMedida}`;
-      expect(screen.getAllByText(rotulo).length).toBeGreaterThan(0);
+      expect(selector.props.accessibilityValue.text).toBe(rotulo);
+
+      // Y los nueve múltiplos siguen disponibles dentro del menú.
+      expect(within(selector).getByText(rotulo)).toBeTruthy();
     }
   });
 
@@ -106,8 +105,8 @@ describe('la pantalla genérica calcula', () => {
     await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
     expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 MHz');
 
-    await fireEvent.press(screen.getByTestId('multiplo-f_inf-M'));
-    await fireEvent.press(screen.getByTestId('multiplo-f_sup-M'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_inf')).getByText('MHz'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_sup')).getByText('MHz'));
 
     expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 kHz');
   });
@@ -149,8 +148,8 @@ describe('la pantalla genérica maneja errores y validación', () => {
 
     await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
     await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
-    await fireEvent.press(screen.getByTestId('multiplo-f_inf-M'));
-    await fireEvent.press(screen.getByTestId('multiplo-f_sup-M'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_inf')).getByText('MHz'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_sup')).getByText('MHz'));
     expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 kHz');
 
     await fireEvent.press(screen.getByTestId('boton-limpiar'));
@@ -160,8 +159,8 @@ describe('la pantalla genérica maneja errores y validación', () => {
     expect(screen.getByTestId('entrada-f_sup').props.value).toBe('');
 
     // Los selectores de múltiplo vuelven a sus valores canónicos (G)
-    expect(screen.getByTestId('multiplo-f_inf-G').props.accessibilityState.selected).toBe(true);
-    expect(screen.getByTestId('multiplo-f_sup-G').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId('multiplos-f_inf').props.accessibilityValue.text).toBe('GHz');
+    expect(screen.getByTestId('multiplos-f_sup').props.accessibilityValue.text).toBe('GHz');
 
     // El resultado indica que faltan todas las Variables
     expect(screen.getByTestId('resultado')).toHaveTextContent('Faltan: f_sup, f_inf');
