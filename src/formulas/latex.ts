@@ -72,6 +72,8 @@ export function simbolosDeLatex(latex: string): string[] {
   texto = texto.replace(/\\(?:mathrm|text|operatorname)\{[^}]*\}/g, ' ');
 
   for (const [comando, letra] of Object.entries(GRIEGAS)) {
+    // Si la letra griega está seguida de espacio y luego letra (ej: \Delta f), unirlos en un solo identificador (Δf)
+    texto = texto.replace(new RegExp(`\\${comando}\\s*(?=[a-zA-Z])`, 'g'), letra);
     // La frontera evita que `\pi` se coma el `\pim` de un comando más largo.
     texto = texto.replace(new RegExp(`\\${comando}(?![a-zA-Z])`, 'g'), letra);
   }
@@ -82,7 +84,7 @@ export function simbolosDeLatex(latex: string): string[] {
   // Lo que queda de `\frac`, `\le`, `\times`… ya no es un símbolo.
   texto = texto.replace(/\\[a-zA-Z]+/g, ' ');
 
-  const encontrados = texto.match(/[A-Za-zαβγδΔεηθλµπρσΣτφωΩ][A-Za-z0-9_αβγδΔεηθλµπρσΣτφωΩ°]*/g) ?? [];
+  const encontrados = texto.match(/[A-Za-zαβγδΔεηθλµπρσΣτφωΩ][A-Za-z0-9_,αβγδΔεηθλµπρσΣτφωΩ°]*/g) ?? [];
   const conjunto = new Set(encontrados);
 
   // Un alias declarado cuenta como presente si su forma LaTeX está en la expresión.
