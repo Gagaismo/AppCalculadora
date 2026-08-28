@@ -16,6 +16,7 @@ const U06_F01: Formula = {
   unidad: 6,
   nombre: 'Tasa de Errores BER (Bit Error Rate)',
   expresion: 'BER = N_e / N_t',
+  expresionLatex: 'BER = \\frac{N_e}{N_t}',
   entradas: [
     {
       simbolo: 'N_e',
@@ -51,6 +52,7 @@ const U06_F02: Formula = {
   unidad: 6,
   nombre: 'Bits perdidos ante una ráfaga de ruido',
   expresion: 'N_perdidos = R · t',
+  expresionLatex: 'N_{perdidos} = R \\cdot t',
   entradas: [
     {
       simbolo: 'R',
@@ -85,6 +87,7 @@ const U06_F03: Formula = {
   unidad: 6,
   nombre: 'Combinaciones posibles de un código binario de N dígitos',
   expresion: 'M = 2^N',
+  expresionLatex: 'M = 2^{N}',
   entradas: [
     {
       simbolo: 'N',
@@ -113,6 +116,8 @@ const U06_F06: Formula = {
   unidad: 6,
   nombre: 'Capacidad de detección de errores según la distancia de Hamming',
   expresion: 'D = H − 1',
+  // El catálogo empaqueta la equivalencia; se deja la ecuación que calcula la app.
+  expresionLatex: 'D = H - 1',
   entradas: [
     {
       simbolo: 'H',
@@ -142,6 +147,8 @@ const U06_F07: Formula = {
   unidad: 6,
   nombre: 'Capacidad de corrección de errores según la distancia de Hamming',
   expresion: 'C = (H − 1) / 2',
+  // El catálogo empaqueta la equivalencia; se deja la ecuación que calcula la app.
+  expresionLatex: 'C = \\frac{H - 1}{2}',
   entradas: [
     {
       simbolo: 'H',
@@ -170,6 +177,7 @@ const U06_F08: Formula = {
   unidad: 6,
   nombre: 'Reparto entre capacidad de detección y de corrección (mínima distancia de un código)',
   expresion: 'H − 1 = D + C  (con D ≥ C)',
+  expresionLatex: 'H - 1 = D + C \\quad , \\quad D \\ge C',
   entradas: [
     {
       simbolo: 'D',
@@ -204,6 +212,7 @@ const U06_F09: Formula = {
   unidad: 6,
   nombre: 'Cantidad de bits de paridad en la codificación Hamming',
   expresion: '2^p ≥ n + p + 1',
+  expresionLatex: '2^{p} \\ge n + p + 1',
   entradas: [
     {
       simbolo: 'n',
@@ -239,6 +248,7 @@ const U06_F10: Formula = {
   unidad: 6,
   nombre: 'Posición del bit erróneo (síndrome de Hamming)',
   expresion: 'pos = Σ p_i · 2^(i−1)',
+  expresionLatex: 'pos = \\sum_{i=1}^{p} p_i \\cdot 2^{\\,i-1}',
   entradas: [
     {
       simbolo: 'p',
