@@ -18,6 +18,18 @@ const U08_F01: Formula = {
   expresion: 'R = (1 / T_s) · log₂(M)',
   // El catálogo escribe T_S; el código usa T_s.
   expresionLatex: 'R = \\frac{1}{T_s} \\cdot \\log_2 M',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la velocidad de modulación (baudios)',
+      expresion: 'R = r · log₂(M)',
+      latex: 'R = r \\cdot \\log_2 M',
+    },
+    {
+      rotulo: 'En función de la velocidad de modulación y bits por símbolo',
+      expresion: 'R = r · n',
+      latex: 'R = r \\cdot n',
+    },
+  ],
   entradas: [
     {
       simbolo: 'T_s',
@@ -40,7 +52,7 @@ const U08_F01: Formula = {
   },
   condiciones:
     'Vale para modulaciones digitales M-arias (ASK, FSK, PSK, 4PSK, QPSK, nQAM). ' +
-    'M debe ser potencia de 2 para que log₂(M) sea entero. 1/T_s es la velocidad de modulación r en baudios.',
+    'M debe ser potencia de 2 para que log₂(M) sea entero.',
   paginas: '17, 21, 27, 30, 32, 37, 45',
   confianza: 'alta',
   calcular: ({ T_s, M }) => (1 / T_s) * Math.log2(M),
@@ -53,6 +65,13 @@ const U08_F02: Formula = {
   expresion: 'n = log₂ M',
   // Se deja sólo n = \log_2 M según observaciones-resueltas.md.
   expresionLatex: 'n = \\log_2 M',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Cantidad de estados o niveles a partir de los bits (forma inversa)',
+      expresion: 'M = 2^n',
+      latex: 'M = 2^n',
+    },
+  ],
   entradas: [
     {
       simbolo: 'M',
@@ -70,8 +89,7 @@ const U08_F02: Formula = {
   condiciones:
     'Doble lectura en la unidad: (a) modulaciones M-arias, M = cantidad de símbolos posibles; ' +
     '(b) PCM, M = cantidad de niveles de cuantificación y n = bits de la palabra codificada. ' +
-    'n debe ser entero, por lo tanto M potencia de 2. En PCM el bit más significativo se usa como bit de signo. ' +
-    'Se implementa el despeje que la cátedra resuelve (n = log₂ M).',
+    'n debe ser entero, por lo tanto M potencia de 2. En PCM el bit más significativo se usa como bit de signo.',
   paginas: '28, 29, 63, 71, 72',
   confianza: 'alta',
   calcular: ({ M }) => Math.log2(M),
@@ -84,6 +102,23 @@ const U08_F03: Formula = {
   expresion: 'B_{M-ario} = R / log₂(M)',
   // El código declara B_M_ario y omite el segundo miembro con n porque no es entrada.
   expresionLatex: 'B_{M-ario} = \\frac{R}{\\log_2 M}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de los bits por símbolo (n)',
+      expresion: 'B_{M-ario} = R / n',
+      latex: 'B_{M-ario} = \\frac{R}{n}',
+    },
+    {
+      rotulo: 'En función del tiempo de símbolo',
+      expresion: 'B_{M-ario} = 1 / T_s',
+      latex: 'B_{M-ario} = \\frac{1}{T_s}',
+    },
+    {
+      rotulo: 'Relación con la velocidad de modulación (baudios)',
+      expresion: 'B_{M-ario} = r',
+      latex: 'B_{M-ario} = r',
+    },
+  ],
   entradas: [
     {
       simbolo: 'R',
@@ -105,8 +140,7 @@ const U08_F03: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'La diapositiva 30 escribe además R = (1/T_s)·log₂(M) = B_M-ario·log₂(M), o sea B_M-ario = 1/T_s. ' +
-    'Requiere que M sea potencia de 2.',
+    'Requiere que M sea potencia de 2. El ancho de banda en Hz coincide con la tasa de símbolos en baudios.',
   paginas: '30, 89',
   confianza: 'alta',
   calcular: ({ R, M }) => R / Math.log2(M),
@@ -119,6 +153,18 @@ const U08_F04: Formula = {
   expresion: 'r = 1 / T_s',
   // El catálogo escribe T_S; el código usa T_s.
   expresionLatex: 'r = \\frac{1}{T_s}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso binario (M = 2)',
+      expresion: 'r = R',
+      latex: 'r = R',
+    },
+    {
+      rotulo: 'Equivalencia con ancho de banda M-ario',
+      expresion: 'r = B_{M-ario}',
+      latex: 'r = B_{M-ario}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'T_s',
@@ -134,8 +180,7 @@ const U08_F04: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'Es la velocidad en baudios, distinta de R (bps) salvo cuando M = 2. ' +
-    'Sirve también como B_M-ario según la igualdad de la diapositiva 30.',
+    'Es la velocidad de modulación en baudios (tasa de símbolos por segundo), distinta de la tasa binaria R en bps salvo en modulación binaria.',
   paginas: '17, 21, 27, 30, 32, 37',
   confianza: 'media',
   calcular: ({ T_s }) => 1 / T_s,
@@ -176,6 +221,18 @@ const U08_F06: Formula = {
   expresion: 'BW_{FSK} = 2 · (Δf + B)',
   // Se transcribe la forma factorizada que implementa el código.
   expresionLatex: 'BW_{FSK} = 2(Δf + B)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma desarrollada',
+      expresion: 'BW_{FSK} = 2·B + 2·Δf',
+      latex: 'BW_{FSK} = 2B + 2\\Delta f',
+    },
+    {
+      rotulo: 'Cota práctica (Δf ≥ B)',
+      expresion: 'BW_{FSK} ≥ 4 · B',
+      latex: 'BW_{FSK} \\ge 4B',
+    },
+  ],
   entradas: [
     {
       simbolo: 'delta_f',
@@ -197,8 +254,7 @@ const U08_F06: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'FSK binaria con desplazamientos de igual magnitud y sentido opuesto respecto de f_p. ' +
-    'La diapositiva 23 agrega la cota práctica de al menos 4B (caso Δf ≥ B).',
+    'FSK binaria con desplazamientos de igual magnitud y sentido opuesto respecto de f_p.',
   paginas: '20, 23',
   confianza: 'media',
   calcular: ({ delta_f, B }) => 2 * (delta_f + B),
@@ -347,6 +403,18 @@ const U08_F10: Formula = {
   expresion: 'M ≤ N°Fases × N°Amplitudes',
   // El `\\le` se conserva: la Fórmula calcula una cota superior y tiene que decirlo.
   expresionLatex: 'M \\le N_{fases} \\times N_{amplitudes}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Cota máxima de estados (igualdad)',
+      expresion: 'M_max = N°Fases × N°Amplitudes',
+      latex: 'M_{max} = N_{fases} \\times N_{amplitudes}',
+    },
+    {
+      rotulo: 'Condición de diseño QAM',
+      expresion: 'N°Fases > N°Amplitudes',
+      latex: 'N_{fases} > N_{amplitudes}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'N_fases',
@@ -368,9 +436,8 @@ const U08_F10: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Es una desigualdad (cota superior), no una igualdad: no todas las combinaciones fase-amplitud se usan. ' +
-    'QAM combina ASK + PSK; la cátedra aclara que el número de desplazamientos de fase siempre es mayor que el de amplitudes. ' +
-    'En la diapositiva 38 aparece marcada con (*). Se implementa la cota superior M_max = N°Fases × N°Amplitudes.',
+    'Es una desigualdad (cota superior): no todas las combinaciones fase-amplitud se usan en constelaciones reales. ' +
+    'QAM combina ASK y PSK. En la diapositiva 38 aparece marcada con (*).',
   paginas: '36, 38',
   confianza: 'alta',
   calcular: ({ N_fases, N_amplitudes }) => N_fases * N_amplitudes,
@@ -382,6 +449,18 @@ const U08_F11: Formula = {
   nombre: 'Relación entre número de estados M y SNR (nQAM adaptativo)',
   expresion: 'M = SNR + 1',
   expresionLatex: 'M = SNR + 1',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Despeje de la relación señal a ruido lineal',
+      expresion: 'SNR = M − 1',
+      latex: 'SNR = M - 1',
+    },
+    {
+      rotulo: 'Bits por símbolo según el límite de Shannon',
+      expresion: 'n = log₂(SNR + 1)',
+      latex: 'n = \\log_2(SNR + 1)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'SNR',
@@ -412,6 +491,13 @@ const U08_F12: Formula = {
   expresion: 'f_s ≥ 2 · f_MAX',
   // El catálogo escribe f_S; el código usa f_s y conserva el \ge de Nyquist.
   expresionLatex: 'f_s \\ge 2 f_{MAX}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Frecuencia de muestreo mínima (tasa de Nyquist)',
+      expresion: 'f_s = 2 · f_MAX',
+      latex: 'f_s = 2 f_{MAX}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'f_MAX',
@@ -427,7 +513,7 @@ const U08_F12: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'Es una desigualdad: la salida es la frecuencia de muestreo mínima (cota inferior de Nyquist f_s = 2 · f_MAX). ' +
+    'Es una desigualdad: la salida calcula la frecuencia de muestreo mínima (cota inferior de Nyquist). ' +
     'Requiere que la señal esté previamente filtrada pasa-bajos y limitada en banda a f_MAX.',
   paginas: '49, 51',
   confianza: 'alta',
@@ -441,6 +527,18 @@ const U08_F13: Formula = {
   expresion: 'T_muestreo = 1 / f_s',
   // Renombrado a T_{muestreo} para evitar colisión con la duración del símbolo y f_S -> f_s.
   expresionLatex: 'T_{muestreo} = \\frac{1}{f_s}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Frecuencia de muestreo a partir del período',
+      expresion: 'f_s = 1 / T_muestreo',
+      latex: 'f_s = \\frac{1}{T_{muestreo}}',
+    },
+    {
+      rotulo: 'Cota de Nyquist en función del ancho de banda',
+      expresion: 'T_muestreo ≤ 1 / (2 · f_MAX)',
+      latex: 'T_{muestreo} \\le \\frac{1}{2 f_{MAX}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'f_s',
@@ -456,10 +554,9 @@ const U08_F13: Formula = {
     multiploCanonico: 'µ',
   },
   condiciones:
-    'Usado en PCM y en la trama E1/T1 (en telefonía f_s = 8000 Hz → T_muestreo = 125 µs). ' +
+    'Usado en PCM y en la trama E1/T1 (en telefonía con f_s = 8 kHz da T_muestreo = 125 µs). ' +
     'La diapositiva escribe el símbolo como T_s; se declara T_muestreo para evitar confusión con la ' +
-    'duración del símbolo de modulación. Se implementa la igualdad T_muestreo = 1/f_s corrigiendo ' +
-    'la desigualdad invertida de la diapositiva 49.',
+    'duración del símbolo de modulación. La diapositiva 49 escribía la desigualdad con sentido invertido.',
   paginas: '49, 100, 108',
   confianza: 'alta',
   calcular: ({ f_s }) => 1 / f_s,
@@ -472,6 +569,18 @@ const U08_F14: Formula = {
   expresion: 'C = f_s · n',
   // El catálogo escribe f_S; el código usa f_s.
   expresionLatex: 'C = f_s \\cdot n',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de los niveles de cuantificación (M)',
+      expresion: 'C = f_s · log₂(M)',
+      latex: 'C = f_s \\cdot \\log_2 M',
+    },
+    {
+      rotulo: 'En función del período de muestreo',
+      expresion: 'C = n / T_muestreo',
+      latex: 'C = \\frac{n}{T_{muestreo}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'f_s',
@@ -494,7 +603,7 @@ const U08_F14: Formula = {
   },
   condiciones:
     'PCM con cuantificación uniforme de n bits. Es la base del canal E0/T0 de 64 kbps ' +
-    '(8000 muestras/s × 8 bits/muestra = 64.000 bps = 64 kbps).',
+    '(8000 muestras/s con 8 bits/muestra).',
   paginas: '72, 100, 108',
   confianza: 'alta',
   calcular: ({ f_s, n }) => f_s * n,
@@ -506,6 +615,13 @@ const U08_F15: Formula = {
   nombre: 'Longitud de onda de una portadora óptica (WDM)',
   expresion: 'λ = c / f',
   expresionLatex: '\\lambda = \\frac{c}{f}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma inversa (frecuencia óptica)',
+      expresion: 'f = c / λ',
+      latex: 'f = \\frac{c}{\\lambda}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'c',
@@ -539,6 +655,13 @@ const U08_F16: Formula = {
   nombre: 'Cantidad de bits de la trama de salida en TDM sincrónica',
   expresion: 'N_trama = k · b + s',
   expresionLatex: 'N_{trama} = k \\cdot b + s',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso sin bits de sobrecarga (s = 0)',
+      expresion: 'N_trama = k · b',
+      latex: 'N_{trama} = k \\cdot b',
+    },
+  ],
   entradas: [
     {
       simbolo: 'k',
@@ -579,6 +702,18 @@ const U08_F17: Formula = {
   nombre: 'Duración de la trama en TDM sincrónica',
   expresion: 'T_trama = b / R_canal',
   expresionLatex: 'T_{trama} = \\frac{b}{R_{canal}}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso de multiplexación al bit (b = 1)',
+      expresion: 'T_trama = 1 / R_canal',
+      latex: 'T_{trama} = \\frac{1}{R_{canal}}',
+    },
+    {
+      rotulo: 'En función de la frecuencia de trama',
+      expresion: 'T_trama = 1 / f_trama',
+      latex: 'T_{trama} = \\frac{1}{f_{trama}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'b',
@@ -601,7 +736,7 @@ const U08_F17: Formula = {
   },
   condiciones:
     'Todos los canales de entrada deben tener la misma tasa R_canal (TDM sincrónica con tasas iguales). ' +
-    'Los bits de sincronismo/señalización no alargan la trama, solo aumentan la tasa del enlace multiplexado.',
+    'Los bits de sincronismo y señalización no alargan la trama, solo aumentan la tasa del enlace multiplexado.',
   paginas: '93, 94, 95, 97, 98, 99, 100',
   confianza: 'media',
   calcular: ({ b, R_canal }) => b / R_canal,
@@ -613,6 +748,18 @@ const U08_F18: Formula = {
   nombre: 'Tasa de transmisión del enlace en TDM sincrónica',
   expresion: 'R_enlace = N_trama / T_trama',
   expresionLatex: 'R_{enlace} = \\frac{N_{trama}}{T_{trama}}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la frecuencia de trama',
+      expresion: 'R_enlace = N_trama · f_trama',
+      latex: 'R_{enlace} = N_{trama} \\cdot f_{trama}',
+    },
+    {
+      rotulo: 'Caso sin sobrecarga (s = 0)',
+      expresion: 'R_enlace = k · R_canal',
+      latex: 'R_{enlace} = k \\cdot R_{canal}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'N_trama',
@@ -635,8 +782,8 @@ const U08_F18: Formula = {
   },
   condiciones:
     'TDM sincrónica. Los bits de sincronismo y señalización sí se cuentan en N_trama. ' +
-    'Se aplica tanto a tramas genéricas como a las jerarquías E1 (256 bits / 125 µs = 2,048 Mbps) ' +
-    'y T1 (193 bits / 125 µs = 1,544 Mbps).',
+    'Se aplica a tramas genéricas y a las jerarquías E1 (256 bits cada 125 µs = 2,048 Mbps) ' +
+    'y T1 (193 bits cada 125 µs = 1,544 Mbps).',
   paginas: '93, 94, 95, 97, 98, 99, 100, 108',
   confianza: 'alta',
   calcular: ({ N_trama, T_trama }) => N_trama / T_trama,
@@ -648,6 +795,23 @@ const U08_F19: Formula = {
   nombre: 'Duración de un time slot dentro de la trama PCM',
   expresion: 'T_TS = T_trama / N_TS',
   expresionLatex: 'T_{TS} = \\frac{T_{trama}}{N_{TS}}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la frecuencia de muestreo',
+      expresion: 'T_TS = 1 / (f_s · N_TS)',
+      latex: 'T_{TS} = \\frac{1}{f_s \\cdot N_{TS}}',
+    },
+    {
+      rotulo: 'Caso E1 (32 time slots, T_trama = 125 µs)',
+      expresion: 'T_TS = 125 µs / 32',
+      latex: 'T_{TS} = \\frac{125\\,\\mu\\text{s}}{32}',
+    },
+    {
+      rotulo: 'Caso T1 (24 time slots, T_trama = 125 µs)',
+      expresion: 'T_TS = 125 µs / 24',
+      latex: 'T_{TS} = \\frac{125\\,\\mu\\text{s}}{24}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'T_trama',
@@ -669,8 +833,9 @@ const U08_F19: Formula = {
     multiploCanonico: 'µ',
   },
   condiciones:
-    'T_trama = 125 µs viene del muestreo f_s = 8 kHz. Para E1 (32 TS) el valor exacto es 125 µs / 32 = 3,90625 µs ' +
-    '(la diapositiva redondea a 3,9 µs). Para T1 (24 TS) es 125 µs / 24 = 5,2083 µs (la diapositiva redondea a 5,2 µs).',
+    'T_trama = 125 µs proviene del muestreo a f_s = 8 kHz. ' +
+    'Para E1 (32 TS) el valor exacto es 3,90625 µs (la diapositiva redondea a 3,9 µs). ' +
+    'Para T1 (24 TS) el valor exacto es 5,2083 µs (la diapositiva redondea a 5,2 µs).',
   paginas: '108',
   confianza: 'alta',
   calcular: ({ T_trama, N_TS }) => T_trama / N_TS,
@@ -683,6 +848,13 @@ const U08_F20: Formula = {
   expresion: 'R = N_TS · R_E0',
   // El código usa el producto R = N_TS · R_E0.
   expresionLatex: 'R = N_{TS} \\cdot R_{E0}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Tasa del enlace T1 (24 canales + 1 bit de sincronismo)',
+      expresion: 'R_T1 = 24 · R_T0 + (1 bit / 125 µs)',
+      latex: 'R_{T1} = 24 \\cdot R_{T0} + \\frac{1\\,\\text{bit}}{125\\,\\mu\\text{s}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'N_TS',
@@ -704,8 +876,8 @@ const U08_F20: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'Aplica al sistema E1 (32 time slots: 30 de voz + 2 de servicio/señalización). ' +
-    'No aplica directamente a T1 (24 TS + 1 bit = 193 bits/trama).',
+    'Aplica al sistema E1 (32 time slots de 64 kbps: 30 de voz + 2 de servicio y señalización). ' +
+    'Para T1 la trama agrega 1 bit de sincronismo a los 24 canales (193 bits por trama de 125 µs = 1,544 Mbps).',
   paginas: '107',
   confianza: 'alta',
   calcular: ({ N_TS, R_E0 }) => N_TS * R_E0,
@@ -717,6 +889,18 @@ const U08_F21: Formula = {
   nombre: 'Velocidad de la trama SDH (STM-1)',
   expresion: 'R_STM = f_trama · (columnas · filas · 8)',
   expresionLatex: 'R_{STM} = f_{trama} \\cdot (columnas \\cdot filas \\cdot 8)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función del período de trama (T_trama = 125 µs)',
+      expresion: 'R_STM = (columnas · filas · 8) / T_trama',
+      latex: 'R_{STM} = \\frac{columnas \\cdot filas \\cdot 8}{T_{trama}}',
+    },
+    {
+      rotulo: 'Jerarquía superior STM-N',
+      expresion: 'R_STM-N = N · R_STM-1',
+      latex: 'R_{STM-N} = N \\cdot R_{STM-1}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'f_trama',
@@ -744,8 +928,8 @@ const U08_F21: Formula = {
     multiploCanonico: 'M',
   },
   condiciones:
-    'Aplica a STM-1 (8000 tramas/s × 270 columnas × 9 filas × 8 bits = 155,52 Mbps). ' +
-    'Con 261 columnas (restando las 9 columnas de SOH) da la carga útil: 150,336 Mbps.',
+    'Aplica a STM-1 con 270 columnas totales (261 de carga útil al restar las 9 columnas de SOH), ' +
+    '9 filas y 8 bits por byte.',
   paginas: '115',
   confianza: 'alta',
   calcular: ({ f_trama, columnas, filas }) => f_trama * columnas * filas * 8,
