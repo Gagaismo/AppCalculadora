@@ -16,6 +16,9 @@ const U09_F01: Formula = {
   unidad: 9,
   nombre: 'Velocidad de transmisión (tasa binaria) del módem M-ario',
   expresion: 'R = (1 / T_S) · log₂(M) = B_M_ario · log₂(M)',
+  // El catálogo escribe `R = (1/T_S) \log_2 M = B_{M-ario} \cdot \log_2 M`; se deja la
+  // rama implementada con B_M_ario. Ver docs/research/latex-transcripcion.md.
+  expresionLatex: 'R = B_{M_ario} \\cdot \\log_2 M',
   entradas: [
     {
       simbolo: 'B_M_ario',
@@ -52,6 +55,7 @@ const U09_F02: Formula = {
   unidad: 9,
   nombre: 'Capacidad de canal de Nyquist (canal sin ruido)',
   expresion: 'C = 2 · B · log₂(M)',
+  expresionLatex: 'C = 2B \\cdot \\log_2 M',
   entradas: [
     {
       simbolo: 'B',
@@ -86,6 +90,7 @@ const U09_F03: Formula = {
   unidad: 9,
   nombre: 'Capacidad de canal de Shannon (canal con ruido)',
   expresion: 'C = B · log₂(1 + SNR)',
+  expresionLatex: 'C = B \\cdot \\log_2(1 + SNR)',
   entradas: [
     {
       simbolo: 'B',
@@ -120,6 +125,7 @@ const U09_F04: Formula = {
   unidad: 9,
   nombre: 'Máximo orden de modulación M por portadora (DMT/ADSL)',
   expresion: 'M = √(1 + SNR)',
+  expresionLatex: 'M = \\sqrt{1 + SNR}',
   entradas: [
     {
       simbolo: 'SNR',
@@ -149,6 +155,7 @@ const U09_F05: Formula = {
   unidad: 9,
   nombre: 'Potencia de ruido térmico',
   expresion: 'N = K · T · B',
+  expresionLatex: 'N = K \\cdot T \\cdot B',
   entradas: [
     {
       simbolo: 'K',
@@ -188,6 +195,7 @@ const U09_F06: Formula = {
   unidad: 9,
   nombre: 'Relación señal/ruido en decibeles',
   expresion: 'SNR_dB = 10 · log₁₀(S / N)',
+  expresionLatex: 'SNR_{dB} = 10 \\log_{10}(S / N)',
   entradas: [
     {
       simbolo: 'S',
@@ -222,6 +230,7 @@ const U09_F07: Formula = {
   unidad: 9,
   nombre: 'Bits por símbolo de una modulación M-aria',
   expresion: 'n = log₂(M)',
+  expresionLatex: 'n = \\log_2 M',
   entradas: [
     {
       simbolo: 'M',
@@ -249,6 +258,7 @@ const U09_F08: Formula = {
   unidad: 9,
   nombre: 'Velocidad máxima teórica de un enlace multiportadora (ADSL/DMT)',
   expresion: 'R = N_canales · B_canal · n',
+  expresionLatex: 'R = N_{canales} \\cdot B_{canal} \\cdot n',
   entradas: [
     {
       simbolo: 'N_canales',
@@ -291,6 +301,7 @@ const U09_F09: Formula = {
   unidad: 9,
   nombre: 'Ancho de banda de cada subcanal DMT',
   expresion: 'B_canal = B_total / N_canales',
+  expresionLatex: 'B_{canal} = \\frac{B_{total}}{N_{canales}}',
   entradas: [
     {
       simbolo: 'B_total',
