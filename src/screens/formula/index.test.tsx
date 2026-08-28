@@ -28,7 +28,12 @@ describe('la pantalla genérica renderiza la Fórmula', () => {
 
     expect(screen.getByText('U10-F07')).toBeTruthy();
     expect(screen.getByText(formula.nombre)).toBeTruthy();
-    expect(screen.getByText(formula.expresion)).toBeTruthy();
+    // La expresión se dibuja como SVG cuando la Fórmula tiene `expresionLatex`, y un
+    // SVG no tiene texto que buscar. Se afirma por la etiqueta accesible, que es lo
+    // que recibe un lector de pantalla y vale para las dos formas de dibujarla.
+    expect(screen.getByTestId(`expresion-${formula.id}`).props.accessibilityLabel).toBe(
+      formula.expresion,
+    );
   });
 
   it('muestra cada Variable de entrada con su símbolo y su significado', async () => {

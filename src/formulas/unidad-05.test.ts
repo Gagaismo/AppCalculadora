@@ -53,7 +53,12 @@ describe('Unidad 5 — Render en la pantalla genérica', () => {
       await render(React.createElement(PantallaFormula, { formula }));
       expect(screen.getAllByText(formula.id).length).toBeGreaterThan(0);
       expect(screen.getAllByText(formula.nombre).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(formula.expresion).length).toBeGreaterThan(0);
+      // La expresión se dibuja como SVG cuando la Fórmula tiene `expresionLatex`, y un
+      // SVG no tiene texto que buscar. Se afirma por la etiqueta accesible, que es lo
+      // que recibe un lector de pantalla y vale para las dos formas de dibujarla.
+      expect(screen.getByTestId(`expresion-${formula.id}`).props.accessibilityLabel).toBe(
+        formula.expresion,
+      );
       expect(screen.getByTestId('salida')).toBeTruthy();
       expect(screen.getByTestId('ficha-formula')).toBeTruthy();
     },

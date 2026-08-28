@@ -6,6 +6,7 @@ import { calcular } from '@/dominio/motor';
 import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
 
 import { FichaFormula } from './ficha';
+import { Expresion } from './expresion';
 import { SelectorMultiplo } from './selector-multiplo';
 import { formatearNumero, parsearEntrada } from './numeros';
 
@@ -110,7 +111,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
     <ScrollView style={estilos.pantalla} contentContainerStyle={estilos.contenido}>
       <Text style={estilos.identificador}>{formula.id}</Text>
       <Text style={estilos.nombre}>{formula.nombre}</Text>
-      <Text style={estilos.expresion}>{formula.expresion}</Text>
+      <Expresion formula={formula} altura={26} />
 
       {formula.entradas.map((variable) => {
         const esInvalido = noNumericos.includes(variable.simbolo);
@@ -151,8 +152,38 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
                     <Text style={estilos.botonQuitarTexto}>−</Text>
                   </Pressable>
                 )}
+
+                {/*
+                  El múltiplo va pegado al campo, no debajo: cargar «2,4» y elegir
+                  «GHz» es un solo gesto, y el error que la regla dura 6 quiere evitar
+                  aparece justamente cuando las dos cosas se leen por separado.
+
+                  En una Variable de lista el múltiplo es uno para todos los valores,
+                  así que va una sola vez, después de los campos.
+                */}
+                {!variable.esLista && (
+                  <SelectorMultiplo
+                    simbolo={variable.simbolo}
+                    unidadDeMedida={variable.unidadDeMedida}
+                    elegido={multiplos[variable.simbolo]}
+                    onElegir={(multiplo) =>
+                      setMultiplos((previos) => ({ ...previos, [variable.simbolo]: multiplo }))
+                    }
+                  />
+                )}
               </View>
             ))}
+
+            {variable.esLista && (
+              <SelectorMultiplo
+                simbolo={variable.simbolo}
+                unidadDeMedida={variable.unidadDeMedida}
+                elegido={multiplos[variable.simbolo]}
+                onElegir={(multiplo) =>
+                  setMultiplos((previos) => ({ ...previos, [variable.simbolo]: multiplo }))
+                }
+              />
+            )}
 
             {variable.esLista && (
               <Pressable
@@ -172,14 +203,6 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
               </Text>
             )}
 
-            <SelectorMultiplo
-              simbolo={variable.simbolo}
-              unidadDeMedida={variable.unidadDeMedida}
-              elegido={multiplos[variable.simbolo]}
-              onElegir={(multiplo) =>
-                setMultiplos((previos) => ({ ...previos, [variable.simbolo]: multiplo }))
-              }
-            />
           </View>
         );
       })}

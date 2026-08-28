@@ -1,6 +1,8 @@
 import { Host, Picker } from '@expo/ui';
+import { StyleSheet } from 'react-native';
 
 import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
+import { colores } from '@/tema';
 
 export interface SelectorMultiploProps {
   /** El símbolo de la Variable. Identifica al selector en las pruebas. */
@@ -40,7 +42,16 @@ export function SelectorMultiplo({
   onElegir,
 }: SelectorMultiploProps) {
   return (
-    <Host matchContents={{ vertical: true }}>
+    // `matchContents` en los dos ejes para que el control mida lo que ocupa y no se
+    // estire a todo el ancho de la fila. `colorScheme` fijo en claro porque la app no
+    // tiene tema oscuro: sin esto, Material 3 sigue al sistema y el selector aparece
+    // como una barra negra sobre el fondo claro.
+    <Host
+      matchContents
+      colorScheme="light"
+      seedColor={colores.marca}
+      style={estilos.contenedor}
+    >
       <Picker
         testID={`multiplos-${simbolo}`}
         selectedValue={elegido === '' ? BASE : elegido}
@@ -57,3 +68,11 @@ export function SelectorMultiplo({
     </Host>
   );
 }
+
+const estilos = StyleSheet.create({
+  contenedor: {
+    // Un piso de ancho para que «Hz» y «bit/símbolo» no den controles de tamaños
+    // muy distintos en la misma pantalla.
+    minWidth: 96,
+  },
+});

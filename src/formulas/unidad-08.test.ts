@@ -40,7 +40,12 @@ describe('Unidad 8 — Renderizado en pantalla genérica', () => {
       // Muestra el identificador, nombre y expresión
       expect(screen.getByText(formula.id)).toBeTruthy();
       expect(screen.getByText(formula.nombre)).toBeTruthy();
-      expect(screen.getByText(formula.expresion)).toBeTruthy();
+      // La expresión se dibuja como SVG cuando la Fórmula tiene `expresionLatex`, y un
+      // SVG no tiene texto que buscar. Se afirma por la etiqueta accesible, que es lo
+      // que recibe un lector de pantalla y vale para las dos formas de dibujarla.
+      expect(screen.getByTestId(`expresion-${formula.id}`).props.accessibilityLabel).toBe(
+        formula.expresion,
+      );
 
       // Muestra cada variable de entrada
       for (const variable of formula.entradas) {
