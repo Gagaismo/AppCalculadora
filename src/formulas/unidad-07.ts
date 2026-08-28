@@ -16,6 +16,7 @@ const U07_F01: Formula = {
   unidad: 7,
   nombre: 'Número de bits por elemento de señal (bits por símbolo)',
   expresion: 'n = log₂(N)',
+  expresionLatex: 'n = \\log_2(N)',
   entradas: [
     {
       simbolo: 'N',
@@ -47,6 +48,7 @@ const U07_F02: Formula = {
   unidad: 7,
   nombre: 'Velocidad de transmisión (tasa de bits) a partir de la tasa de símbolos',
   expresion: 'R = r · n',
+  expresionLatex: 'R = r \\cdot n',
   entradas: [
     {
       simbolo: 'r',
@@ -82,6 +84,9 @@ const U07_F03: Formula = {
   unidad: 7,
   nombre: 'Ancho de banda de un canal / señal analógica',
   expresion: 'B = f_2 − f_1',
+  // El catálogo escribe `B = \Delta f = f_2 - f_1`; se transcribe la igualdad
+  // directa que la Fórmula implementa.
+  expresionLatex: 'B = f_2 - f_1',
   entradas: [
     {
       simbolo: 'f_2',
@@ -119,6 +124,7 @@ const U07_F04: Formula = {
   unidad: 7,
   nombre: 'Bits extra por segundo por desviación del reloj del receptor',
   expresion: 'b_extra = R · (d / 100)',
+  expresionLatex: 'b_{extra} = R \\cdot \\frac{d}{100}',
   entradas: [
     {
       simbolo: 'R',
