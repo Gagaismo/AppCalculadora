@@ -17,6 +17,13 @@ const U05_F01: Formula = {
   nombre: 'Cantidad de información de un símbolo (información propia)',
   expresion: 'I_i = log₂(1 / P_i) = −log₂ P_i',
   expresionLatex: 'I_i = \\log_2\\left(\\frac{1}{P_i}\\right) = -\\log_2 P_i',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso de símbolos equiprobables (P_i = 1/N)',
+      expresion: 'I_i = log₂ N',
+      latex: 'I_i = \\log_2 N',
+    },
+  ],
   entradas: [
     {
       simbolo: 'P_i',
@@ -33,7 +40,7 @@ const U05_F01: Formula = {
   },
   condiciones:
     'Fuente discreta con N símbolos distintos e independientes. P_i debe estar en (0, 1]; con P_i = 0 ' +
-    'la fórmula diverge. Si los símbolos son equiprobables, P_i = 1/N y se reduce a I = log₂(N).',
+    'la fórmula diverge.',
   paginas: '2, 29',
   confianza: 'alta',
   calcular: ({ P_i }) => Math.log2(1 / P_i),
@@ -76,6 +83,13 @@ const U05_F03: Formula = {
   nombre: 'Duración promedio de un símbolo',
   expresion: 'σ̄ = Σ P_j · σ_j',
   expresionLatex: '\\bar{\\sigma} = \\sum_{j=1}^{m} P_j \\, \\sigma_j',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso de símbolos de igual duración',
+      expresion: 'σ̄ = T_s',
+      latex: '\\bar{\\sigma} = T_s',
+    },
+  ],
   entradas: [
     {
       simbolo: 'P',
@@ -99,8 +113,8 @@ const U05_F03: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Se usa cuando los símbolos no tienen todos la misma duración. Si todos duran lo mismo, ' +
-    'σ̄ = T_s. Requiere Σ P_j = 1.',
+    'Se usa cuando los símbolos no tienen todos la misma duración. ' +
+    'Requiere Σ P_j = 1.',
   paginas: '2',
   confianza: 'alta',
   calcular: (_, { P, σ }) => P.reduce((sum, p, i) => sum + p * (σ[i] ?? 0), 0),
@@ -113,6 +127,13 @@ const U05_F04: Formula = {
   expresion: 'r = 1 / T_s',
   // El catálogo escribe `\sigma` y `T_S`; la Fórmula declara `T_s`. Ver docs/research/latex-transcripcion.md.
   expresionLatex: 'r = \\frac{1}{T_s}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso con duraciones distintas',
+      expresion: 'r = 1 / σ̄',
+      latex: 'r = \\frac{1}{\\bar{\\sigma}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'T_s',
@@ -128,7 +149,7 @@ const U05_F04: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Vale con símbolos de duración uniforme; con duraciones distintas usar r = 1/σ̄ (U05-F03). ' +
+    'Vale con símbolos de duración uniforme. ' +
     'T_s > 0. La cátedra escribe indistintamente σ o T_s para la duración del símbolo.',
   paginas: '2',
   confianza: 'alta',
@@ -142,6 +163,18 @@ const U05_F05: Formula = {
   expresion: 'R = r · H',
   // El catálogo incluye formas con `\bar{\sigma}` y `T_S`; la Fórmula implementa `R = r \times H`.
   expresionLatex: 'R = r \\times H',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la duración promedio del símbolo',
+      expresion: 'R = H / σ̄',
+      latex: 'R = \\frac{H}{\\bar{\\sigma}}',
+    },
+    {
+      rotulo: 'En función de la duración del símbolo',
+      expresion: 'R = H / T_s',
+      latex: 'R = \\frac{H}{T_s}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'r',
@@ -165,7 +198,7 @@ const U05_F05: Formula = {
   condiciones:
     'H debe calcularse con U05-F02 o U05-F12. Se compara contra la capacidad C del canal: si R ≤ C ' +
     'existe codificación con error arbitrariamente pequeño; si R > C no es posible transmitir ' +
-    'sin errores (segundo teorema de Shannon). Equivale a R = H / σ̄ = H / T_s.',
+    'sin errores (segundo teorema de Shannon).',
   paginas: '2',
   confianza: 'alta',
   calcular: ({ r, H }) => r * H,
@@ -343,6 +376,13 @@ const U05_F11: Formula = {
   expresion: 'I = (T / T_s) · log₂ N',
   // El catálogo escribe `T_S` e incluye la forma con `m` y `p`; la Fórmula implementa `I = \frac{T}{T_s} \log_2 N`.
   expresionLatex: 'I = \\frac{T}{T_s} \\log_2 N',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la cantidad de símbolos y su probabilidad',
+      expresion: 'I = m · log₂(1 / p)',
+      latex: 'I = m \\log_2\\left(\\frac{1}{p}\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'T',
@@ -443,6 +483,13 @@ const U05_F14: Formula = {
   expresion: 'f_Nyquist = 2 · f_max',
   // El catálogo escribe `f_S = 2 f_{Max}`; la Fórmula declara `f_{Nyquist} = 2 f_{max}`.
   expresionLatex: 'f_{Nyquist} = 2 f_{max}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Condición general de muestreo (teorema de Nyquist)',
+      expresion: 'f_s ≥ 2 · f_max',
+      latex: 'f_s \\ge 2 f_{max}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'f_max',
@@ -458,7 +505,7 @@ const U05_F14: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'La señal debe estar limitada en banda. La condición general es f_s ≥ 2·f_max; la igualdad ' +
+    'La señal debe estar limitada en banda. La igualdad ' +
     'define la frecuencia de Nyquist mínima para reconstruir la señal original.',
   paginas: '23',
   confianza: 'alta',
@@ -471,6 +518,13 @@ const U05_F15: Formula = {
   nombre: 'Teorema de Nyquist: capacidad de un canal sin ruido',
   expresion: 'C = 2 · B · log₂ M',
   expresionLatex: 'C = 2 B \\log_2 M',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso binario (M = 2)',
+      expresion: 'C = 2 · B',
+      latex: 'C = 2 B',
+    },
+  ],
   entradas: [
     {
       simbolo: 'B',
@@ -491,7 +545,7 @@ const U05_F15: Formula = {
     unidadDeMedida: 'bit/s',
     multiploCanonico: '',
   },
-  condiciones: 'Canal ideal: sin ruido ni distorsiones, de ancho de banda finito B. Si M = 2, log₂(2) = 1 y queda C = 2B.',
+  condiciones: 'Canal ideal: sin ruido ni distorsiones, de ancho de banda finito B.',
   paginas: '24, 25, 32',
   confianza: 'alta',
   calcular: ({ B, M }) => 2 * B * Math.log2(M),
@@ -536,6 +590,13 @@ const U05_F17: Formula = {
   expresion: 'C = B · log₂(1 + SNR)',
   // El catálogo escribe `\frac{S}{N}`; la Fórmula declara `SNR`.
   expresionLatex: 'C = B \\log_2\\left(1 + SNR\\right)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de las potencias de señal y ruido',
+      expresion: 'C = B · log₂(1 + S / N)',
+      latex: 'C = B \\log_2\\left(1 + \\frac{S}{N}\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'B',
@@ -558,7 +619,7 @@ const U05_F17: Formula = {
   },
   condiciones:
     'Canal real con ruido aleatorio blanco. La SNR debe entrar en valor lineal: si el dato viene en dB ' +
-    'hay que convertirlo primero con SNR = 10^(SNR_dB/10).',
+    'hay que convertirlo primero a escala lineal.',
   paginas: '26, 27, 28, 29, 31, 33, 34, 35',
   confianza: 'alta',
   calcular: ({ B, SNR }) => B * Math.log2(1 + SNR),
@@ -570,6 +631,13 @@ const U05_F18: Formula = {
   nombre: 'Relación señal a ruido en decibeles',
   expresion: 'SNR_dB = 10 · log₁₀(SNR)',
   expresionLatex: 'SNR_{dB} = 10 \\log_{10}\\left(SNR\\right)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Despeje del valor lineal',
+      expresion: 'SNR = 10^(SNR_dB / 10)',
+      latex: 'SNR = 10^{\\frac{SNR_{dB}}{10}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'SNR',
@@ -585,7 +653,7 @@ const U05_F18: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Relación de potencias (factor 10). Despeje: SNR = 10^(SNR_dB/10). En las diapositivas a veces ' +
+    'Relación de potencias (factor 10). En las diapositivas a veces ' +
     '24 dB se redondea a SNR = 255 para que 1+SNR sea potencia de 2.',
   paginas: '27, 28, 33, 34, 35',
   confianza: 'alta',
@@ -599,6 +667,18 @@ const U05_F19: Formula = {
   expresion: 'E_max = C / B = log₂(1 + SNR)',
   // El catálogo incluye la forma con SNR; la Fórmula implementa `E_{max} = \frac{C}{B}`.
   expresionLatex: 'E_{max} = \\frac{C}{B}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la relación señal a ruido (límite de Shannon)',
+      expresion: 'E_max = log₂(1 + SNR)',
+      latex: 'E_{max} = \\log_2\\left(1 + SNR\\right)',
+    },
+    {
+      rotulo: 'En función de las potencias de señal y ruido',
+      expresion: 'E_max = log₂(1 + S / N)',
+      latex: 'E_{max} = \\log_2\\left(1 + \\frac{S}{N}\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'C',
@@ -619,7 +699,7 @@ const U05_F19: Formula = {
     unidadDeMedida: 'bit/Hz',
     multiploCanonico: '',
   },
-  condiciones: 'Depende exclusivamente de la calidad del canal (su nivel de ruido): E_max = log₂(1 + SNR).',
+  condiciones: 'Depende exclusivamente de la calidad del canal (su nivel de ruido), no del ancho de banda B.',
   paginas: '31, 35, 37',
   confianza: 'alta',
   calcular: ({ C, B }) => C / B,
@@ -631,6 +711,13 @@ const U05_F20: Formula = {
   nombre: 'Shannon-Hartley: niveles de señal requeridos',
   expresion: 'M = √(1 + SNR)',
   expresionLatex: 'M = \\sqrt{1 + SNR}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Igualdad de Nyquist y Shannon',
+      expresion: '2B · log₂(M) = B · log₂(1 + SNR)',
+      latex: '2B \\log_2 M = B \\log_2\\left(1 + SNR\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'SNR',
@@ -646,7 +733,7 @@ const U05_F20: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Surge de igualar Nyquist con Shannon: 2B·log₂(M) = B·log₂(1+SNR) ⇒ M = √(1 + SNR). SNR en valor ' +
+    'Surge de igualar la capacidad de Nyquist con la de Shannon. SNR en valor ' +
     'lineal. En las diapositivas, si no es potencia de 2 se adopta la potencia de 2 inferior.',
   paginas: '32, 33, 34, 35',
   confianza: 'alta',
@@ -659,6 +746,13 @@ const U05_F21: Formula = {
   nombre: 'Potencia de señal en función de la energía por bit',
   expresion: 'S = E_b / T_b',
   expresionLatex: 'S = \\frac{E_b}{T_b}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la tasa de bit',
+      expresion: 'S = E_b · R',
+      latex: 'S = E_b \\times R',
+    },
+  ],
   entradas: [
     {
       simbolo: 'E_b',
@@ -679,7 +773,7 @@ const U05_F21: Formula = {
     unidadDeMedida: 'W',
     multiploCanonico: 'm',
   },
-  condiciones: 'Sistemas digitales. T_b es el tiempo de un bit. Equivale a S = E_b · R (siendo R = 1/T_b).',
+  condiciones: 'Sistemas digitales. T_b es el tiempo de un bit, con R = 1/T_b.',
   paginas: '36',
   confianza: 'alta',
   calcular: ({ E_b, T_b }) => E_b / T_b,
@@ -749,6 +843,18 @@ const U05_F24: Formula = {
   nombre: 'SNR en función de Eb/No',
   expresion: 'SNR = (E_b / N_0) / (T_b · B)',
   expresionLatex: 'SNR = \\frac{E_b/N_0}{T_b \\, B}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'En función de la capacidad C (límite máximo R = C)',
+      expresion: 'SNR = (E_b / N_0) / (B / C)',
+      latex: 'SNR = \\frac{E_b/N_0}{B/C}',
+    },
+    {
+      rotulo: 'En función de las potencias de señal y ruido',
+      expresion: 'SNR = S / N',
+      latex: 'SNR = \\frac{S}{N}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'E_b/N_0',
@@ -776,8 +882,8 @@ const U05_F24: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Se deduce de S = E_b/T_b y N = N_0·B. La forma (E_b/N_0)/(B/C) vale cuando se iguala R = 1/T_b a ' +
-    'la capacidad C.',
+    'Se deduce de S = E_b/T_b y N = N_0·B. La forma en función de B/C vale cuando se iguala la tasa de bit ' +
+    'R = 1/T_b a la capacidad C.',
   paginas: '36, 37',
   confianza: 'alta',
   calcular: ({ ['E_b/N_0']: Eb_N0, T_b, B }) => Eb_N0 / (T_b * B),
