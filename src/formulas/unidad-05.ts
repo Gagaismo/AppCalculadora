@@ -16,6 +16,7 @@ const U05_F01: Formula = {
   unidad: 5,
   nombre: 'Cantidad de información de un símbolo (información propia)',
   expresion: 'I_i = log₂(1 / P_i) = −log₂ P_i',
+  expresionLatex: 'I_i = \\log_2\\left(\\frac{1}{P_i}\\right) = -\\log_2 P_i',
   entradas: [
     {
       simbolo: 'P_i',
@@ -43,6 +44,8 @@ const U05_F02: Formula = {
   unidad: 5,
   nombre: 'Entropía de la fuente H(x)',
   expresion: 'H(x) = Σ P_j · log₂(1 / P_j)',
+  // El catálogo escribe `H(x)` y `P_j`; la Fórmula declara `H` y `P`.
+  expresionLatex: 'H = \\sum P \\log_2\\left(\\frac{1}{P}\\right)',
   entradas: [
     {
       simbolo: 'P',
@@ -107,6 +110,8 @@ const U05_F04: Formula = {
   unidad: 5,
   nombre: 'Velocidad de símbolos (tasa de señalización)',
   expresion: 'r = 1 / T_s',
+  // El catálogo escribe `\sigma` y `T_S`; la Fórmula declara `T_s`. Ver docs/research/latex-transcripcion.md.
+  expresionLatex: 'r = \\frac{1}{T_s}',
   entradas: [
     {
       simbolo: 'T_s',
@@ -134,6 +139,8 @@ const U05_F05: Formula = {
   unidad: 5,
   nombre: 'Velocidad de transmisión de información (velocidad de entropía de la fuente) R',
   expresion: 'R = r · H',
+  // El catálogo incluye formas con `\bar{\sigma}` y `T_S`; la Fórmula implementa `R = r \times H`.
+  expresionLatex: 'R = r \\times H',
   entradas: [
     {
       simbolo: 'r',
@@ -168,6 +175,8 @@ const U05_F06: Formula = {
   unidad: 5,
   nombre: 'Velocidad de transmisión para símbolos equiprobables',
   expresion: 'R = (1 / T_s) · log₂ N',
+  // El catálogo escribe `T_S` e incluye `r \times H`; la Fórmula declara `T_s` y `N`.
+  expresionLatex: 'R = \\frac{1}{T_s} \\times \\log_2 N',
   entradas: [
     {
       simbolo: 'T_s',
@@ -270,6 +279,7 @@ const U05_F09: Formula = {
   unidad: 5,
   nombre: 'Probabilidad de un nivel equiprobable',
   expresion: 'p = 1 / N',
+  expresionLatex: 'p = \\frac{1}{N}',
   entradas: [
     {
       simbolo: 'N',
@@ -295,6 +305,8 @@ const U05_F10: Formula = {
   unidad: 5,
   nombre: 'Cantidad de símbolos contenidos en la señal',
   expresion: 'm = T / T_s',
+  // El catálogo escribe `T_S`; la Fórmula declara `T_s`.
+  expresionLatex: 'm = \\frac{T}{T_s}',
   entradas: [
     {
       simbolo: 'T',
@@ -326,6 +338,8 @@ const U05_F11: Formula = {
   unidad: 5,
   nombre: 'Contenido de información de una señal',
   expresion: 'I = (T / T_s) · log₂ N',
+  // El catálogo escribe `T_S` e incluye la forma con `m` y `p`; la Fórmula implementa `I = \frac{T}{T_s} \log_2 N`.
+  expresionLatex: 'I = \\frac{T}{T_s} \\log_2 N',
   entradas: [
     {
       simbolo: 'T',
@@ -365,6 +379,8 @@ const U05_F12: Formula = {
   unidad: 5,
   nombre: 'Bits por símbolo / entropía con símbolos equiprobables',
   expresion: 'H = log₂ N',
+  // El catálogo escribe `H = I = \log_2 N`; la Fórmula implementa `H = \log_2 N`.
+  expresionLatex: 'H = \\log_2 N',
   entradas: [
     {
       simbolo: 'N',
@@ -422,6 +438,8 @@ const U05_F14: Formula = {
   unidad: 5,
   nombre: 'Frecuencia de Nyquist (velocidad mínima de muestreo)',
   expresion: 'f_Nyquist = 2 · f_max',
+  // El catálogo escribe `f_S = 2 f_{Max}`; la Fórmula declara `f_{Nyquist} = 2 f_{max}`.
+  expresionLatex: 'f_{Nyquist} = 2 f_{max}',
   entradas: [
     {
       simbolo: 'f_max',
@@ -449,6 +467,7 @@ const U05_F15: Formula = {
   unidad: 5,
   nombre: 'Teorema de Nyquist: capacidad de un canal sin ruido',
   expresion: 'C = 2 · B · log₂ M',
+  expresionLatex: 'C = 2 B \\log_2 M',
   entradas: [
     {
       simbolo: 'B',
@@ -480,6 +499,7 @@ const U05_F16: Formula = {
   unidad: 5,
   nombre: 'Ancho de banda a partir del espectro del canal',
   expresion: 'B = f_sup − f_inf',
+  expresionLatex: 'B = f_{sup} - f_{inf}',
   entradas: [
     {
       simbolo: 'f_sup',
@@ -511,6 +531,8 @@ const U05_F17: Formula = {
   unidad: 5,
   nombre: 'Fórmula de Shannon: capacidad de un canal con ruido',
   expresion: 'C = B · log₂(1 + SNR)',
+  // El catálogo escribe `\frac{S}{N}`; la Fórmula declara `SNR`.
+  expresionLatex: 'C = B \\log_2\\left(1 + SNR\\right)',
   entradas: [
     {
       simbolo: 'B',
@@ -544,6 +566,7 @@ const U05_F18: Formula = {
   unidad: 5,
   nombre: 'Relación señal a ruido en decibeles',
   expresion: 'SNR_dB = 10 · log₁₀(SNR)',
+  expresionLatex: 'SNR_{dB} = 10 \\log_{10}\\left(SNR\\right)',
   entradas: [
     {
       simbolo: 'SNR',
@@ -571,6 +594,8 @@ const U05_F19: Formula = {
   unidad: 5,
   nombre: 'Eficiencia espectral máxima',
   expresion: 'E_max = C / B = log₂(1 + SNR)',
+  // El catálogo incluye la forma con SNR; la Fórmula implementa `E_{max} = \frac{C}{B}`.
+  expresionLatex: 'E_{max} = \\frac{C}{B}',
   entradas: [
     {
       simbolo: 'C',
@@ -602,6 +627,7 @@ const U05_F20: Formula = {
   unidad: 5,
   nombre: 'Shannon-Hartley: niveles de señal requeridos',
   expresion: 'M = √(1 + SNR)',
+  expresionLatex: 'M = \\sqrt{1 + SNR}',
   entradas: [
     {
       simbolo: 'SNR',
@@ -629,6 +655,7 @@ const U05_F21: Formula = {
   unidad: 5,
   nombre: 'Potencia de señal en función de la energía por bit',
   expresion: 'S = E_b / T_b',
+  expresionLatex: 'S = \\frac{E_b}{T_b}',
   entradas: [
     {
       simbolo: 'E_b',
@@ -660,6 +687,7 @@ const U05_F22: Formula = {
   unidad: 5,
   nombre: 'Potencia total de ruido a partir de la densidad espectral',
   expresion: 'N = N_0 · B',
+  expresionLatex: 'N = N_0 B',
   entradas: [
     {
       simbolo: 'N_0',
@@ -691,6 +719,7 @@ const U05_F23: Formula = {
   unidad: 5,
   nombre: 'Tasa de bit en función del tiempo de bit',
   expresion: 'R = 1 / T_b',
+  expresionLatex: 'R = \\frac{1}{T_b}',
   entradas: [
     {
       simbolo: 'T_b',
