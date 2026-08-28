@@ -21,6 +21,8 @@ const U02_F01: Formula = {
   unidad: 2,
   nombre: 'Señal exponencial (real y compleja)',
   expresion: 'x(t) = C · e^(s·t)',
+  expresionLatex:
+    'x(t) = C e^{st},\\ \\ C = A \\pm jB,\\ \\ s = \\sigma \\pm j\\omega \\ \\Rightarrow\\ \\text{real (}B=0,\\omega=0\\text{): } x(t)=A e^{\\sigma t};\\ \\ \\text{compleja (}B=0,\\sigma=0\\text{): } x(t)=A e^{\\pm j\\omega t}',
   entradas: [],
   salida: {
     simbolo: 'x(t)',
@@ -43,6 +45,8 @@ const U02_F02: Formula = {
   unidad: 2,
   nombre: 'Relación de Euler',
   expresion: 'e^(±jθ) = cos(θ) ± j·sen(θ)',
+  expresionLatex:
+    'e^{\\pm j\\theta} = \\cos\\theta \\pm j\\,\\mathrm{sen}\\,\\theta;\\quad \\cos\\theta = \\tfrac{1}{2}\\left(e^{j\\theta}+e^{-j\\theta}\\right);\\quad \\mathrm{sen}\\,\\theta = \\tfrac{1}{2j}\\left(e^{j\\theta}-e^{-j\\theta}\\right)',
   entradas: [],
   salida: {
     simbolo: 'e^(±jθ)',
@@ -64,6 +68,7 @@ const U02_F03: Formula = {
   unidad: 2,
   nombre: 'Longitud de onda a partir de la frecuencia',
   expresion: 'λ = v / f',
+  expresionLatex: '\\lambda = \\frac{v}{f}',
   entradas: [
     {
       simbolo: 'v',
@@ -98,6 +103,7 @@ const U02_F04: Formula = {
   unidad: 2,
   nombre: 'Longitud de onda a partir del período',
   expresion: 'λ = v · T',
+  expresionLatex: '\\lambda = v \\cdot T',
   entradas: [
     {
       simbolo: 'v',
@@ -129,6 +135,7 @@ const U02_F05: Formula = {
   unidad: 2,
   nombre: 'Frecuencia angular',
   expresion: 'ω = 2 · π · f',
+  expresionLatex: '\\omega = 2\\pi f',
   entradas: [
     {
       simbolo: 'f',
@@ -155,6 +162,7 @@ const U02_F06: Formula = {
   unidad: 2,
   nombre: 'Frecuencia angular fundamental',
   expresion: 'ω₀ = 2 · π / T',
+  expresionLatex: '\\omega_0 = \\frac{2\\pi}{T}',
   entradas: [
     {
       simbolo: 'T',
@@ -182,6 +190,7 @@ const U02_F07: Formula = {
   unidad: 2,
   nombre: 'Frecuencia fundamental y armónicos',
   expresion: 'f_n = n / T',
+  expresionLatex: 'f_n = \\frac{n}{T}',
   entradas: [
     {
       simbolo: 'n',
@@ -216,6 +225,7 @@ const U02_F08: Formula = {
   unidad: 2,
   nombre: 'Señal periódica simple (senoidal)',
   expresion: 'f(t) = A · sen(2 · π · f · t + θ)',
+  expresionLatex: 'f(t) = A\\,\\mathrm{sen}(2\\pi f t + \\theta)',
   entradas: [
     {
       simbolo: 'A',
@@ -261,6 +271,8 @@ const U02_F09: Formula = {
   unidad: 2,
   nombre: 'Señal periódica compuesta (suma de senoidales)',
   expresion: 'f(t) = A · sen(2 · π · f₁ · t) + B · sen(2 · π · f₂ · t) + C · sen(2 · π · f₃ · t)',
+  expresionLatex:
+    'f(t) = A\\,\\mathrm{sen}(2\\pi f_1 t) + B\\,\\mathrm{sen}(2\\pi f_2 t) + C\\,\\mathrm{sen}(2\\pi f_3 t)',
   entradas: [
     {
       simbolo: 'A',
@@ -327,6 +339,7 @@ const U02_F10: Formula = {
   unidad: 2,
   nombre: 'Ancho de banda absoluto',
   expresion: 'BW_abs = f_max − f_min',
+  expresionLatex: 'BW_{abs} = f_{max} - f_{min}',
   entradas: [
     {
       simbolo: 'f_max',
@@ -361,6 +374,8 @@ const U02_F11: Formula = {
   unidad: 2,
   nombre: 'Serie de Fourier trigonométrica (síntesis)',
   expresion: 'f(t) = ½·a₀ + Σ a_n·cos(n·ω₀·t) + Σ b_n·sen(n·ω₀·t)',
+  expresionLatex:
+    'f(t) = \\frac{1}{2}a_0 + \\sum_{n=1}^{\\infty} a_n \\cos(n\\omega_0 t) + \\sum_{n=1}^{\\infty} b_n\\,\\mathrm{sen}(n\\omega_0 t)',
   entradas: [],
   salida: {
     simbolo: 'f(t)',
@@ -382,6 +397,7 @@ const U02_F12: Formula = {
   unidad: 2,
   nombre: 'Coeficiente a_0 de la serie trigonométrica',
   expresion: 'a₀ = (2 / T) · ∫ f(t) dt',
+  expresionLatex: 'a_0 = \\frac{2}{T}\\int_{-T/2}^{T/2} f(t)\\,dt',
   entradas: [],
   salida: {
     simbolo: 'a_0',
@@ -402,6 +418,7 @@ const U02_F13: Formula = {
   unidad: 2,
   nombre: 'Coeficiente a_n de la serie trigonométrica',
   expresion: 'a_n = (2 / T) · ∫ f(t) · cos(n · ω₀ · t) dt',
+  expresionLatex: 'a_n = \\frac{2}{T}\\int_{-T/2}^{T/2} f(t)\\cos(n\\omega_0 t)\\,dt',
   entradas: [],
   salida: {
     simbolo: 'a_n',
@@ -422,6 +439,7 @@ const U02_F14: Formula = {
   unidad: 2,
   nombre: 'Coeficiente b_n de la serie trigonométrica',
   expresion: 'b_n = (2 / T) · ∫ f(t) · sen(n · ω₀ · t) dt',
+  expresionLatex: 'b_n = \\frac{2}{T}\\int_{-T/2}^{T/2} f(t)\\,\\mathrm{sen}(n\\omega_0 t)\\,dt',
   entradas: [],
   salida: {
     simbolo: 'b_n',
@@ -442,6 +460,8 @@ const U02_F15: Formula = {
   unidad: 2,
   nombre: 'Coeficientes b_n de la onda cuadrada simétrica de amplitud 1',
   expresion: 'b_n = (2 / (n · π)) · [1 − (−1)ⁿ]',
+  expresionLatex:
+    'b_n = \\frac{2}{n\\pi}\\left[1-(-1)^n\\right] = \\begin{cases} \\dfrac{4}{n\\pi} & n\\ \\text{impar}\\\\[4pt] 0 & n\\ \\text{par}\\end{cases}',
   entradas: [
     {
       simbolo: 'n',
@@ -473,6 +493,8 @@ const U02_F16: Formula = {
   unidad: 2,
   nombre: 'Serie de Fourier de la onda cuadrada simétrica',
   expresion: 'f(t) = (4 / π) · Σ (1 / n) · sen(n · ω₀ · t), n impar',
+  expresionLatex:
+    'f(t) = \\frac{4}{\\pi}\\left[\\mathrm{sen}(\\omega_0 t) + \\frac{1}{3}\\mathrm{sen}(3\\omega_0 t) + \\frac{1}{5}\\mathrm{sen}(5\\omega_0 t) + \\cdots\\right] = \\frac{4}{\\pi}\\sum_{n\\ \\text{impar}} \\frac{1}{n}\\,\\mathrm{sen}(n\\omega_0 t)',
   entradas: [],
   salida: {
     simbolo: 'f(t)',
@@ -493,6 +515,8 @@ const U02_F17: Formula = {
   unidad: 2,
   nombre: 'Serie de Fourier compleja (síntesis)',
   expresion: 'f(t) = Σ C_n · e^(j · n · ω₀ · t)',
+  expresionLatex:
+    'f(t) = \\sum_{n=-\\infty}^{+\\infty} C_n\\,e^{j n \\omega_0 t},\\qquad \\omega_0 = \\frac{2\\pi}{T}',
   entradas: [],
   salida: {
     simbolo: 'f(t)',
@@ -513,6 +537,8 @@ const U02_F18: Formula = {
   unidad: 2,
   nombre: 'Coeficientes de la serie de Fourier compleja',
   expresion: 'C_n = (1 / T) · ∫ f(t) · e^(−j · n · ω₀ · t) dt',
+  expresionLatex:
+    'C_n = \\frac{1}{T}\\int_{0}^{T} f(t)\\,e^{-j n \\omega_0 t}\\,dt \\qquad n = 0, \\pm1, \\pm2, \\pm3,\\ldots',
   entradas: [],
   salida: {
     simbolo: 'C_n',
@@ -533,6 +559,9 @@ const U02_F19: Formula = {
   unidad: 2,
   nombre: 'Relación entre coeficientes complejos y trigonométricos',
   expresion: 'C₀ = ½·a₀; C_n = ½(a_n − j·b_n); C_−n = ½(a_n + j·b_n)',
+  // Decisión de observaciones-resueltas.md: se invierte el signo para corregir la errata de la lámina 46.
+  expresionLatex:
+    'C_0 = \\frac{1}{2}a_0;\\qquad C_n = \\frac{1}{2}\\left(a_n - j b_n\\right);\\qquad C_{-n} = \\frac{1}{2}\\left(a_n + j b_n\\right)',
   entradas: [],
   salida: {
     simbolo: 'C_n',
@@ -558,6 +587,8 @@ const U02_F20: Formula = {
   unidad: 2,
   nombre: 'Coeficientes complejos de la onda cuadrada simétrica',
   expresion: 'C_n = −j · (1 / (n · π)) · [1 − (−1)ⁿ]',
+  expresionLatex:
+    'C_n = -j\\,\\frac{1}{n\\pi}\\left[1-(-1)^n\\right] = \\begin{cases} -j\\dfrac{2}{n\\pi} & n\\ \\text{impar}\\\\[4pt] 0 & n\\ \\text{par o } n=0\\end{cases};\\qquad |C_n| = \\frac{1}{n\\pi}\\left[1-(-1)^n\\right]',
   entradas: [],
   salida: {
     simbolo: 'C_n',
@@ -579,6 +610,8 @@ const U02_F21: Formula = {
   unidad: 2,
   nombre: 'Coeficientes del tren de pulsos rectangulares (función sinc)',
   expresion: 'C_n = A · (p / T) · sinc(n · π · p / T)',
+  expresionLatex:
+    'C_n = A\\,\\frac{p}{T}\\cdot\\frac{\\mathrm{sen}\\!\\left(n\\,\\omega_0\\,p/2\\right)}{n\\,\\omega_0\\,p/2} = A\\,\\frac{p}{T}\\,\\mathrm{sinc}(x),\\qquad x = \\frac{n\\,\\pi\\,p}{T}',
   entradas: [
     {
       simbolo: 'A',
@@ -631,6 +664,7 @@ const U02_F22: Formula = {
   unidad: 2,
   nombre: 'Función sinc',
   expresion: 'sinc(x) = sen(x) / x',
+  expresionLatex: '\\mathrm{sinc}(x) = \\frac{\\mathrm{sen}(x)}{x}',
   entradas: [
     {
       simbolo: 'x',
@@ -658,6 +692,8 @@ const U02_F23: Formula = {
   unidad: 2,
   nombre: 'Número de fasores hasta el primer cruce por cero',
   expresion: 'n_fasores = T / p',
+  // El catálogo escribe n_{\text{fasores}}; se normaliza a subíndice para ligar con n_fasores.
+  expresionLatex: 'n_{fasores} = \\frac{T}{p}',
   entradas: [
     {
       simbolo: 'T',
@@ -691,6 +727,8 @@ const U02_F24: Formula = {
   unidad: 2,
   nombre: 'Frecuencia del primer cruce por cero del espectro del pulso',
   expresion: 'f_cero = 1 / p',
+  // El catálogo escribe f_{\text{1er cero}}; el código declara f_cero.
+  expresionLatex: 'f_{cero} = \\frac{1}{p}',
   entradas: [
     {
       simbolo: 'p',
@@ -718,6 +756,7 @@ const U02_F25: Formula = {
   unidad: 2,
   nombre: 'Transformada de Fourier',
   expresion: 'F(ω) = ∫ f(t) · e^(−j·ω·t) dt',
+  expresionLatex: 'F(\\omega) = \\int_{-\\infty}^{+\\infty} f(t)\\,e^{-j\\omega t}\\,dt',
   entradas: [],
   salida: {
     simbolo: 'F(ω)',
@@ -738,6 +777,7 @@ const U02_F26: Formula = {
   unidad: 2,
   nombre: 'Transformada inversa de Fourier',
   expresion: 'f(t) = (1 / (2·π)) · ∫ F(ω) · e^(j·ω·t) dω',
+  expresionLatex: 'f(t) = \\frac{1}{2\\pi}\\int_{-\\infty}^{+\\infty} F(\\omega)\\,e^{j\\omega t}\\,d\\omega',
   entradas: [],
   salida: {
     simbolo: 'f(t)',
@@ -757,6 +797,7 @@ const U02_F27: Formula = {
   unidad: 2,
   nombre: 'Transformada de Fourier del pulso rectangular (en omega)',
   expresion: 'F(ω) = p · sen(ω·p / 2) / (ω·p / 2)',
+  expresionLatex: 'F(\\omega) = p\\,\\frac{\\mathrm{sen}(\\omega p / 2)}{\\omega p / 2}',
   entradas: [
     {
       simbolo: 'p',
@@ -793,6 +834,8 @@ const U02_F28: Formula = {
   unidad: 2,
   nombre: 'Transformada de Fourier del pulso rectangular (en frecuencia f)',
   expresion: 'F(f) = p · sinc(π · p · f)',
+  expresionLatex:
+    'F(f) = p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f} = p\\,\\mathrm{sinc}(\\pi p f)',
   entradas: [
     {
       simbolo: 'p',
@@ -829,6 +872,8 @@ const U02_F29: Formula = {
   unidad: 2,
   nombre: 'Densidad espectral (módulo al cuadrado) del pulso rectangular',
   expresion: '|F(f)|² = [p · sinc(π · p · f)]²',
+  expresionLatex:
+    '|F(f)|^2 = \\left[p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f}\\right]^2 = \\left[p\\,\\mathrm{sinc}(\\pi p f)\\right]^2',
   entradas: [
     {
       simbolo: 'p',
