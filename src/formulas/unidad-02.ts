@@ -497,7 +497,7 @@ const U02_F15: Formula = {
   },
   condiciones:
     'Válido SÓLO para la onda cuadrada simétrica de amplitud ±1 y valor medio nulo (a₀ = 0, a_n = 0). ' +
-    'Da b_n = 4 / (n · π) para n impar y b_n = 0 para n par. Para otra amplitud A, multiplicar por A.',
+    'Para otra amplitud A, multiplicar por A.',
   paginas: '32, 43, 44',
   confianza: 'alta',
   calcular: ({ n }) => {
@@ -513,7 +513,16 @@ const U02_F16: Formula = {
   nombre: 'Serie de Fourier de la onda cuadrada simétrica',
   expresion: 'f(t) = (4 / π) · Σ (1 / n) · sen(n · ω₀ · t), n impar',
   expresionLatex:
-    'f(t) = \\frac{4}{\\pi}\\left[\\mathrm{sen}(\\omega_0 t) + \\frac{1}{3}\\mathrm{sen}(3\\omega_0 t) + \\frac{1}{5}\\mathrm{sen}(5\\omega_0 t) + \\cdots\\right] = \\frac{4}{\\pi}\\sum_{n\\ \\text{impar}} \\frac{1}{n}\\,\\mathrm{sen}(n\\omega_0 t)',
+    'f(t) = \\frac{4}{\\pi}\\sum_{n\\ \\text{impar}} \\frac{1}{n}\\,\\mathrm{sen}(n\\omega_0 t)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma desarrollada (primeros términos)',
+      expresion:
+        'f(t) = (4 / π) · [sen(ω₀·t) + ⅓·sen(3·ω₀·t) + ⅕·sen(5·ω₀·t) + ...]',
+      latex:
+        'f(t) = \\frac{4}{\\pi}\\left[\\mathrm{sen}(\\omega_0 t) + \\frac{1}{3}\\mathrm{sen}(3\\omega_0 t) + \\frac{1}{5}\\mathrm{sen}(5\\omega_0 t) + \\cdots\\right]',
+    },
+  ],
   entradas: [],
   salida: {
     simbolo: 'f(t)',
@@ -577,10 +586,21 @@ const U02_F19: Formula = {
   id: 'U02-F19',
   unidad: 2,
   nombre: 'Relación entre coeficientes complejos y trigonométricos',
-  expresion: 'C₀ = ½·a₀; C_n = ½(a_n − j·b_n); C_−n = ½(a_n + j·b_n)',
+  expresion: 'C_n = ½(a_n − j·b_n)',
   // Decisión de observaciones-resueltas.md: se invierte el signo para corregir la errata de la lámina 46.
-  expresionLatex:
-    'C_0 = \\frac{1}{2}a_0;\\qquad C_n = \\frac{1}{2}\\left(a_n - j b_n\\right);\\qquad C_{-n} = \\frac{1}{2}\\left(a_n + j b_n\\right)',
+  expresionLatex: 'C_n = \\frac{1}{2}\\left(a_n - j b_n\\right)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Componente continua (n = 0)',
+      expresion: 'C₀ = ½·a₀',
+      latex: 'C_0 = \\frac{1}{2}a_0',
+    },
+    {
+      rotulo: 'Armónica de orden negativo (n < 0)',
+      expresion: 'C_−n = ½(a_n + j·b_n)',
+      latex: 'C_{-n} = \\frac{1}{2}\\left(a_n + j b_n\\right)',
+    },
+  ],
   entradas: [],
   salida: {
     simbolo: 'C_n',
@@ -590,8 +610,7 @@ const U02_F19: Formula = {
   },
   condiciones:
     'Sólo para señales periódicas desarrolladas en ambas formas de la serie. ' +
-    'El resultado es un número complejo, por lo que entra como ficha de consulta. ' +
-    'Se implementa C_n = ½(a_n − j·b_n) y C_−n = ½(a_n + j·b_n), con C₀ = ½·a₀.',
+    'El resultado es un número complejo, por lo que entra como ficha de consulta.',
   paginas: '46',
   confianza: 'baja',
   observacion:
@@ -607,7 +626,20 @@ const U02_F20: Formula = {
   nombre: 'Coeficientes complejos de la onda cuadrada simétrica',
   expresion: 'C_n = −j · (1 / (n · π)) · [1 − (−1)ⁿ]',
   expresionLatex:
-    'C_n = -j\\,\\frac{1}{n\\pi}\\left[1-(-1)^n\\right] = \\begin{cases} -j\\dfrac{2}{n\\pi} & n\\ \\text{impar}\\\\[4pt] 0 & n\\ \\text{par o } n=0\\end{cases};\\qquad |C_n| = \\frac{1}{n\\pi}\\left[1-(-1)^n\\right]',
+    'C_n = -j\\,\\frac{1}{n\\pi}\\left[1-(-1)^n\\right] = \\begin{cases} -j\\dfrac{2}{n\\pi} & n\\ \\text{impar}\\\\[4pt] 0 & n\\ \\text{par o } n=0\\end{cases}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Módulo del coeficiente espectral',
+      expresion: '|C_n| = (1 / (n · π)) · [1 − (−1)ⁿ]',
+      latex:
+        '|C_n| = \\frac{1}{n\\pi}\\left[1-(-1)^n\\right] = \\begin{cases} \\dfrac{2}{n\\pi} & n\\ \\text{impar}\\\\[4pt] 0 & n\\ \\text{par o } n=0\\end{cases}',
+    },
+    {
+      rotulo: 'Armónica de orden negativo (n impar negativo)',
+      expresion: 'C_−n = +j · 2 / (n · π)',
+      latex: 'C_{-n} = +j\\,\\frac{2}{n\\pi}',
+    },
+  ],
   entradas: [],
   salida: {
     simbolo: 'C_n',
@@ -616,9 +648,8 @@ const U02_F20: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Válido para la onda cuadrada simétrica de amplitud ±1. Coeficientes imaginarios puros: ' +
-    'C_n = −j·2/(nπ) para n impar positivo, C_−n = +j·2/(nπ) para n impar negativo, C_n = 0 para n par y C₀ = 0. ' +
-    'Módulo: |C_n| = (1/(nπ))[1 − (−1)ⁿ]. Al ser números complejos, entra como ficha de consulta.',
+    'Válido para la onda cuadrada simétrica de amplitud ±1. Coeficientes imaginarios puros con C₀ = 0. ' +
+    'Al ser números complejos, entra como ficha de consulta.',
   paginas: '50, 51, 52',
   confianza: 'alta',
   calcular: () => NaN,
@@ -630,7 +661,21 @@ const U02_F21: Formula = {
   nombre: 'Coeficientes del tren de pulsos rectangulares (función sinc)',
   expresion: 'C_n = A · (p / T) · sinc(n · π · p / T)',
   expresionLatex:
-    'C_n = A\\,\\frac{p}{T}\\cdot\\frac{\\mathrm{sen}\\!\\left(n\\,\\omega_0\\,p/2\\right)}{n\\,\\omega_0\\,p/2} = A\\,\\frac{p}{T}\\,\\mathrm{sinc}(x),\\qquad x = \\frac{n\\,\\pi\\,p}{T}',
+    'C_n = A\\,\\frac{p}{T}\\,\\mathrm{sinc}\\!\\left(\\frac{n\\,\\pi\\,p}{T}\\right)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma trigonométrica (con pulsación fundamental ω₀)',
+      expresion:
+        'C_n = A · (p / T) · [sen(n · ω₀ · p / 2) / (n · ω₀ · p / 2)]',
+      latex:
+        'C_n = A\\,\\frac{p}{T}\\cdot\\frac{\\mathrm{sen}\\!\\left(n\\,\\omega_0\\,p/2\\right)}{n\\,\\omega_0\\,p/2}',
+    },
+    {
+      rotulo: 'Componente continua (n = 0)',
+      expresion: 'C₀ = A · p / T',
+      latex: 'C_0 = A\\,\\frac{p}{T}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'A',
@@ -665,8 +710,7 @@ const U02_F21: Formula = {
   },
   condiciones:
     'Tren periódico de pulsos rectangulares de amplitud A, ancho p, período T, centrado en t = 0. ' +
-    'La cátedra usa la sinc no normalizada: sinc(x) = sen(x)/x con x = n·π·p/T en radianes. ' +
-    'Para n = 0, sen(x)/x = 1 y C₀ = A · p / T (ciclo de trabajo por amplitud). ' +
+    'La cátedra usa la sinc no normalizada: sinc(x) = sen(x)/x con x en radianes. ' +
     'C_n = 0 cuando n es múltiplo entero de T/p.',
   paginas: '54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 66',
   confianza: 'alta',
@@ -817,6 +861,13 @@ const U02_F27: Formula = {
   nombre: 'Transformada de Fourier del pulso rectangular (en omega)',
   expresion: 'F(ω) = p · sen(ω·p / 2) / (ω·p / 2)',
   expresionLatex: 'F(\\omega) = p\\,\\frac{\\mathrm{sen}(\\omega p / 2)}{\\omega p / 2}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma equivalente con función sinc',
+      expresion: 'F(ω) = p · sinc(ω · p / 2)',
+      latex: 'F(\\omega) = p\\,\\mathrm{sinc}\\!\\left(\\frac{\\omega p}{2}\\right)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'p',
@@ -853,8 +904,14 @@ const U02_F28: Formula = {
   unidad: 2,
   nombre: 'Transformada de Fourier del pulso rectangular (en frecuencia f)',
   expresion: 'F(f) = p · sinc(π · p · f)',
-  expresionLatex:
-    'F(f) = p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f} = p\\,\\mathrm{sinc}(\\pi p f)',
+  expresionLatex: 'F(f) = p\\,\\mathrm{sinc}(\\pi p f)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma trigonométrica equivalente',
+      expresion: 'F(f) = p · sen(π · p · f) / (π · p · f)',
+      latex: 'F(f) = p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'p',
@@ -876,8 +933,7 @@ const U02_F28: Formula = {
     multiploCanonico: 'm',
   },
   condiciones:
-    'Misma hipótesis que U02-F27 con ω = 2πf. Ceros en f = ±1/p, ±2/p, ... En f = 0 vale F(0) = p. ' +
-    'Aquí sinc significa sen(π·p·f)/(π·p·f).',
+    'Misma hipótesis que U02-F27 con ω = 2πf. Ceros en f = ±1/p, ±2/p, ... En f = 0 vale F(0) = p.',
   paginas: '69, 70',
   confianza: 'alta',
   calcular: ({ p, f }) => {
@@ -891,8 +947,15 @@ const U02_F29: Formula = {
   unidad: 2,
   nombre: 'Densidad espectral (módulo al cuadrado) del pulso rectangular',
   expresion: '|F(f)|² = [p · sinc(π · p · f)]²',
-  expresionLatex:
-    '|F(f)|^2 = \\left[p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f}\\right]^2 = \\left[p\\,\\mathrm{sinc}(\\pi p f)\\right]^2',
+  expresionLatex: '|F(f)|^2 = \\left[p\\,\\mathrm{sinc}(\\pi p f)\\right]^2',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma trigonométrica equivalente',
+      expresion: '|F(f)|² = [p · sen(π · p · f) / (π · p · f)]²',
+      latex:
+        '|F(f)|^2 = \\left[p\\,\\frac{\\mathrm{sen}(\\pi p f)}{\\pi p f}\\right]^2',
+    },
+  ],
   entradas: [
     {
       simbolo: 'p',
