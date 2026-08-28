@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { formulasDeUnidad } from '@/formulas';
+import { Expresion } from '@/screens/formula/expresion';
 import { formatearCantidadFormulas, obtenerUnidad } from '@/screens/unidades';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
@@ -38,11 +40,19 @@ export function PantallaUnidad({ numero, onSeleccionarFormula }: PantallaUnidadP
   const tema = info?.tema ?? `Unidad ${numero}`;
   const textoCantidad = formatearCantidadFormulas(formulas.length);
 
+  // Esta pantalla se apila sobre la barra de pestañas, así que nada le reserva el alto
+  // de la barra de navegación del sistema: sin este relleno, la última tarjeta queda
+  // tapada por los botones de Atrás e Inicio.
+  const margenInferior = useSafeAreaInsets().bottom;
+
   return (
     <ScrollView
       testID="lista-formulas"
       style={estilos.pantalla}
-      contentContainerStyle={estilos.contenido}
+      contentContainerStyle={[
+        estilos.contenido,
+        { paddingBottom: espacio.xxl + margenInferior },
+      ]}
     >
       <View style={estilos.encabezado}>
         <Text style={estilos.identificadorUnidad}>{`Unidad ${numero}`}</Text>
@@ -74,9 +84,7 @@ export function PantallaUnidad({ numero, onSeleccionarFormula }: PantallaUnidadP
               <Text testID={`formula-nombre-${formula.id}`} style={estilos.nombreFormula}>
                 {formula.nombre}
               </Text>
-              <Text testID={`formula-expresion-${formula.id}`} style={estilos.expresionFormula}>
-                {formula.expresion}
-              </Text>
+              <Expresion formula={formula} altura={20} />
             </Pressable>
           );
         })
@@ -158,16 +166,6 @@ const estilos = StyleSheet.create({
   nombreFormula: {
     ...tipografia.subtitulo,
     color: colores.texto,
-  },
-  expresionFormula: {
-    ...tipografia.cuerpo,
-    fontFamily: fuentes.nota,
-    color: colores.texto,
-    backgroundColor: colores.fondo,
-    paddingHorizontal: espacio.md,
-    paddingVertical: espacio.sm,
-    borderRadius: radio.sm,
-    overflow: 'hidden',
   },
   contenedorVacio: {
     backgroundColor: colores.superficie,

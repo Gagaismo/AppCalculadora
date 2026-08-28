@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { EntradaCargada, Formula } from '@/dominio/formula';
 import { calcular } from '@/dominio/motor';
@@ -25,6 +26,12 @@ function camposIniciales(formula: Formula): Record<string, string[]> {
 export function PantallaFormula({ formula }: { formula: Formula }) {
   const esFicha = formula.entradas.length === 0;
 
+  // Esta pantalla se apila sobre la barra de pestañas, así que nada le reserva el
+  // alto de la barra de navegación del sistema: sin este relleno, el último Ejemplo
+  // resuelto queda tapado por los botones de Atrás e Inicio y no se puede terminar
+  // de leer por más que se desplace.
+  const margenInferior = useSafeAreaInsets().bottom;
+
   // Toda Variable guarda un arreglo de textos. Una escalar simplemente tiene uno,
   // así el resto de la pantalla no necesita dos caminos para cada cosa.
   const [textos, setTextos] = useState<Record<string, string[]>>(() => camposIniciales(formula));
@@ -34,7 +41,10 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
 
   if (esFicha) {
     return (
-      <ScrollView style={estilos.pantalla} contentContainerStyle={estilos.contenido}>
+      <ScrollView
+        style={estilos.pantalla}
+        contentContainerStyle={[estilos.contenido, { paddingBottom: espacio.xl + margenInferior }]}
+      >
         <Text style={estilos.rotuloConsulta}>Ficha de consulta — sin cálculo</Text>
         <Text style={estilos.identificador}>{formula.id}</Text>
         <Text style={estilos.nombre}>{formula.nombre}</Text>
@@ -129,7 +139,10 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
     });
 
   return (
-    <ScrollView style={estilos.pantalla} contentContainerStyle={estilos.contenido}>
+    <ScrollView
+      style={estilos.pantalla}
+      contentContainerStyle={[estilos.contenido, { paddingBottom: espacio.xl + margenInferior }]}
+    >
       <Text style={estilos.identificador}>{formula.id}</Text>
       <Text style={estilos.nombre}>{formula.nombre}</Text>
       <Expresion formula={formula} altura={26} />

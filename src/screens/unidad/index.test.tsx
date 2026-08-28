@@ -25,7 +25,10 @@ describe('PantallaUnidad', () => {
       expect(screen.getByTestId('formula-item-U10-F07')).toBeTruthy();
       expect(screen.getByText('U10-F07')).toBeTruthy();
       expect(screen.getByText(formulaU10.nombre)).toBeTruthy();
-      expect(screen.getByText(formulaU10.expresion)).toBeTruthy();
+      // La expresión se dibuja como notación, no como texto: el SVG no tiene texto
+      // accesible, así que lo que queda del texto plano es la etiqueta del lector de
+      // pantalla. Es la misma que muestra el respaldo si el SVG no se generó.
+      expect(screen.getByLabelText(formulaU10.expresion)).toBeTruthy();
     });
 
     it('llama a onSeleccionarFormula con el id al tocar una Fórmula', async () => {
