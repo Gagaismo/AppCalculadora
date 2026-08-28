@@ -16,6 +16,8 @@ const U08_F01: Formula = {
   unidad: 8,
   nombre: 'Velocidad de transmisión (tasa binaria) a partir del tiempo de símbolo',
   expresion: 'R = (1 / T_s) · log₂(M)',
+  // El catálogo escribe T_S; el código usa T_s.
+  expresionLatex: 'R = \\frac{1}{T_s} \\cdot \\log_2 M',
   entradas: [
     {
       simbolo: 'T_s',
@@ -49,6 +51,8 @@ const U08_F02: Formula = {
   unidad: 8,
   nombre: 'Bits por símbolo y cantidad de niveles / símbolos M-arios',
   expresion: 'n = log₂ M',
+  // Se deja sólo n = \log_2 M según observaciones-resueltas.md.
+  expresionLatex: 'n = \\log_2 M',
   entradas: [
     {
       simbolo: 'M',
@@ -78,6 +82,8 @@ const U08_F03: Formula = {
   unidad: 8,
   nombre: 'Ancho de banda / velocidad de modulación M-aria',
   expresion: 'B_{M-ario} = R / log₂(M)',
+  // El código declara B_M_ario y omite el segundo miembro con n porque no es entrada.
+  expresionLatex: 'B_{M_ario} = \\frac{R}{\\log_2 M}',
   entradas: [
     {
       simbolo: 'R',
@@ -111,6 +117,8 @@ const U08_F04: Formula = {
   unidad: 8,
   nombre: 'Velocidad de modulación (baudios) a partir del tiempo de símbolo',
   expresion: 'r = 1 / T_s',
+  // El catálogo escribe T_S; el código usa T_s.
+  expresionLatex: 'r = \\frac{1}{T_s}',
   entradas: [
     {
       simbolo: 'T_s',
@@ -138,6 +146,7 @@ const U08_F05: Formula = {
   unidad: 8,
   nombre: 'Ancho de banda de ASK',
   expresion: 'BW_{ASK} = 2 · B',
+  expresionLatex: 'BW_{ASK} = 2 \\cdot B',
   entradas: [
     {
       simbolo: 'B',
@@ -165,6 +174,8 @@ const U08_F06: Formula = {
   unidad: 8,
   nombre: 'Ancho de banda de FSK',
   expresion: 'BW_{FSK} = 2 · (Δf + B)',
+  // Se transcribe la forma factorizada que implementa el código.
+  expresionLatex: 'BW_{FSK} = 2(\\Delta f + B)',
   entradas: [
     {
       simbolo: 'delta_f',
@@ -198,6 +209,7 @@ const U08_F07: Formula = {
   unidad: 8,
   nombre: 'Ancho de banda de PSK',
   expresion: 'BW_{PSK} = 2 · B',
+  expresionLatex: 'BW_{PSK} = 2 \\cdot B',
   entradas: [
     {
       simbolo: 'B',
@@ -223,6 +235,8 @@ const U08_F08a: Formula = {
   unidad: 8,
   nombre: 'Frecuencia de marca en FSK',
   expresion: 'f_1 = f_p + Δf',
+  // Una fila del catálogo partida en dos: frecuencia de marca con f_p en minúscula.
+  expresionLatex: 'f_1 = f_p + \\Delta f',
   entradas: [
     {
       simbolo: 'f_p',
@@ -256,6 +270,8 @@ const U08_F08b: Formula = {
   unidad: 8,
   nombre: 'Frecuencia de espacio en FSK',
   expresion: 'f_2 = f_p − Δf',
+  // Una fila del catálogo partida en dos: frecuencia de espacio con f_p en minúscula.
+  expresionLatex: 'f_2 = f_p - \\Delta f',
   entradas: [
     {
       simbolo: 'f_p',
@@ -287,6 +303,8 @@ const U08_F09: Formula = {
   unidad: 8,
   nombre: 'Señal portadora sinusoidal',
   expresion: 'v_p(t) = V_p · sen(2π · f_p · t)',
+  // Se conserva v_p(t) para reflejar la dependencia temporal evaluada en t.
+  expresionLatex: 'v_p(t) = V_p \\, \\mathrm{sen}(2\\pi f_p t)',
   entradas: [
     {
       simbolo: 'V_p',
@@ -363,6 +381,7 @@ const U08_F11: Formula = {
   unidad: 8,
   nombre: 'Relación entre número de estados M y SNR (nQAM adaptativo)',
   expresion: 'M = SNR + 1',
+  expresionLatex: 'M = SNR + 1',
   entradas: [
     {
       simbolo: 'SNR',
@@ -391,6 +410,8 @@ const U08_F12: Formula = {
   unidad: 8,
   nombre: 'Teorema del muestreo (Nyquist): frecuencia de muestreo mínima',
   expresion: 'f_s ≥ 2 · f_MAX',
+  // El catálogo escribe f_S; el código usa f_s y conserva el \ge de Nyquist.
+  expresionLatex: 'f_s \\ge 2 f_{MAX}',
   entradas: [
     {
       simbolo: 'f_MAX',
@@ -418,6 +439,8 @@ const U08_F13: Formula = {
   unidad: 8,
   nombre: 'Período de muestreo',
   expresion: 'T_muestreo = 1 / f_s',
+  // Renombrado a T_{muestreo} para evitar colisión con la duración del símbolo y f_S -> f_s.
+  expresionLatex: 'T_{muestreo} = \\frac{1}{f_s}',
   entradas: [
     {
       simbolo: 'f_s',
@@ -447,6 +470,8 @@ const U08_F14: Formula = {
   unidad: 8,
   nombre: 'Velocidad del canal PCM (velocidad de la señal digitalizada)',
   expresion: 'C = f_s · n',
+  // El catálogo escribe f_S; el código usa f_s.
+  expresionLatex: 'C = f_s \\cdot n',
   entradas: [
     {
       simbolo: 'f_s',
@@ -512,6 +537,7 @@ const U08_F16: Formula = {
   unidad: 8,
   nombre: 'Cantidad de bits de la trama de salida en TDM sincrónica',
   expresion: 'N_trama = k · b + s',
+  expresionLatex: 'N_{trama} = k \\cdot b + s',
   entradas: [
     {
       simbolo: 'k',
@@ -551,6 +577,7 @@ const U08_F17: Formula = {
   unidad: 8,
   nombre: 'Duración de la trama en TDM sincrónica',
   expresion: 'T_trama = b / R_canal',
+  expresionLatex: 'T_{trama} = \\frac{b}{R_{canal}}',
   entradas: [
     {
       simbolo: 'b',
@@ -584,6 +611,7 @@ const U08_F18: Formula = {
   unidad: 8,
   nombre: 'Tasa de transmisión del enlace en TDM sincrónica',
   expresion: 'R_enlace = N_trama / T_trama',
+  expresionLatex: 'R_{enlace} = \\frac{N_{trama}}{T_{trama}}',
   entradas: [
     {
       simbolo: 'N_trama',
@@ -618,6 +646,7 @@ const U08_F19: Formula = {
   unidad: 8,
   nombre: 'Duración de un time slot dentro de la trama PCM',
   expresion: 'T_TS = T_trama / N_TS',
+  expresionLatex: 'T_{TS} = \\frac{T_{trama}}{N_{TS}}',
   entradas: [
     {
       simbolo: 'T_trama',
@@ -651,6 +680,8 @@ const U08_F20: Formula = {
   unidad: 8,
   nombre: 'Velocidad de la trama E1 a partir de los canales E0',
   expresion: 'R = N_TS · R_E0',
+  // El código usa el producto R = N_TS · R_E0.
+  expresionLatex: 'R = N_{TS} \\cdot R_{E0}',
   entradas: [
     {
       simbolo: 'N_TS',
@@ -684,6 +715,7 @@ const U08_F21: Formula = {
   unidad: 8,
   nombre: 'Velocidad de la trama SDH (STM-1)',
   expresion: 'R_STM = f_trama · (columnas · filas · 8)',
+  expresionLatex: 'R_{STM} = f_{trama} \\cdot (columnas \\cdot filas \\cdot 8)',
   entradas: [
     {
       simbolo: 'f_trama',
