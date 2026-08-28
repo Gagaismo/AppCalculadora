@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formulasDeUnidad } from '@/formulas';
+import { colores, espacio, radio, tipografia } from '@/tema';
 
 import { InfoUnidad, UNIDADES } from './datos';
 
@@ -109,58 +110,57 @@ export function PantallaUnidades({ onSeleccionarUnidad, onBuscar }: PantallaUnid
 const estilos = StyleSheet.create({
   pantalla: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colores.fondo,
   },
   contenido: {
-    padding: 16,
-    gap: 12,
-    paddingBottom: 32,
+    padding: espacio.lg,
+    gap: espacio.md,
+    paddingBottom: espacio.xxl,
   },
   encabezado: {
-    marginBottom: 4,
+    marginBottom: espacio.xs,
+    gap: espacio.xs,
   },
   tituloPrincipal: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
+    ...tipografia.titulo,
+    color: colores.texto,
   },
   subtituloPrincipal: {
-    fontSize: 14,
-    color: '#64748B',
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
   },
   barraBusqueda: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: colores.superficie,
+    borderRadius: radio.md,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 8,
-    marginBottom: 4,
+    borderColor: colores.borde,
+    gap: espacio.sm,
+    marginBottom: espacio.xs,
   },
   barraBusquedaPresionada: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colores.superficieEnfasis,
   },
   iconoBusqueda: {
-    fontSize: 15,
+    fontSize: tipografia.cuerpo.fontSize,
   },
   textoBarraBusqueda: {
-    fontSize: 14,
-    color: '#94A3B8',
+    ...tipografia.cuerpo,
+    color: colores.textoTenue,
   },
   tarjeta: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colores.superficie,
+    borderRadius: radio.md,
+    padding: espacio.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 8,
+    borderColor: colores.borde,
+    gap: espacio.xs,
   },
   tarjetaPresionada: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colores.superficieEnfasis,
   },
   tarjetaEncabezado: {
     flexDirection: 'row',
@@ -168,36 +168,31 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
   },
   numeroUnidad: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#208AEF',
+    ...tipografia.etiqueta,
+    color: colores.accion,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   conteoFormulas: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#64748B',
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
     fontVariant: ['tabular-nums'],
   },
   temaUnidad: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1E293B',
-    lineHeight: 22,
+    ...tipografia.subtitulo,
+    color: colores.texto,
   },
   contenedorNota: {
-    backgroundColor: '#F1F5F9',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    backgroundColor: colores.fondo,
+    borderRadius: radio.sm,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm,
     borderLeftWidth: 3,
-    borderLeftColor: '#64748B',
-    marginTop: 4,
+    borderLeftColor: colores.textoSuave,
+    marginTop: espacio.xs,
   },
   textoNota: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 18,
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
   },
 });
