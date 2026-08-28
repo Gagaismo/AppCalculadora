@@ -19,6 +19,8 @@ const U03_F01: Formula = {
   unidad: 3,
   nombre: 'Relación de potencias en decibeles (atenuación / ganancia)',
   expresion: 'dB = 10 · log₁₀(P_o / P_i)',
+  // El catálogo incluye la forma inversa; se implementa la directa.
+  expresionLatex: 'dB = 10 \\log_{10}\\left(\\frac{P_o}{P_i}\\right)',
   entradas: [
     {
       simbolo: 'P_o',
@@ -53,6 +55,8 @@ const U03_F02: Formula = {
   unidad: 3,
   nombre: 'Pérdida total de un medio con atenuación específica por unidad de longitud',
   expresion: 'L_dB = α · d',
+  // El catálogo escribe \alpha; el código declara alpha.
+  expresionLatex: 'L_{dB} = alpha \\cdot d',
   entradas: [
     {
       simbolo: 'alpha',
@@ -86,6 +90,8 @@ const U03_F03: Formula = {
   unidad: 3,
   nombre: 'Suma algebraica de decibeles en una cadena de transmisión',
   expresion: 'dB_total = Σ dB_i',
+  // El catálogo escribe \sum_i dB_i; el código declara dB como lista.
+  expresionLatex: 'dB_{total} = \\sum dB',
   entradas: [
     {
       simbolo: 'dB',
@@ -114,6 +120,8 @@ const U03_F04: Formula = {
   unidad: 3,
   nombre: 'Nivel de potencia absoluto en dBm (referido a 1 mW)',
   expresion: 'P_dBm = 10 · log₁₀(P / 1 mW)',
+  // El catálogo incluye la forma inversa; se implementa la directa.
+  expresionLatex: 'P_{dBm} = 10 \\log_{10}\\left(\\frac{P}{1\\,\\text{mW}}\\right)',
   entradas: [
     {
       simbolo: 'P',
@@ -141,6 +149,7 @@ const U03_F05: Formula = {
   unidad: 3,
   nombre: 'Ganancia (directividad) de antena en dBi',
   expresion: 'dBi = 10 · log₁₀(P_antena / P_isotropica)',
+  expresionLatex: 'dBi = 10 \\log_{10}\\left(\\frac{P_{antena}}{P_{isotropica}}\\right)',
   entradas: [
     {
       simbolo: 'P_antena',
@@ -174,6 +183,8 @@ const U03_F06: Formula = {
   unidad: 3,
   nombre: 'Pérdida en el espacio libre (frecuencia en MHz)',
   expresion: 'L_0 = 32.45 + 20 · log₁₀(f) + 20 · log₁₀(d)',
+  // El catálogo escribe f_{MHz} y d_{Km}; el código declara f y d.
+  expresionLatex: 'L_0 = 32.45 + 20 \\log_{10}(f) + 20 \\log_{10}(d)',
   entradas: [
     {
       simbolo: 'f',
@@ -207,6 +218,8 @@ const U03_F07: Formula = {
   unidad: 3,
   nombre: 'Pérdida en el espacio libre (frecuencia en GHz)',
   expresion: 'L_0 = 92.44 + 20 · log₁₀(f) + 20 · log₁₀(d)',
+  // El catálogo escribe f_{GHz} y d_{Km}; el código declara f y d.
+  expresionLatex: 'L_0 = 92.44 + 20 \\log_{10}(f) + 20 \\log_{10}(d)',
   entradas: [
     {
       simbolo: 'f',
@@ -240,6 +253,9 @@ const U03_F08: Formula = {
   unidad: 3,
   nombre: 'Balance de enlace / potencia recibida (RSSI) en un radioenlace WiFi',
   expresion: 'P_RX = P_TX + L_cable_TX + G_antena_TX + L_espacio_libre + G_antena_RX + L_cable_RX',
+  // El catálogo repite L_{cable} y G_{antena}; el código desambigua TX y RX.
+  expresionLatex:
+    'P_{RX} = P_{TX} + L_{cable_TX} + G_{antena_TX} + L_{espacio_libre} + G_{antena_RX} + L_{cable_RX}',
   entradas: [
     {
       simbolo: 'P_TX',
@@ -298,6 +314,8 @@ const U03_F09: Formula = {
   unidad: 3,
   nombre: 'Margen del enlace (RSSI sobre sensibilidad del receptor)',
   expresion: 'M = RSSI − S_RX',
+  // El catálogo incluye la forma con potencias lineales; se implementa la resta de dBm.
+  expresionLatex: 'M = RSSI - S_{RX}',
   entradas: [
     {
       simbolo: 'RSSI',
@@ -331,6 +349,7 @@ const U03_F10: Formula = {
   unidad: 3,
   nombre: 'Densidad de potencia de ruido térmico',
   expresion: 'N_0 = K · T',
+  expresionLatex: 'N_0 = K \\cdot T',
   entradas: [
     {
       simbolo: 'T',
@@ -358,6 +377,8 @@ const U03_F11: Formula = {
   unidad: 3,
   nombre: 'Conversión de temperatura de grados Celsius a Kelvin',
   expresion: 'T = T_C + 273',
+  // El catálogo escribe T[°C] y T[K]; el código declara T_C y T.
+  expresionLatex: 'T = T_C + 273',
   entradas: [
     {
       simbolo: 'T_C',
@@ -383,6 +404,8 @@ const U03_F12: Formula = {
   unidad: 3,
   nombre: 'Potencia total de ruido térmico en un ancho de banda',
   expresion: 'N = K · T · B',
+  // El catálogo incluye N_0 · B; se implementa en función de K, T y B.
+  expresionLatex: 'N = K \\cdot T \\cdot B',
   entradas: [
     {
       simbolo: 'T',
@@ -416,6 +439,7 @@ const U03_F13: Formula = {
   unidad: 3,
   nombre: 'Potencia de ruido térmico expresada en dBm',
   expresion: 'N_dBm = 10 · log₁₀((K · T · B) / 1 mW)',
+  expresionLatex: 'N_{dBm} = 10 \\log_{10}\\left(\\frac{K \\cdot T \\cdot B}{1\\,\\text{mW}}\\right)',
   entradas: [
     {
       simbolo: 'T',
@@ -449,6 +473,8 @@ const U03_F14: Formula = {
   unidad: 3,
   nombre: 'Relación señal a ruido en veces (lineal)',
   expresion: 'SNR = S / N',
+  // El catálogo incluye P_S / P_N; el código declara S y N.
+  expresionLatex: 'SNR = \\frac{S}{N}',
   entradas: [
     {
       simbolo: 'S',
@@ -482,6 +508,8 @@ const U03_F15: Formula = {
   unidad: 3,
   nombre: 'Relación señal a ruido en decibeles',
   expresion: 'SNR_dB = 10 · log₁₀(S / N)',
+  // El catálogo escribe SNR [dB]; el código declara SNR_dB.
+  expresionLatex: 'SNR_{dB} = 10 \\log_{10}\\left(\\frac{S}{N}\\right)',
   entradas: [
     {
       simbolo: 'S',
@@ -515,6 +543,7 @@ const U03_F16: Formula = {
   unidad: 3,
   nombre: 'Factor de ruido (f)',
   expresion: 'f = (S_i / N_i) / (S_o / N_o)',
+  expresionLatex: 'f = \\frac{S_i / N_i}{S_o / N_o}',
   entradas: [
     {
       simbolo: 'S_i',
@@ -563,6 +592,8 @@ const U03_F17: Formula = {
   unidad: 3,
   nombre: 'Índice de ruido (factor de ruido en dB)',
   expresion: 'NF = 10 · log₁₀(f)',
+  // El catálogo escribe NF [dB]; el código declara NF.
+  expresionLatex: 'NF = 10 \\log_{10}(f)',
   entradas: [
     {
       simbolo: 'f',
