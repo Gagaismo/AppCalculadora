@@ -109,6 +109,32 @@ Tres cosas que importan al escribirlas:
    de `calcular`. El patrón está en `src/formulas/unidad-04.ts` con `U04-F06`, la entropía.
    El múltiplo es uno para toda la lista, no uno por elemento.
 
+### Fórmulas dentro de `condiciones`
+
+`condiciones` es **prosa**. Cuando una Fórmula completa quedó metida ahí adentro en
+texto plano —«Formas equivalentes: cos(θ) = ½(e^(jθ) + e^(−jθ))»— va sacada al campo
+`expresionesRelacionadas`, que la dibuja con el mismo SVG pre-renderizado que la
+expresión principal. El patrón está en `U02-F01` y `U02-F02`.
+
+Dónde va el corte: **bloque para la fórmula completa, prosa para la igualdad corta.**
+Una ecuación con fracciones, exponentes o números complejos no se lee en un renglón de
+texto corrido y merece su caja. Una igualdad que forma parte de la frase —«las
+diapositivas la aplican con θ = n·ω₀·t»— se queda en el párrafo: sacarla la haría más
+difícil de leer, no menos, y cada bloque cuesta unos 9 KB de SVG en el paquete.
+
+Tres cosas que se olvidan:
+
+- El rótulo no es opcional y no es decorativo: dice **qué** es esa expresión respecto
+  de la principal («Caso real (B = 0, ω = 0)»). Un bloque de notación sin rótulo obliga
+  a deducir para qué está.
+- `expresion` (texto plano) va siempre, igual que en la Fórmula: es el respaldo, la
+  etiqueta del lector de pantalla y lo que se lee en el informe escrito.
+- Al sacar la fórmula de `condiciones`, **borrala de la prosa**. Si queda en los dos
+  lados, la ficha la muestra dos veces.
+
+`src/formulas/latex.test.ts` vigila que ninguna quede a medias y que su SVG esté
+generado. Como siempre, `npm run expresiones` se corre una sola vez al final.
+
 Comandos: `npm test`, `npm run typecheck`, `npm start` (Expo Go).
 
 ## Diseño de la interfaz

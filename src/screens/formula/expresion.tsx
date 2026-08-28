@@ -4,23 +4,23 @@ import { SvgXml } from 'react-native-svg';
 
 import type { Formula } from '@/dominio/formula';
 import { EXPRESIONES } from '@/formulas/expresiones-generadas';
-import { colores, fuentes, radio } from '@/tema';
+import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 /** Relleno y borde del marco. Se descuentan del ancho útil, así que son constantes. */
 const RELLENO = 10;
 const BORDE = 1;
 
-interface ExpresionProps {
-  readonly formula: Formula;
-  /**
-   * Altura de la expresión, en píxeles, para una expresión de una línea. Las que
-   * tienen fracción o integral crecen solas en proporción.
-   */
-  readonly altura?: number;
+interface DibujoProps {
+  readonly testID: string;
+  /** La clave en `EXPRESIONES`: el id de la Fórmula, o `«id»#N` para una relacionada. */
+  readonly clave: string;
+  /** La misma expresión en texto plano: respaldo y etiqueta para el lector de pantalla. */
+  readonly textoPlano: string;
+  readonly altura: number;
 }
 
 /**
- * La expresión matemática de una Fórmula.
+ * Un bloque de notación matemática.
  *
  * Dibuja el SVG que `npm run expresiones` generó a partir del LaTeX. El SVG está
  * pre-renderizado a propósito: la app no ejecuta MathJax, así que lo que se ve en el
@@ -29,35 +29,25 @@ interface ExpresionProps {
  *
  * **Las expresiones anchas se desplazan, no se achican.** La mediana del catálogo mide
  * 15,6 ex y entra holgada, pero 27 de las 138 pasan de 25 ex y once pasan de 40:
- * `U02-F01` mide 115,6 ex. Encogerla hasta que entrara en un teléfono la dejaría a un
+ * `U02-F01` medía 115,6 ex. Encogerla hasta que entrara en un teléfono la dejaría a un
  * cuarto de tamaño, ilegible, que es exactamente el problema que el SVG vino a
  * resolver. Así que la expresión conserva su tamaño y el marco se vuelve desplazable
- * en horizontal. Antes no había ni una cosa ni la otra: el marco ajustaba al contenido
- * y lo que se pasaba del ancho de la pantalla se cortaba en seco.
+ * en horizontal.
  *
- * Si una Fórmula todavía no tiene `expresionLatex`, o si su SVG no se generó, cae al
- * texto plano. Degradar es deliberado: un hueco donde va la fórmula sería peor que el
- * texto que estamos reemplazando.
+ * Si el SVG no se generó, cae al texto plano. Degradar es deliberado: un hueco donde
+ * va la fórmula sería peor que el texto que estamos reemplazando.
  */
-export function Expresion({ formula, altura = 22 }: ExpresionProps) {
+function Dibujo({ testID, clave, textoPlano, altura }: DibujoProps) {
   // Cuánto ancho hay disponible. Sale de `onLayout`, así que en el primer cuadro vale
   // cero: ahí se dibuja sin desplazamiento, que es lo correcto para la mayoría.
   const [anchoDisponible, setAnchoDisponible] = useState(0);
 
-  const renderizada = EXPRESIONES[formula.id];
-
-  // El SVG no tiene texto que un lector de pantalla pueda leer. La expresión en texto
-  // plano sigue existiendo justamente para esto.
-  const etiqueta = formula.expresion;
+  const renderizada = EXPRESIONES[clave];
 
   if (!renderizada) {
     return (
-      <Text
-        testID={`expresion-${formula.id}`}
-        accessibilityLabel={etiqueta}
-        style={estilos.textoPlano}
-      >
-        {formula.expresion}
+      <Text testID={testID} accessibilityLabel={textoPlano} style={estilos.textoPlano}>
+        {textoPlano}
       </Text>
     );
   }
@@ -74,7 +64,7 @@ export function Expresion({ formula, altura = 22 }: ExpresionProps) {
   // desplazamiento en las expresiones cortas, que son la mayoría.
   const entra = anchoDisponible === 0 || ancho <= anchoUtil;
 
-  const dibujo = (
+  const svg = (
     <SvgXml
       xml={renderizada.svg}
       width={ancho}
@@ -90,13 +80,13 @@ export function Expresion({ formula, altura = 22 }: ExpresionProps) {
       onLayout={(evento) => setAnchoDisponible(evento.nativeEvent.layout.width)}
     >
       <View
-        testID={`expresion-${formula.id}`}
+        testID={testID}
         accessible
-        accessibilityLabel={etiqueta}
+        accessibilityLabel={textoPlano}
         style={[estilos.marco, entra ? estilos.marcoAjustado : estilos.marcoDesplazable]}
       >
         {entra ? (
-          dibujo
+          svg
         ) : (
           <ScrollView
             horizontal
@@ -104,10 +94,65 @@ export function Expresion({ formula, altura = 22 }: ExpresionProps) {
             showsHorizontalScrollIndicator
             contentContainerStyle={estilos.lienzo}
           >
-            {dibujo}
+            {svg}
           </ScrollView>
         )}
       </View>
+    </View>
+  );
+}
+
+interface ExpresionProps {
+  readonly formula: Formula;
+  /**
+   * Altura de la expresión, en píxeles, para una expresión de una línea. Las que
+   * tienen fracción o integral crecen solas en proporción.
+   */
+  readonly altura?: number;
+}
+
+/** La expresión matemática principal de una Fórmula. */
+export function Expresion({ formula, altura = 22 }: ExpresionProps) {
+  return (
+    <Dibujo
+      testID={`expresion-${formula.id}`}
+      clave={formula.id}
+      textoPlano={formula.expresion}
+      altura={altura}
+    />
+  );
+}
+
+/**
+ * Las formas equivalentes y los casos particulares de una Fórmula, cada uno en su
+ * bloque y con su rótulo.
+ *
+ * Van acá y no dentro de `condiciones` porque son fórmulas completas: una ecuación con
+ * fracciones y exponentes no se lee en un renglón de texto corrido. Las igualdades
+ * cortas que forman parte de una frase siguen en la prosa, que es donde se leen mejor.
+ *
+ * Se dibujan un punto más chicas que la principal: acompañan, no compiten con ella.
+ */
+export function ExpresionesRelacionadas({ formula, altura = 22 }: ExpresionProps) {
+  const relacionadas = formula.expresionesRelacionadas ?? [];
+
+  if (relacionadas.length === 0) {
+    return null;
+  }
+
+  return (
+    <View testID={`expresiones-relacionadas-${formula.id}`} style={estilos.relacionadas}>
+      {relacionadas.map((relacionada, indice) => (
+        <View key={relacionada.latex} style={estilos.relacionada}>
+          <Text style={estilos.rotulo}>{relacionada.rotulo}</Text>
+          <Dibujo
+            testID={`expresion-${formula.id}#${indice}`}
+            clave={`${formula.id}#${indice}`}
+            textoPlano={relacionada.expresion}
+            altura={altura}
+          />
+        </View>
+      ))}
     </View>
   );
 }
@@ -137,6 +182,16 @@ const estilos = StyleSheet.create({
   },
   lienzo: {
     alignItems: 'center',
+  },
+  relacionadas: {
+    gap: espacio.sm,
+  },
+  relacionada: {
+    gap: espacio.xs,
+  },
+  rotulo: {
+    ...tipografia.etiqueta,
+    color: colores.textoSuave,
   },
   textoPlano: {
     fontFamily: fuentes.nota,

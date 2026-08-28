@@ -21,8 +21,19 @@ const U02_F01: Formula = {
   unidad: 2,
   nombre: 'Señal exponencial (real y compleja)',
   expresion: 'x(t) = C · e^(s·t)',
-  expresionLatex:
-    'x(t) = C e^{st},\\ \\ C = A \\pm jB,\\ \\ s = \\sigma \\pm j\\omega \\ \\Rightarrow\\ \\text{real (}B=0,\\omega=0\\text{): } x(t)=A e^{\\sigma t};\\ \\ \\text{compleja (}B=0,\\sigma=0\\text{): } x(t)=A e^{\\pm j\\omega t}',
+  expresionLatex: 'x(t) = C e^{st},\\ \\ C = A \\pm jB,\\ \\ s = \\sigma \\pm j\\omega',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Caso real (B = 0, ω = 0)',
+      expresion: 'x(t) = A · e^(σ·t)',
+      latex: 'x(t) = A e^{\\sigma t}',
+    },
+    {
+      rotulo: 'Caso complejo (B = 0, σ = 0)',
+      expresion: 'x(t) = A · e^(±j·ω·t)',
+      latex: 'x(t) = A e^{\\pm j\\omega t}',
+    },
+  ],
   entradas: [],
   salida: {
     simbolo: 'x(t)',
@@ -32,8 +43,6 @@ const U02_F01: Formula = {
   },
   condiciones:
     'Es una identidad o definición de expresión, no un cálculo numérico directo. ' +
-    'C = A ± jB, s = σ ± jω. Caso real requiere B = 0 y ω = 0 (x(t) = A · e^(σ·t)); ' +
-    'caso complejo requiere B = 0 y σ = 0 (x(t) = A · e^(±j·ω·t)). ' +
     'Con σ < 0 la exponencial decae; con σ > 0 crece.',
   paginas: '13, 14',
   confianza: 'alta',
@@ -45,8 +54,19 @@ const U02_F02: Formula = {
   unidad: 2,
   nombre: 'Relación de Euler',
   expresion: 'e^(±jθ) = cos(θ) ± j·sen(θ)',
-  expresionLatex:
-    'e^{\\pm j\\theta} = \\cos\\theta \\pm j\\,\\mathrm{sen}\\,\\theta;\\quad \\cos\\theta = \\tfrac{1}{2}\\left(e^{j\\theta}+e^{-j\\theta}\\right);\\quad \\mathrm{sen}\\,\\theta = \\tfrac{1}{2j}\\left(e^{j\\theta}-e^{-j\\theta}\\right)',
+  expresionLatex: 'e^{\\pm j\\theta} = \\cos\\theta \\pm j\\,\\mathrm{sen}\\,\\theta',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma equivalente del coseno',
+      expresion: 'cos(θ) = ½(e^(jθ) + e^(−jθ))',
+      latex: '\\cos\\theta = \\tfrac{1}{2}\\left(e^{j\\theta}+e^{-j\\theta}\\right)',
+    },
+    {
+      rotulo: 'Forma equivalente del seno',
+      expresion: 'sen(θ) = (1/(2j))(e^(jθ) − e^(−jθ))',
+      latex: '\\mathrm{sen}\\,\\theta = \\tfrac{1}{2j}\\left(e^{j\\theta}-e^{-j\\theta}\\right)',
+    },
+  ],
   entradas: [],
   salida: {
     simbolo: 'e^(±jθ)',
@@ -56,8 +76,7 @@ const U02_F02: Formula = {
   },
   condiciones:
     'Es una identidad matemática fundamental. θ siempre en radianes. ' +
-    'Las diapositivas la aplican con θ = n·ω₀·t; también usan 1/j = −j. ' +
-    'Formas equivalentes: cos(θ) = ½(e^(jθ) + e^(−jθ)) y sen(θ) = (1/(2j))(e^(jθ) − e^(−jθ)).',
+    'Las diapositivas la aplican con θ = n·ω₀·t; también usan 1/j = −j.',
   paginas: '14, 45, 49, 50',
   confianza: 'alta',
   calcular: () => NaN,

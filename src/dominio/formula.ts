@@ -59,6 +59,38 @@ export interface ValoresCargados {
  */
 export type EntradaCargada = ValorCargado | ValoresCargados;
 
+/**
+ * Una expresión que acompaña a la principal: una forma equivalente, un caso
+ * particular, una identidad derivada.
+ *
+ * Existe porque varias Fórmulas traían esas expresiones **adentro de `condiciones`**,
+ * en texto plano y mezcladas con la prosa: «Formas equivalentes: cos(θ) = ½(e^(jθ) +
+ * e^(−jθ)) y sen(θ) = (1/(2j))(e^(jθ) − e^(−jθ))». Una ecuación con fracciones y
+ * exponentes no se lee en un renglón de texto corrido. Acá tiene su propio bloque,
+ * dibujado con el mismo SVG pre-renderizado que la expresión principal.
+ *
+ * **Sólo van acá las fórmulas completas.** Una igualdad corta que forma parte de la
+ * frase —«las diapositivas la aplican con θ = n·ω₀·t»— se queda en `condiciones`:
+ * sacarla del párrafo para darle una caja propia la haría más difícil de leer, no
+ * menos, y cada bloque cuesta unos 9 KB de SVG en el paquete.
+ */
+export interface ExpresionRelacionada {
+  /**
+   * Qué es esta expresión respecto de la principal: «Forma equivalente del coseno»,
+   * «Caso real (B = 0, ω = 0)». Es el rótulo visible y no es opcional: un bloque de
+   * notación sin decir qué es obliga a deducirlo.
+   */
+  readonly rotulo: string;
+  /**
+   * En texto plano. Cumple los mismos tres papeles que `Formula.expresion`: respaldo
+   * si el pre-renderizado falla, etiqueta para el lector de pantalla —un SVG no tiene
+   * texto accesible— y forma legible en el informe escrito.
+   */
+  readonly expresion: string;
+  /** La misma expresión en LaTeX. Rige la misma regla de símbolos que `expresionLatex`. */
+  readonly latex: string;
+}
+
 /** Valores escalares ya llevados a la Unidad de medida canónica, por símbolo. */
 export type ValoresCanonicos = Readonly<Record<string, number>>;
 
@@ -92,6 +124,14 @@ export interface Formula {
    * `docs/research/latex-transcripcion.md`. Hay un test que la vigila.
    */
   readonly expresionLatex?: string;
+  /**
+   * Formas equivalentes, casos particulares e identidades derivadas, cada una con su
+   * rótulo. Se dibujan debajo de la expresión principal, con el mismo tratamiento.
+   *
+   * Se pre-renderizan igual que `expresionLatex`, bajo la clave `«id»#0`, `«id»#1`…
+   * en `expresiones-generadas.ts`.
+   */
+  readonly expresionesRelacionadas?: readonly ExpresionRelacionada[];
   readonly entradas: readonly Variable[];
   /**
    * La Variable de salida, fija. El cálculo es unidireccional: se cargan todas las

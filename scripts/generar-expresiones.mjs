@@ -81,18 +81,28 @@ const generadas = [];
 const fallidas = [];
 let sinLatex = 0;
 
+/** Dibuja una expresión bajo una clave y acumula el resultado o el error. */
+function acumular(clave, latex) {
+  const resultado = renderizar(latex);
+  if (resultado.error) {
+    fallidas.push({ id: clave, latex, motivo: resultado.error });
+    return;
+  }
+  generadas.push({ id: clave, ...resultado });
+}
+
 for (const formula of FORMULAS) {
-  if (!formula.expresionLatex) {
+  if (formula.expresionLatex) {
+    acumular(formula.id, formula.expresionLatex);
+  } else {
     sinLatex += 1;
-    continue;
   }
 
-  const resultado = renderizar(formula.expresionLatex);
-  if (resultado.error) {
-    fallidas.push({ id: formula.id, latex: formula.expresionLatex, motivo: resultado.error });
-    continue;
-  }
-  generadas.push({ id: formula.id, ...resultado });
+  // Las formas equivalentes y los casos particulares van bajo `«id»#0`, `«id»#1`…
+  // La pantalla arma esa misma clave a partir del índice en el arreglo.
+  (formula.expresionesRelacionadas ?? []).forEach((relacionada, indice) => {
+    acumular(`${formula.id}#${indice}`, relacionada.latex);
+  });
 }
 
 if (fallidas.length > 0) {

@@ -1,3 +1,4 @@
+import { EXPRESIONES } from './expresiones-generadas';
 import { FORMULAS } from './index';
 import { simbolosDeLatex } from './latex';
 
@@ -70,5 +71,53 @@ describe('expresionLatex', () => {
     ])('%s: el LaTeX del catálogo no menciona «%s»', (_id, simbolo, latexDelCatalogo) => {
       expect(simbolosDeLatex(latexDelCatalogo)).not.toContain(simbolo);
     });
+  });
+});
+
+/**
+ * El invariante de las expresiones relacionadas.
+ *
+ * Son las formas equivalentes y los casos particulares que antes vivían adentro de
+ * `condiciones`, en texto plano. El patrón se va a repetir sobre las 99 Fórmulas cuyas
+ * condiciones traen notación, así que lo que lo vigila tiene que existir antes.
+ *
+ * Lo que comprueba es que ninguna quede **a medias**: un bloque sin rótulo no dice qué
+ * es lo que se está mirando, uno sin texto plano deja al lector de pantalla mudo y al
+ * respaldo sin nada que mostrar, y uno cuyo SVG no se generó aparece como texto plano
+ * dentro de una caja que promete notación.
+ */
+describe('expresionesRelacionadas', () => {
+  const conRelacionadas = FORMULAS.filter(
+    (f) => (f.expresionesRelacionadas ?? []).length > 0,
+  );
+
+  it('hay al menos una Fórmula con expresiones relacionadas cargadas', () => {
+    expect(conRelacionadas.length).toBeGreaterThan(0);
+  });
+
+  const todas = conRelacionadas.flatMap((formula) =>
+    (formula.expresionesRelacionadas ?? []).map(
+      (relacionada, indice) => [`${formula.id}#${indice}`, relacionada] as const,
+    ),
+  );
+
+  it.each(todas)('%s: tiene rótulo, texto plano y LaTeX', (_clave, relacionada) => {
+    expect(relacionada.rotulo.trim()).not.toBe('');
+    expect(relacionada.expresion.trim()).not.toBe('');
+    expect(relacionada.latex.trim()).not.toBe('');
+  });
+
+  it.each(todas)('%s: su SVG está pre-renderizado', (clave) => {
+    // La clave la arma la pantalla con el mismo `«id»#N`. Si acá falta, es que
+    // `npm run expresiones` no se corrió después de cargar la expresión.
+    expect(EXPRESIONES[clave]).toBeDefined();
+  });
+
+  it('no repite la expresión principal como si fuera otra', () => {
+    for (const formula of conRelacionadas) {
+      for (const relacionada of formula.expresionesRelacionadas ?? []) {
+        expect(relacionada.latex).not.toBe(formula.expresionLatex);
+      }
+    }
   });
 });

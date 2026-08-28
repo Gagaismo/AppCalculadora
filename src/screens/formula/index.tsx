@@ -7,7 +7,7 @@ import { aCanonico, conMultiplo, type Multiplo } from '@/dominio/multiplos';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { FichaFormula } from './ficha';
-import { Expresion } from './expresion';
+import { Expresion, ExpresionesRelacionadas } from './expresion';
 import { SelectorMultiplo } from './selector-multiplo';
 import { formatearNumero, parsearEntrada } from './numeros';
 
@@ -39,6 +39,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
         <Text style={estilos.identificador}>{formula.id}</Text>
         <Text style={estilos.nombre}>{formula.nombre}</Text>
         <Expresion formula={formula} altura={26} />
+        <ExpresionesRelacionadas formula={formula} />
         <FichaFormula formula={formula} />
       </ScrollView>
     );
@@ -132,6 +133,7 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
       <Text style={estilos.identificador}>{formula.id}</Text>
       <Text style={estilos.nombre}>{formula.nombre}</Text>
       <Expresion formula={formula} altura={26} />
+      <ExpresionesRelacionadas formula={formula} />
 
       {formula.entradas.map((variable) => {
         const esInvalido = noNumericos.includes(variable.simbolo);
