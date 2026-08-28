@@ -12,6 +12,7 @@ const U04_F01: Formula = {
   unidad: 4,
   nombre: 'Autoinformación (cantidad de información de un evento o símbolo)',
   expresion: 'I_A = log₂(1 / P_A) = −log₂(P_A)',
+  expresionLatex: 'I_A = \\log_2\\frac{1}{P_A} = -\\log_2 P_A',
   entradas: [
     {
       simbolo: 'P_A',
@@ -121,6 +122,7 @@ const U04_F05: Formula = {
   unidad: 4,
   nombre: 'Información total contenida en una secuencia larga de L símbolos',
   expresion: 'I_T = L · Σ P_j · log₂(1 / P_j)',
+  expresionLatex: 'I_T = L \\sum P \\log_2\\frac{1}{P}',
   entradas: [
     {
       simbolo: 'L',
@@ -156,6 +158,7 @@ const U04_F06: Formula = {
   unidad: 4,
   nombre: 'Entropía de la fuente (información promedio por símbolo)',
   expresion: 'H = Σ P_j · log₂(1 / P_j)',
+  expresionLatex: 'H = \\sum P \\log_2\\frac{1}{P}',
   entradas: [
     {
       simbolo: 'P',
@@ -216,6 +219,7 @@ const U04_F08: Formula = {
   unidad: 4,
   nombre: 'Redundancia de una fuente (porcentual)',
   expresion: 'Rd% = ((H_{MAX} − H) / H_{MAX}) · 100',
+  expresionLatex: 'Rd = \\frac{H_{MAX} - H}{H_{MAX}} \\times 100',
   entradas: [
     {
       simbolo: 'H_MAX',
@@ -287,6 +291,7 @@ const U04_F10: Formula = {
   unidad: 4,
   nombre: 'Tasa de información de una fuente discreta',
   expresion: 'R = H / σ̄',
+  expresionLatex: 'R = \\frac{H}{sigma_{prom}}',
   entradas: [
     {
       simbolo: 'H',
@@ -320,6 +325,8 @@ const U04_F11: Formula = {
   unidad: 4,
   nombre: 'Velocidad de símbolos (símbolos por segundo)',
   expresion: 'r = 1 / T_s',
+  // El catálogo escribe `\\sigma = T_S`; el código ya unificó a `T_s` (observaciones-resueltas.md).
+  expresionLatex: 'r = \\frac{1}{T_s}',
   entradas: [
     {
       simbolo: 'T_s',
@@ -347,6 +354,7 @@ const U04_F12: Formula = {
   unidad: 4,
   nombre: 'Tasa de información con símbolos de igual duración',
   expresion: 'R = r · H = H / T_s',
+  expresionLatex: 'R = r \\cdot H',
   entradas: [
     {
       simbolo: 'r',
@@ -380,6 +388,7 @@ const U04_F13: Formula = {
   unidad: 4,
   nombre: 'Tasa de información con símbolos equiprobables e igual duración',
   expresion: 'R = r · log₂ N = (1 / T_s) · log₂ N',
+  expresionLatex: 'R = r \\log_2 N',
   entradas: [
     {
       simbolo: 'r',
