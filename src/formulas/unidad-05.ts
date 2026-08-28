@@ -75,6 +75,7 @@ const U05_F03: Formula = {
   unidad: 5,
   nombre: 'Duración promedio de un símbolo',
   expresion: 'σ̄ = Σ P_j · σ_j',
+  expresionLatex: '\\bar{\\sigma} = \\sum_{j=1}^{m} P_j \\, \\sigma_j',
   entradas: [
     {
       simbolo: 'P',
@@ -210,6 +211,7 @@ const U05_F07: Formula = {
   unidad: 5,
   nombre: 'Longitud promedio de una palabra código',
   expresion: 'L̄ = Σ P_j · L_j',
+  expresionLatex: '\\bar{L} = \\sum_{j=1}^{N} P_j \\times L_j',
   entradas: [
     {
       simbolo: 'P',
@@ -246,6 +248,7 @@ const U05_F08: Formula = {
   unidad: 5,
   nombre: 'Eficiencia de un codificador de fuente',
   expresion: 'η = H(x) / L̄',
+  expresionLatex: '\\eta = \\frac{H}{\\bar{L}}',
   entradas: [
     {
       simbolo: 'H',
@@ -745,6 +748,7 @@ const U05_F24: Formula = {
   unidad: 5,
   nombre: 'SNR en función de Eb/No',
   expresion: 'SNR = (E_b / N_0) / (T_b · B)',
+  expresionLatex: 'SNR = \\frac{E_b/N_0}{T_b \\, B}',
   entradas: [
     {
       simbolo: 'E_b/N_0',
@@ -784,6 +788,7 @@ const U05_F25: Formula = {
   unidad: 5,
   nombre: 'Relación Eb/No a partir de la SNR y la eficiencia espectral',
   expresion: 'E_b/N_0 = SNR / E_max',
+  expresionLatex: '\\frac{E_b}{N_0} = \\frac{SNR}{E_{max}}',
   entradas: [
     {
       simbolo: 'SNR',

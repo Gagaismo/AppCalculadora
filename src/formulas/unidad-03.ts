@@ -55,11 +55,10 @@ const U03_F02: Formula = {
   unidad: 3,
   nombre: 'Pérdida total de un medio con atenuación específica por unidad de longitud',
   expresion: 'L_dB = α · d',
-  // El catálogo escribe \alpha; el código declara alpha.
-  expresionLatex: 'L_{dB} = alpha \\cdot d',
+  expresionLatex: 'L_{dB} = \\alpha \\cdot d',
   entradas: [
     {
-      simbolo: 'alpha',
+      simbolo: 'α',
       significado: 'Pérdida específica (atenuación por unidad de longitud) del medio',
       unidadDeMedida: 'dB/km',
       multiploCanonico: '',
@@ -82,7 +81,7 @@ const U03_F02: Formula = {
     'operación dada. El resultado es una pérdida: al usarla en balances de enlace entra con signo negativo.',
   paginas: '11, 14',
   confianza: 'alta',
-  calcular: ({ alpha, d }) => alpha * (d / 1000),
+  calcular: ({ α, d }) => α * (d / 1000),
 };
 
 const U03_F03: Formula = {
@@ -677,7 +676,7 @@ export const EJEMPLOS_UNIDAD_03: readonly EjemploResuelto[] = [
     enunciado:
       'Ejemplo04: Se tiene una línea de transmisión (coaxil) de L = 5 Km, su pérdida es de 0,30 dB/Km. Calcular la pérdida total.',
     entradas: {
-      alpha: { valor: 0.3, multiplo: '' },
+      α: { valor: 0.3, multiplo: '' },
       d: { valor: 5, multiplo: 'k' },
     },
     esperado: { valor: 1.5, multiplo: '' },

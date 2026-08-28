@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PantallaUnidad, obtenerUnidad } from '@/screens/unidad';
+import { colores, tipografia } from '@/tema';
 
 /**
  * Ruta para listar las Fórmulas de una Unidad seleccionada.
@@ -46,7 +47,7 @@ const estilos = StyleSheet.create({
     padding: 20,
   },
   textoNoEncontrado: {
-    fontSize: 16,
-    color: '#64748B',
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
   },
 });

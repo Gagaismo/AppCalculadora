@@ -39,7 +39,27 @@ LaTeX el que se adapta.
 | `U08-F02` | `n = \log_2 M \qquad ; \qquad M = 2^{n}` | entrada `M`, salida `n` | Dejar sólo `n = \log_2 M`. Entró una sola Fórmula; la segunda ecuación no tiene Ejemplo resuelto. |
 | `U08-F08` | `f_1 = f_P + \Delta f \qquad ; \qquad f_2 = f_P - \Delta f` | `U08-F08a` y `U08-F08b`, entradas `f_p` y `delta_f` | **Una fila del catálogo, dos Fórmulas.** `f_1 = f_p + \Delta f` para la primera, `f_2 = f_p - \Delta f` para la segunda. Ojo con `f_P` → `f_p`. |
 | `U08-F10` | `M \le N^{\circ}\ Fases \times N^{\circ}\ Amplitudes` | entradas `N_fases`, `N_amplitudes`, salida `M` | `M \le N_{fases} \times N_{amplitudes}`. **El `\le` se conserva**: la Fórmula calcula una cota superior y la expresión tiene que decirlo. |
-| `U04-F16` | `\eta = \frac{H(x)}{\bar{L}}` | entradas `H`, `L_prom`, salida `η` | `\eta = \frac{H}{L_{prom}}`. `\bar{L}` y `H(x)` no ligan con ningún campo. |
+| `U04-F16` | `\eta = \frac{H(x)}{\bar{L}}` | entradas `H`, `L̄`, salida `η` | `\eta = \frac{H}{\bar{L}}`. Sólo `H(x)` → `H`: la trampa de `\bar{L}` se disolvió al unificar el símbolo (ver abajo). |
+
+## Lo que cambió al cargar las nueve Unidades
+
+Cargar las 138 expresiones destapó algo que la auditoría de gabinete no podía ver: **el
+catálogo declaraba la misma magnitud con dos nombres distintos**, en Fórmulas que se
+encadenan entre sí.
+
+| Estaba | Quedó | Por qué |
+|---|---|---|
+| `σ̄` (salida de `U04-F09`) y `sigma_prom` (entrada de `U04-F10`) | `σ̄` en las dos | `U04-F10` consume lo que `U04-F09` produce. Con dos nombres, quien encadena las dos pantallas no reconoce el número que acaba de calcular. |
+| `L̄` (salida de `U04-F14` y `U04-F15`) y `L_prom` (entrada de `U04-F16`) | `L̄` en las tres | Lo mismo. |
+| `alpha`, `sigma`, `lambda` en ASCII | `α`, `σ`, `λ` | La `expresion` en texto plano de esas mismas Fórmulas ya usaba la letra griega: el símbolo se contradecía con su propia Fórmula. |
+| `I_{TOTAL}`, `I_{j,L}`, `H_{MAX}` | `I_TOTAL`, `I_j,L`, `H_MAX` | Las llaves eran un resto de la transcripción y se dibujaban **literalmente** en el rótulo del campo. `H_{MAX}` y `H_MAX` convivían en Fórmulas contiguas. |
+
+Las claves que `calcular` desestructura siguen funcionando: el código ya usaba claves
+computadas (`{ ['L̄']: L_prom }`) para los símbolos que no son identificadores.
+
+Tres símbolos **no** se tocaron, y el extractor los acepta por alias declarado:
+`E_b/N_0` (la barra es parte del nombre de la relación), `Σ P_i` y `e^(±jθ)` y
+`|F(f)|²` (son el rótulo de una notación, no una magnitud con un campo debajo).
 
 Los otros cinco casos que `observaciones-resueltas.md` marca como «disueltos por el modelo»
 (`U04-F09`, `U04-F10`, `U04-F14`, `U04-F15`, `U09-F09`) son de la misma familia: el catálogo usa

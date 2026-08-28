@@ -39,7 +39,8 @@ const U04_F02: Formula = {
   id: 'U04-F02',
   unidad: 4,
   nombre: 'Información total de un mensaje formado por símbolos independientes',
-  expresion: 'I_{TOTAL} = Σ log₂(1 / P_i)',
+  expresion: 'I_TOTAL = Σ log₂(1 / P_i)',
+  expresionLatex: 'I_{TOTAL} = \\sum_{i=1}^{n} \\log_2 \\frac{1}{P_i}',
   entradas: [
     {
       simbolo: 'P',
@@ -50,7 +51,7 @@ const U04_F02: Formula = {
     },
   ],
   salida: {
-    simbolo: 'I_{TOTAL}',
+    simbolo: 'I_TOTAL',
     significado: 'Información total contenida en el mensaje completo',
     unidadDeMedida: 'bit',
     multiploCanonico: '',
@@ -69,6 +70,7 @@ const U04_F03: Formula = {
   unidad: 4,
   nombre: 'Normalización: la suma de las probabilidades de la fuente vale 1',
   expresion: 'Σ P_i = 1',
+  expresionLatex: '\\sum_{i=1}^{N} P_i = 1',
   entradas: [],
   salida: {
     simbolo: 'Σ P_i',
@@ -88,7 +90,8 @@ const U04_F04: Formula = {
   id: 'U04-F04',
   unidad: 4,
   nombre: 'Información aportada por el símbolo j en una secuencia de L símbolos',
-  expresion: 'I_{j,L} = L · P_j · log₂(1 / P_j)',
+  expresion: 'I_j,L = L · P_j · log₂(1 / P_j)',
+  expresionLatex: 'I_{j,L} = L \\cdot P_j \\cdot \\log_2 \\frac{1}{P_j}',
   entradas: [
     {
       simbolo: 'L',
@@ -104,7 +107,7 @@ const U04_F04: Formula = {
     },
   ],
   salida: {
-    simbolo: 'I_{j,L}',
+    simbolo: 'I_j,L',
     significado: 'Información asociada al símbolo j en la secuencia de longitud L',
     unidadDeMedida: 'bit',
     multiploCanonico: '',
@@ -191,7 +194,8 @@ const U04_F07: Formula = {
   id: 'U04-F07',
   unidad: 4,
   nombre: 'Entropía máxima (fuente con símbolos equiprobables)',
-  expresion: 'H_{MAX} = log₂ N',
+  expresion: 'H_MAX = log₂ N',
+  expresionLatex: 'H_{MAX} = \\log_2 N',
   entradas: [
     {
       simbolo: 'N',
@@ -201,7 +205,7 @@ const U04_F07: Formula = {
     },
   ],
   salida: {
-    simbolo: 'H_{MAX}',
+    simbolo: 'H_MAX',
     significado: 'Entropía máxima de la fuente (información promedio por símbolo con equiprobabilidad)',
     unidadDeMedida: 'bit/símbolo',
     multiploCanonico: '',
@@ -218,7 +222,7 @@ const U04_F08: Formula = {
   id: 'U04-F08',
   unidad: 4,
   nombre: 'Redundancia de una fuente (porcentual)',
-  expresion: 'Rd% = ((H_{MAX} − H) / H_{MAX}) · 100',
+  expresion: 'Rd% = ((H_MAX − H) / H_MAX) · 100',
   expresionLatex: 'Rd = \\frac{H_{MAX} - H}{H_{MAX}} \\times 100',
   entradas: [
     {
@@ -254,6 +258,7 @@ const U04_F09: Formula = {
   unidad: 4,
   nombre: 'Duración promedio del símbolo',
   expresion: 'σ̄ = Σ P_j · σ_j',
+  expresionLatex: '\\bar{\\sigma} = \\sum_{j=1}^{m} P_j \\, \\sigma_j',
   entradas: [
     {
       simbolo: 'P',
@@ -263,7 +268,7 @@ const U04_F09: Formula = {
       esLista: true,
     },
     {
-      simbolo: 'sigma',
+      simbolo: 'σ',
       significado: 'Duración de cada símbolo',
       unidadDeMedida: 's',
       multiploCanonico: '',
@@ -282,8 +287,7 @@ const U04_F09: Formula = {
     'y que la suma de probabilidades sea 1.',
   paginas: '35, 36, 37',
   confianza: 'alta',
-  calcular: (_, { P, sigma }) =>
-    P.reduce((acc, p, i) => acc + p * (sigma[i] ?? 0), 0),
+  calcular: (_, { P, ['σ']: σ }) => P.reduce((acc, p, i) => acc + p * (σ[i] ?? 0), 0),
 };
 
 const U04_F10: Formula = {
@@ -291,7 +295,7 @@ const U04_F10: Formula = {
   unidad: 4,
   nombre: 'Tasa de información de una fuente discreta',
   expresion: 'R = H / σ̄',
-  expresionLatex: 'R = \\frac{H}{sigma_{prom}}',
+  expresionLatex: 'R = \\frac{H}{\\bar{\\sigma}}',
   entradas: [
     {
       simbolo: 'H',
@@ -300,7 +304,7 @@ const U04_F10: Formula = {
       multiploCanonico: '',
     },
     {
-      simbolo: 'sigma_prom',
+      simbolo: 'σ̄',
       significado: 'Duración promedio del símbolo',
       unidadDeMedida: 's/símbolo',
       multiploCanonico: '',
@@ -317,7 +321,7 @@ const U04_F10: Formula = {
     'Describe la fuente en bits/segundo. Requiere σ̄ > 0.',
   paginas: '35, 36, 37',
   confianza: 'alta',
-  calcular: ({ H, sigma_prom }) => H / sigma_prom,
+  calcular: ({ H, ['σ̄']: sigma_prom }) => H / sigma_prom,
 };
 
 const U04_F11: Formula = {
@@ -422,6 +426,7 @@ const U04_F14: Formula = {
   unidad: 4,
   nombre: 'Longitud promedio de la palabra código',
   expresion: 'L̄ = Σ P_i · L_i',
+  expresionLatex: '\\bar{L} = \\sum_{i=1}^{N} P_i L_i',
   entradas: [
     {
       simbolo: 'P',
@@ -457,7 +462,8 @@ const U04_F15: Formula = {
   id: 'U04-F15',
   unidad: 4,
   nombre: 'Longitud promedio del código a partir de los bits totales transmitidos',
-  expresion: 'L̄ = B_{total} / n',
+  expresion: 'L̄ = B_total / n',
+  expresionLatex: '\\bar{L} = \\frac{B_{total}}{n}',
   entradas: [
     {
       simbolo: 'B_total',
@@ -492,7 +498,7 @@ const U04_F16: Formula = {
   nombre: 'Eficiencia del codificador de fuente',
   expresion: 'η = H(x) / L̄',
   // El catálogo escribe `H(x)` y `\\bar{L}`; ninguno liga con un campo de la app.
-  expresionLatex: '\\eta = \\frac{H}{L_{prom}}',
+  expresionLatex: '\\eta = \\frac{H}{\\bar{L}}',
   entradas: [
     {
       simbolo: 'H',
@@ -501,7 +507,7 @@ const U04_F16: Formula = {
       multiploCanonico: '',
     },
     {
-      simbolo: 'L_prom',
+      simbolo: 'L̄',
       significado: 'Longitud promedio de la palabra código',
       unidadDeMedida: 'dígito/símbolo',
       multiploCanonico: '',
@@ -518,7 +524,7 @@ const U04_F16: Formula = {
     'óptimo/compacto ideal). Se expresa en tanto por uno (multiplicar por 100 para porcentaje). Requiere L̄ > 0.',
   paginas: '51',
   confianza: 'alta',
-  calcular: ({ H, L_prom }) => H / L_prom,
+  calcular: ({ H, ['L̄']: L_prom }) => H / L_prom,
 };
 
 export const FORMULAS_UNIDAD_04: readonly Formula[] = [
@@ -671,7 +677,7 @@ export const EJEMPLOS_UNIDAD_04: readonly EjemploResuelto[] = [
       'Ejemplo 11 (duración promedio): fuente telegráfica con punto (P = 2/3, σ = 0,2 s) y raya (P = 1/3, σ = 0,4 s).',
     entradas: {
       P: { valores: [2 / 3, 1 / 3], multiplo: '' },
-      sigma: { valores: [0.2, 0.4], multiplo: '' },
+      'σ': { valores: [0.2, 0.4], multiplo: '' },
     },
     esperado: { valor: 0.267, multiplo: '' },
     pagina: '36',
@@ -684,7 +690,7 @@ export const EJEMPLOS_UNIDAD_04: readonly EjemploResuelto[] = [
       'Ejemplo 11 (tasa de información): fuente telegráfica con H = 0,92 bit/símbolo y σ̄ = 0,267 s/símbolo.',
     entradas: {
       H: { valor: 0.92, multiplo: '' },
-      sigma_prom: { valor: 0.267, multiplo: '' },
+      'σ̄': { valor: 0.267, multiplo: '' },
     },
     esperado: { valor: 3.44, multiplo: '' },
     pagina: '36',
@@ -761,7 +767,7 @@ export const EJEMPLOS_UNIDAD_04: readonly EjemploResuelto[] = [
       'Ejemplo 14 (eficiencia del codificador): fuente con H = 1,5 bit/símbolo y longitud promedio L̄ = 1,5 dígitos/símbolo.',
     entradas: {
       H: { valor: 1.5, multiplo: '' },
-      L_prom: { valor: 1.5, multiplo: '' },
+      'L̄': { valor: 1.5, multiplo: '' },
     },
     esperado: { valor: 1, multiplo: '' },
     pagina: '52',

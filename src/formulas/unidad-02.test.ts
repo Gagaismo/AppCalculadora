@@ -234,7 +234,12 @@ describe('Unidad 2 — Renderizado en PantallaFormula', () => {
       const u02f03 = FORMULAS_UNIDAD_02.find((f) => f.id === 'U02-F03')!;
       await render(React.createElement(PantallaFormula, { formula: u02f03 }));
       expect(screen.getByText('U02-F03')).toBeTruthy();
-      expect(screen.getByText(u02f03.expresion)).toBeTruthy();
+      // La expresión se dibuja como SVG cuando la Fórmula tiene `expresionLatex`, y un
+      // SVG no tiene texto que buscar. Se afirma por la etiqueta accesible, que es lo
+      // que recibe un lector de pantalla y vale para las dos formas de dibujarla.
+      expect(screen.getByTestId(`expresion-${u02f03.id}`).props.accessibilityLabel).toBe(
+        u02f03.expresion,
+      );
     },
     20000,
   );

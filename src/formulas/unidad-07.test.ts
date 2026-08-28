@@ -98,7 +98,12 @@ describe('Unidad 7 — Render en pantalla genérica', () => {
 
     expect(screen.getByText('U07-F01')).toBeTruthy();
     expect(screen.getAllByText(formula.nombre).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(formula.expresion)).toBeTruthy();
+    // La expresión se dibuja como SVG cuando la Fórmula tiene `expresionLatex`, y un
+    // SVG no tiene texto que buscar. Se afirma por la etiqueta accesible, que es lo
+    // que recibe un lector de pantalla y vale para las dos formas de dibujarla.
+    expect(screen.getByTestId(`expresion-${formula.id}`).props.accessibilityLabel).toBe(
+      formula.expresion,
+    );
 
     await fireEvent.changeText(screen.getByTestId('entrada-N'), '8');
     expect(screen.getByTestId('resultado')).toHaveTextContent('3 bit/baudio');

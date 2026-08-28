@@ -83,7 +83,7 @@ const U08_F03: Formula = {
   nombre: 'Ancho de banda / velocidad de modulación M-aria',
   expresion: 'B_{M-ario} = R / log₂(M)',
   // El código declara B_M_ario y omite el segundo miembro con n porque no es entrada.
-  expresionLatex: 'B_{M_ario} = \\frac{R}{\\log_2 M}',
+  expresionLatex: 'B_{M-ario} = \\frac{R}{\\log_2 M}',
   entradas: [
     {
       simbolo: 'R',
@@ -505,6 +505,7 @@ const U08_F15: Formula = {
   unidad: 8,
   nombre: 'Longitud de onda de una portadora óptica (WDM)',
   expresion: 'λ = c / f',
+  expresionLatex: '\\lambda = \\frac{c}{f}',
   entradas: [
     {
       simbolo: 'c',
@@ -520,7 +521,7 @@ const U08_F15: Formula = {
     },
   ],
   salida: {
-    simbolo: 'lambda',
+    simbolo: 'λ',
     significado: 'Longitud de onda de la portadora óptica',
     unidadDeMedida: 'm',
     multiploCanonico: 'n',

@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { buscarFormula } from '@/formulas';
+import { colores, tipografia } from '@/tema';
 import { PantallaFormula } from '@/screens/formula';
 
 /**
@@ -38,7 +39,7 @@ const estilos = StyleSheet.create({
     padding: 20,
   },
   textoNoEncontrado: {
-    fontSize: 16,
-    color: '#64748B',
+    ...tipografia.cuerpo,
+    color: colores.textoSuave,
   },
 });
