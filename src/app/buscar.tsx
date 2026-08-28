@@ -1,12 +1,14 @@
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 
 import { PantallaBusqueda } from '@/screens/busqueda';
+import { router } from 'expo-router';
 
 /**
- * Ruta para la búsqueda de Fórmulas por nombre o por símbolo.
+ * Pestaña «Buscar»: búsqueda de Fórmulas por nombre o por símbolo.
  *
- * Permite buscar en todo el catálogo de fórmulas desde cualquier parte de la app
- * y navegar directamente a la pantalla de cálculo de la fórmula seleccionada.
+ * Al ser ahora una pestaña permanente de la barra de navegación, la pila de
+ * esta pestaña se preserva: si alguien escribe una búsqueda, cambia de
+ * pestaña y vuelve, el texto sigue ahí.
  */
 export default function RutaBusqueda() {
   return (
@@ -14,7 +16,6 @@ export default function RutaBusqueda() {
       <Stack.Screen
         options={{
           title: 'Buscar fórmulas',
-          headerRight: () => null,
         }}
       />
       <PantallaBusqueda
