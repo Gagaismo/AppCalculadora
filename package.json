@@ -56,7 +56,7 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@expo/ui/jetpack-compose$": "<rootDir>/src/pruebas/expo-ui-doble.tsx"
+      "^@expo/ui$": "<rootDir>/src/pruebas/expo-ui-doble.tsx"
     }
   }
 }

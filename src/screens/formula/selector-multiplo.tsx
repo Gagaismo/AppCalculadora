@@ -1,8 +1,6 @@
-import { DropdownMenu, DropdownMenuItem, Host, Text as TextoNativo } from '@expo/ui/jetpack-compose';
-import { View } from 'react-native';
+import { Host, Picker } from '@expo/ui';
 
 import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
-import { colores } from '@/tema';
 
 export interface SelectorMultiploProps {
   /** El símbolo de la Variable. Identifica al selector en las pruebas. */
@@ -11,6 +9,12 @@ export interface SelectorMultiploProps {
   readonly elegido: Multiplo;
   readonly onElegir: (multiplo: Multiplo) => void;
 }
+
+/**
+ * `Multiplo` incluye la cadena vacía —la unidad base, Hz sin prefijo—, y el `Picker`
+ * necesita que cada opción tenga un valor distinguible. `'base'` es ese valor.
+ */
+const BASE = 'base';
 
 /**
  * El selector de múltiplo de una Variable.
@@ -22,15 +26,12 @@ export interface SelectorMultiploProps {
  *
  * Antes eran nueve pastillas en una fila con scroll horizontal: una Fórmula de cuatro
  * Variables dibujaba treinta y seis controles y el elegido quedaba fuera de pantalla.
- * Ahora es un menú desplegable de Material 3, uno por Variable.
  *
- * **Sobre las pruebas.** Ningún componente de `@expo/ui` acepta `testID`: el árbol
- * nativo no es alcanzable desde `@testing-library/react-native`. Por eso el `testID`
- * y la etiqueta de accesibilidad viven en la `View` de React Native que lo envuelve —
- * una prueba puede afirmar **qué múltiplo se está mostrando**, que es el hecho que le
- * importa a quien usa la app. Elegir uno distinto se prueba montando este componente
- * y llamando a `onElegir`; que la conversión sea correcta ya lo cubren los 234
- * Ejemplos resueltos contra el motor.
+ * Usa el `Picker` **universal** de `@expo/ui`, no el de Jetpack Compose. En Android
+ * dibuja exactamente el mismo menú de Material 3, pero además funciona en iOS sin una
+ * segunda implementación —que es lo que vuelve barata la decisión de dejar iOS
+ * registrado a futuro— y, a diferencia de los componentes de `jetpack-compose`,
+ * acepta `testID`.
  */
 export function SelectorMultiplo({
   simbolo,
@@ -38,39 +39,21 @@ export function SelectorMultiplo({
   elegido,
   onElegir,
 }: SelectorMultiploProps) {
-  const etiqueta = conMultiplo(elegido, unidadDeMedida);
-
   return (
-    <View
-      testID={`multiplos-${simbolo}`}
-      accessible
-      accessibilityRole="button"
-      accessibilityLabel={`Múltiplo de ${simbolo}: ${etiqueta}. Tocá para cambiarlo.`}
-      accessibilityValue={{ text: etiqueta }}
-    >
-      <Host matchContents>
-        <DropdownMenu>
-          <DropdownMenu.Trigger>
-            <TextoNativo color={colores.accion}>{`${etiqueta} ▾`}</TextoNativo>
-          </DropdownMenu.Trigger>
-
-          <DropdownMenu.Items>
-            {MULTIPLOS.map((multiplo) => (
-              <DropdownMenuItem
-                key={multiplo}
-                onClick={() => onElegir(multiplo)}
-                elementColors={{
-                  textColor: multiplo === elegido ? colores.accion : colores.texto,
-                }}
-              >
-                <DropdownMenuItem.Text>
-                  <TextoNativo>{conMultiplo(multiplo, unidadDeMedida)}</TextoNativo>
-                </DropdownMenuItem.Text>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenu.Items>
-        </DropdownMenu>
-      </Host>
-    </View>
+    <Host matchContents={{ vertical: true }}>
+      <Picker
+        testID={`multiplos-${simbolo}`}
+        selectedValue={elegido === '' ? BASE : elegido}
+        onValueChange={(valor) => onElegir(valor === BASE ? '' : (valor as Multiplo))}
+      >
+        {MULTIPLOS.map((multiplo) => (
+          <Picker.Item
+            key={multiplo || BASE}
+            label={conMultiplo(multiplo, unidadDeMedida)}
+            value={multiplo || BASE}
+          />
+        ))}
+      </Picker>
+    </Host>
   );
 }

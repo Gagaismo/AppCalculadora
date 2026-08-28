@@ -132,8 +132,10 @@ levantarla. Tres cosas de esta etapa que **no se deciden de nuevo**:
   Fórmula va en `expresionLatex` y se transcribe según
   [`docs/research/latex-transcripcion.md`](docs/research/latex-transcripcion.md), que tiene la
   regla y los nueve casos verificados. Hay un test que la vigila.
-- **Los componentes de `@expo/ui` no aceptan `testID`.** El patrón para hacerlos verificables está
-  en `src/screens/formula/selector-multiplo.tsx` y su doble de prueba en
+- **Los componentes nativos salen del `@expo/ui` universal** (`import { Picker } from '@expo/ui'`),
+  nunca de `@expo/ui/jetpack-compose`. El universal dibuja lo mismo en Android, funciona en iOS sin
+  una segunda implementación y acepta `testID`, que los de Jetpack Compose no. El patrón está en
+  `src/screens/formula/selector-multiplo.tsx` y su doble de prueba en
   `src/pruebas/expo-ui-doble.tsx`. Se replica, no se reinventa.
 
 Después, `/impeccable init` en el chat del agente escribe el contexto de diseño que leen los demás

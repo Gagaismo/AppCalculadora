@@ -1,20 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ReactNode } from 'react';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { Pressable, Text as TextoRN, View } from 'react-native';
 
 /**
- * Doble de prueba de `@expo/ui/jetpack-compose`.
+ * Doble de prueba de `@expo/ui`.
  *
- * Los componentes de `@expo/ui` son vistas nativas de Jetpack Compose: en Jest no
- * renderizan, y además ninguno acepta `testID`, así que el árbol nativo no es
- * alcanzable desde `@testing-library/react-native`.
+ * Los componentes de `@expo/ui` son vistas nativas —Jetpack Compose en Android,
+ * SwiftUI en iOS— y en Jest no renderizan. Sin doble, convertir el selector de
+ * múltiplo a un componente nativo habría costado la prueba que verifica el camino
+ * completo: elegir MHz, que el motor convierta, que el resultado pase de 83,5 MHz a
+ * 83,5 kHz. Ese es exactamente el camino que la aplicación existe para asegurar, así
+ * que apagar la prueba no era una opción.
  *
- * Sin este doble, convertir los selectores de múltiplo a componentes nativos habría
- * costado la prueba que verifica el camino completo —elegir MHz, que el motor
- * convierta, que el resultado cambie—, que es justamente el camino que la aplicación
- * existe para asegurar. El doble reproduce la **estructura lógica** del menú con
- * componentes de React Native, de modo que esa prueba se sigue escribiendo como la
- * escribiría alguien usando la app: buscando el rótulo que ve en pantalla.
+ * El doble reproduce la **estructura lógica** del `Picker` con componentes de React
+ * Native: cada opción es un botón con su rótulo, de modo que la prueba elige el
+ * múltiplo como lo haría una persona, buscando el texto que ve en pantalla.
  *
  * Lo que el doble **no** prueba es que el componente nativo se dibuje bien. Eso se
  * verifica en el teléfono, no acá.
@@ -26,44 +25,66 @@ export function Host({ children }: { children: ReactNode }) {
   return <View>{children}</View>;
 }
 
-export function Text({ children }: { children?: ReactNode; color?: string }) {
+export function Text({ children }: { children?: ReactNode }) {
   return <TextoRN>{children}</TextoRN>;
 }
 
-function Trigger({ children }: { children: ReactNode }) {
+export function Row({ children }: { children?: ReactNode }) {
   return <View>{children}</View>;
 }
 
-function Items({ children }: { children: ReactNode }) {
+export function Column({ children }: { children?: ReactNode }) {
   return <View>{children}</View>;
 }
 
-export function DropdownMenu({ children }: { children: ReactNode }) {
-  return <View>{children}</View>;
-}
-DropdownMenu.Trigger = Trigger;
-DropdownMenu.Items = Items;
-DropdownMenu.Preview = ({ children }: { children: ReactNode }) => <View>{children}</View>;
-
-function TextSlot({ children }: { children: ReactNode }) {
-  return <View>{children}</View>;
+export function Spacer() {
+  return <View />;
 }
 
-export function DropdownMenuItem({
-  children,
-  onClick,
-}: {
-  children?: ReactNode;
-  onClick?: () => void;
-  elementColors?: unknown;
-  enabled?: boolean;
-}) {
+interface ItemProps<T> {
+  readonly label: string;
+  readonly value: T;
+}
+
+function Item<T>(_props: ItemProps<T>) {
+  return null;
+}
+
+interface PickerProps<T> {
+  readonly selectedValue: T;
+  readonly onValueChange: (valor: T) => void;
+  readonly children?: ReactNode;
+  readonly testID?: string;
+  readonly enabled?: boolean;
+  readonly appearance?: 'menu' | 'wheel';
+}
+
+function PickerBase<T>({ selectedValue, onValueChange, children, testID }: PickerProps<T>) {
+  const opciones = Children.toArray(children).flatMap((hijo) =>
+    isValidElement<ItemProps<T>>(hijo) ? [hijo.props] : [],
+  );
+  const elegida = opciones.find((o) => o.value === selectedValue);
+
   return (
-    <Pressable accessibilityRole="button" onPress={onClick}>
-      {children}
-    </Pressable>
+    <View
+      testID={testID}
+      accessible
+      accessibilityRole="button"
+      // El múltiplo elegido tiene que poder afirmarse sin desplegar el menú: es el
+      // dato que evita cargar MHz donde la Fórmula espera Hz.
+      accessibilityValue={{ text: elegida?.label ?? '' }}
+    >
+      {opciones.map((opcion) => (
+        <Pressable
+          key={String(opcion.value)}
+          accessibilityRole="button"
+          onPress={() => onValueChange(opcion.value)}
+        >
+          <TextoRN>{opcion.label}</TextoRN>
+        </Pressable>
+      ))}
+    </View>
   );
 }
-DropdownMenuItem.Text = TextSlot;
-DropdownMenuItem.LeadingIcon = TextSlot;
-DropdownMenuItem.TrailingIcon = TextSlot;
+
+export const Picker = Object.assign(PickerBase, { Item });
