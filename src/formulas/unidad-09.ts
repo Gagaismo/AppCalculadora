@@ -19,6 +19,13 @@ const U09_F01: Formula = {
   // El catálogo escribe `R = (1/T_S) \log_2 M = B_{M-ario} \cdot \log_2 M`; se deja la
   // rama implementada con B_M_ario. Ver docs/research/latex-transcripcion.md.
   expresionLatex: 'R = B_{M_ario} \\cdot \\log_2 M',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma en función de la duración del símbolo',
+      expresion: 'R = (1 / T_S) · log₂(M)',
+      latex: 'R = \\frac{1}{T_S} \\cdot \\log_2 M',
+    },
+  ],
   entradas: [
     {
       simbolo: 'B_M_ario',
@@ -40,7 +47,7 @@ const U09_F01: Formula = {
     multiploCanonico: 'k',
   },
   condiciones:
-    'Tasa teórica, sin considerar ruido, codificación ni overhead. Se asume B_M_ario = 1/T_S (baudios). ' +
+    'Tasa teórica, sin considerar ruido, codificación ni overhead. ' +
     'M debe ser potencia de 2 para que log₂(M) sea entero. Sobre línea telefónica el ancho de banda útil ' +
     'para datos es 2400 Hz (600–3000 Hz dentro de la banda vocal 300–3300 Hz): en semidúplex B_M_ario = 2400 Hz ' +
     'y en dúplex B_M_ario = 1200 Hz por sentido (1200 Up + 1200 Down). En ADSL la misma fórmula se aplica con ' +
@@ -126,6 +133,13 @@ const U09_F04: Formula = {
   nombre: 'Máximo orden de modulación M por portadora (DMT/ADSL)',
   expresion: 'M = √(1 + SNR)',
   expresionLatex: 'M = \\sqrt{1 + SNR}',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Igualdad de capacidades (Nyquist y Shannon)',
+      expresion: '2 · B · log₂(M) = B · log₂(1 + SNR)',
+      latex: '2B \\cdot \\log_2 M = B \\cdot \\log_2(1 + SNR)',
+    },
+  ],
   entradas: [
     {
       simbolo: 'SNR',
@@ -141,7 +155,7 @@ const U09_F04: Formula = {
     multiploCanonico: '',
   },
   condiciones:
-    'Se obtiene igualando Nyquist y Shannon en la pág. 20: 2B·log₂(M) = B·log₂(1+SNR) ⇒ M = √(1+SNR). ' +
+    'Se obtiene igualando las capacidades de Nyquist y Shannon (pág. 20). ' +
     'SNR en veces (lineal), no en dB. El resultado continuo se redondea a la potencia de 2 soportada ' +
     '(mínimo 4-QAM [2 bits/símbolo] y máximo 16384-QAM [14 bits/símbolo] según pág. 23). ' +
     'En ADSL el SNR se mide por portadora en la inicialización y se re-mide durante showtime (default 10 s).',
@@ -196,6 +210,13 @@ const U09_F06: Formula = {
   nombre: 'Relación señal/ruido en decibeles',
   expresion: 'SNR_dB = 10 · log₁₀(S / N)',
   expresionLatex: 'SNR_{dB} = 10 \\log_{10}(S / N)',
+  expresionesRelacionadas: [
+    {
+      rotulo: 'Forma inversa (relación lineal)',
+      expresion: 'SNR = 10^(SNR_dB / 10)',
+      latex: 'SNR = 10^{\\frac{SNR_{dB}}{10}}',
+    },
+  ],
   entradas: [
     {
       simbolo: 'S',
@@ -218,8 +239,8 @@ const U09_F06: Formula = {
   },
   condiciones:
     'S y N deben estar en la misma unidad de potencia (ambos convertidos a W en la unidad canónica). ' +
-    'Es una relación de potencias, por eso el factor 10. Para usar el SNR en U09-F03 o U09-F04 ' +
-    'hay que convertir a veces: SNR = 10^(SNR_dB/10).',
+    'Es una relación de potencias, por eso el factor 10. Para usar el valor en U09-F03 o U09-F04 ' +
+    'se debe convertir a veces (lineal).',
   paginas: '20',
   confianza: 'alta',
   calcular: ({ S, N }) => 10 * Math.log10(S / N),
