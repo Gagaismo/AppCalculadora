@@ -13,6 +13,7 @@ const U10_F01: Formula = {
   unidad: 10,
   nombre: 'Tasa de símbolos con codificación de bloque 4B/5B',
   expresion: 'R_s = R_b · (5 / 4)',
+  expresionLatex: 'R_s = R_b \\times \\frac{5}{4}',
   entradas: [
     {
       simbolo: 'R_b',
@@ -42,6 +43,7 @@ const U10_F02: Formula = {
   unidad: 10,
   nombre: 'Tasa de símbolos con codificación de bloque 8B/10B',
   expresion: 'R_s = R_b · (10 / 8)',
+  expresionLatex: 'R_s = R_b \\times \\frac{10}{8}',
   entradas: [
     {
       simbolo: 'R_b',
@@ -70,6 +72,7 @@ const U10_F03: Formula = {
   unidad: 10,
   nombre: 'Tasa de símbolos con codificación de bloque 64B/66B',
   expresion: 'R_s = R_b · (66 / 64)',
+  expresionLatex: 'R_s = R_b \\times \\frac{66}{64}',
   entradas: [
     {
       simbolo: 'R_b',
@@ -99,6 +102,7 @@ const U10_F04: Formula = {
   unidad: 10,
   nombre: 'Tasa de símbolos a partir de los bits por símbolo (modulación multinivel)',
   expresion: 'R_s = R_b / m',
+  expresionLatex: 'R_s = \\frac{R_b}{m}',
   entradas: [
     {
       simbolo: 'R_b',
@@ -134,6 +138,7 @@ const U10_F05: Formula = {
   unidad: 10,
   nombre: 'Tasa de símbolos total de un enlace multipar',
   expresion: 'R_s,total = N_pares · R_s,par',
+  expresionLatex: 'R_{s,total} = N_{pares} \\times R_{s,par}',
   entradas: [
     {
       simbolo: 'N_pares',
@@ -168,6 +173,7 @@ const U10_F06: Formula = {
   unidad: 10,
   nombre: 'Velocidad binaria por par trenzado',
   expresion: 'R_b,par = R_b,total / N_pares',
+  expresionLatex: 'R_{b,par} = \\frac{R_{b,total}}{N_{pares}}',
   entradas: [
     {
       simbolo: 'R_b,total',
@@ -237,6 +243,7 @@ const U10_F08: Formula = {
   unidad: 10,
   nombre: 'Separación entre subportadoras OFDM (802.11a)',
   expresion: 'Δf = BW / N_FFT',
+  expresionLatex: '\\Delta f = \\frac{BW}{N_{FFT}}',
   entradas: [
     {
       simbolo: 'BW',
