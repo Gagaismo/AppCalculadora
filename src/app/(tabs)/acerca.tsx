@@ -1,6 +1,8 @@
-import { Stack } from 'expo-router';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PantallaAcerca } from '@/screens/acerca';
+import { colores } from '@/tema';
 
 /**
  * Pestaña «Acerca de»: contexto del proyecto para la defensa oral.
@@ -11,9 +13,15 @@ import { PantallaAcerca } from '@/screens/acerca';
  */
 export default function RutaAcerca() {
   return (
-    <>
-      <Stack.Screen options={{ title: 'Acerca de' }} />
+    <SafeAreaView edges={['top']} style={estilos.pantalla}>
       <PantallaAcerca />
-    </>
+    </SafeAreaView>
   );
 }
+
+const estilos = StyleSheet.create({
+  pantalla: {
+    flex: 1,
+    backgroundColor: colores.fondo,
+  },
+});

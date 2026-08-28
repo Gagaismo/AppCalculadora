@@ -8,11 +8,12 @@ import {
   Sora_700Bold,
 } from '@expo-google-fonts/sora';
 import { useFonts } from 'expo-font';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
-import { colores } from '@/tema';
+import { colores, fuentes } from '@/tema';
 
 /**
  * Mantiene el splash visible hasta que las fuentes estén listas.
@@ -22,16 +23,21 @@ import { colores } from '@/tema';
 SplashScreen.preventAutoHideAsync();
 
 /**
- * Layout raíz de la aplicación.
+ * Layout raíz de la aplicación: una **pila**.
  *
  * Responsabilidades:
  * 1. Cargar exactamente las cinco fuentes que el tema declara en `fuentes`.
  * 2. Mantener el splash visible hasta que las fuentes resuelvan.
- * 3. Montar la barra de pestañas nativa con las tres secciones de la app.
+ * 3. Apilar las pantallas de Unidad y de Fórmula sobre la barra de pestañas.
  *
- * La pantalla de Fórmula y la de Unidad **no son pestañas**: se apilan sobre
- * la pestaña activa mediante el Stack implícito que `NativeTabs` hereda de
- * `expo-router`. El botón «Volver» sigue funcionando igual que antes.
+ * **Por qué la raíz es un Stack y no `NativeTabs`.** `NativeTabs` registra
+ * únicamente las rutas que se declaran como `<NativeTabs.Trigger>`: el resto de
+ * los archivos del directorio se descartan (`withLayoutContext` lo llama
+ * `useOnlyUserDefinedScreens`). Con `NativeTabs` en la raíz, `unidad/[numero]` y
+ * `formula/[id]` no existían para el navegador y `router.push()` hacia ellas no
+ * hacía absolutamente nada. La barra de pestañas vive ahora en `(tabs)/_layout`,
+ * un nivel más abajo, y estas dos pantallas se apilan encima con su encabezado y
+ * su botón «Volver».
  */
 export default function DisposicionRaiz() {
   const [fontsCargadas, errorFuentes] = useFonts({
@@ -55,27 +61,23 @@ export default function DisposicionRaiz() {
   }
 
   return (
-    <NativeTabs
-      indicatorColor={colores.marca}
-      rippleColor={colores.marca}
-    >
-      {/* Pestaña 1 — Unidades: el inicio actual con el catálogo de las diez Unidades */}
-      <NativeTabs.Trigger name="index" accessibilityLabel="Unidades">
-        <NativeTabs.Trigger.Label>Unidades</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="calculate" />
-      </NativeTabs.Trigger>
-
-      {/* Pestaña 2 — Buscar: búsqueda global de Fórmulas por nombre o símbolo */}
-      <NativeTabs.Trigger name="buscar" accessibilityLabel="Buscar">
-        <NativeTabs.Trigger.Label>Buscar</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="search" />
-      </NativeTabs.Trigger>
-
-      {/* Pestaña 3 — Acerca de: contexto del proyecto para la defensa oral */}
-      <NativeTabs.Trigger name="acerca" accessibilityLabel="Acerca de">
-        <NativeTabs.Trigger.Label>Acerca de</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="info" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <>
+      {/* Fondo crema y tema claro fijo: los íconos de la barra de estado van oscuros. */}
+      <StatusBar style="dark" />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colores.fondo },
+          headerTintColor: colores.accion,
+          headerTitleStyle: {
+            fontFamily: fuentes.interfazFuerte,
+            color: colores.texto,
+          },
+          contentStyle: { backgroundColor: colores.fondo },
+        }}
+      >
+        {/* La barra de pestañas trae su propio encabezado por pantalla. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </>
   );
 }
