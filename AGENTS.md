@@ -121,6 +121,21 @@ clon nuevo hay que reinstalarlo:
 npx impeccable install
 ```
 
+
+La verdad de producto ya está capturada en [`PRODUCT.md`](PRODUCT.md) y no hace falta volver a
+levantarla. Tres cosas de esta etapa que **no se deciden de nuevo**:
+
+- **El tema es la única fuente de colores, tipografía y espaciado**: `src/tema/index.ts`. Ninguna
+  pantalla escribe un color a mano. Ojo con el marrón: `marca` (#C67C4E) sólo rellena superficies
+  —da 2,96:1 sobre el fondo y no puede llevar texto—; el que lleva texto es `accion`.
+- **Las expresiones matemáticas se pre-renderizan** con `npm run expresiones`. El LaTeX de cada
+  Fórmula va en `expresionLatex` y se transcribe según
+  [`docs/research/latex-transcripcion.md`](docs/research/latex-transcripcion.md), que tiene la
+  regla y los nueve casos verificados. Hay un test que la vigila.
+- **Los componentes de `@expo/ui` no aceptan `testID`.** El patrón para hacerlos verificables está
+  en `src/screens/formula/selector-multiplo.tsx` y su doble de prueba en
+  `src/pruebas/expo-ui-doble.tsx`. Se replica, no se reinventa.
+
 Después, `/impeccable init` en el chat del agente escribe el contexto de diseño que leen los demás
 comandos. Trae variantes nativas (`adapt.native`, `audit.native`, `android`), que es lo que importa
 acá: esto es React Native, no una web.
