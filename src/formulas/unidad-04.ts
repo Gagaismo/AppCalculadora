@@ -482,6 +482,8 @@ const U04_F16: Formula = {
   unidad: 4,
   nombre: 'Eficiencia del codificador de fuente',
   expresion: 'η = H(x) / L̄',
+  // El catálogo escribe `H(x)` y `\\bar{L}`; ninguno liga con un campo de la app.
+  expresionLatex: '\\eta = \\frac{H}{L_{prom}}',
   entradas: [
     {
       simbolo: 'H',

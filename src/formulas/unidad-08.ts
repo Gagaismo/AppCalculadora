@@ -327,6 +327,8 @@ const U08_F10: Formula = {
   unidad: 8,
   nombre: 'Cota del número de estados en QAM',
   expresion: 'M ≤ N°Fases × N°Amplitudes',
+  // El `\\le` se conserva: la Fórmula calcula una cota superior y tiene que decirlo.
+  expresionLatex: 'M \\le N_{fases} \\times N_{amplitudes}',
   entradas: [
     {
       simbolo: 'N_fases',

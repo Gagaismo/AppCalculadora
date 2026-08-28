@@ -392,6 +392,9 @@ const U05_F13: Formula = {
   unidad: 5,
   nombre: 'Período de muestreo',
   expresion: 'T_muestreo = 1 / f_s',
+  // El catálogo escribe `T_s`; se renombró para no confundirlo con la duración del
+  // símbolo. Ver docs/research/latex-transcripcion.md.
+  expresionLatex: 'T_{muestreo} = \\frac{1}{f_s}',
   entradas: [
     {
       simbolo: 'f_s',

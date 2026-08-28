@@ -202,6 +202,7 @@ const U10_F07: Formula = {
   unidad: 10,
   nombre: 'Ancho de banda de una banda de frecuencias (ISM / Wi-Fi)',
   expresion: 'AB = f_sup − f_inf',
+  expresionLatex: 'AB = f_{sup} - f_{inf}',
   entradas: [
     {
       simbolo: 'f_sup',

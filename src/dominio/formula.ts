@@ -71,8 +71,27 @@ export interface Formula {
   /** El número de la Unidad de la materia a la que pertenece. */
   readonly unidad: number;
   readonly nombre: string;
-  /** La expresión tal como se muestra en pantalla. */
+  /**
+   * La expresión en texto plano.
+   *
+   * Aunque la pantalla dibuje la versión LaTeX, ésta no desaparece: es el respaldo si
+   * el pre-renderizado falla, la etiqueta que lee el lector de pantalla —un SVG no
+   * tiene texto accesible— y lo que indexa la búsqueda.
+   */
   readonly expresion: string;
+  /**
+   * La misma expresión en LaTeX, para dibujarla como notación matemática de verdad.
+   *
+   * **Los símbolos tienen que coincidir con los de `entradas` y `salida`, no con los
+   * de la diapositiva.** El catálogo trae el LaTeX de las 140 Fórmulas, pero para
+   * varias de ellas `observaciones-resueltas.md` ya decidió llamar a las cosas de otra
+   * manera; transcribir sin aplicar esa decisión deja la expresión mostrando un símbolo
+   * y el campo de entrada justo debajo mostrando otro, para la misma magnitud.
+   *
+   * La regla completa, con los nueve casos verificados, está en
+   * `docs/research/latex-transcripcion.md`. Hay un test que la vigila.
+   */
+  readonly expresionLatex?: string;
   readonly entradas: readonly Variable[];
   /**
    * La Variable de salida, fija. El cálculo es unidireccional: se cargan todas las
