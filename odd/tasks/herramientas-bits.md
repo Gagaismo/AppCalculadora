@@ -76,3 +76,16 @@ Diseño elegido: `design/herramientas-bits/01-paso-a-paso.html` («Paso a paso»
   - La esquina recibida no se verifica.
   - Las celdas de la tabla miden 34 px.
   - Falta probar en el teléfono la alineación y el scroll horizontal (CRC-16, tablas de 15 columnas).
+- **L7** El humano dijo «hacele el rdd». El candidato completo no entra en el presupuesto (`lens_context_budget_exceeded`), así que se partió un candidato por commit, con worktrees temporales ya removidos, y se autorizaron 5 corridas:
+  - A `94baf58` (lógica): reliability, aprobado.
+  - B `011874e` (pestaña y CRC): readability y reliability, aprobado.
+  - C `da2a431` (Hamming): reliability, aprobado.
+  - D `8aadecd` (VRC/LRC): reliability, aprobado.
+  Los cuatro tienen el acknowledgement hecho. Ninguno abrió una corrección.
+  No se revisaron los mockups HTML de `4abb405` ni el registro de `0b731ac`.
+  Advertencias para hacer después:
+  - Hamming con `corregida = null` no tiene test.
+  - `verificarTabla` no valida las paridades recibidas, y la esquina no se verifica.
+  - En CRC, una trama editada puede quedar truncada.
+  - El comentario sobre el máximo de bits del CRC.
+  - Un BCC vacío.
