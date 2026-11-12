@@ -3,7 +3,7 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { colores } from '@/tema';
 
 /**
- * La barra de pestañas nativa con las tres secciones de la aplicación.
+ * La barra de pestañas nativa con las cuatro secciones de la aplicación.
  *
  * Vive en el grupo `(tabs)` y no en la raíz a propósito: `NativeTabs` descarta
  * toda ruta del directorio que no esté declarada como `<NativeTabs.Trigger>`,
@@ -31,7 +31,13 @@ export default function DisposicionPestanas() {
         <NativeTabs.Trigger.Icon md="search" />
       </NativeTabs.Trigger>
 
-      {/* Pestaña 3 — Acerca de: contexto del proyecto para la defensa oral */}
+      {/* Pestaña 3 — Bits: CRC, Hamming y VRC/LRC paso a paso; no son Fórmulas */}
+      <NativeTabs.Trigger name="bits" accessibilityLabel="Herramientas de bits">
+        <NativeTabs.Trigger.Label>Bits</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon md="memory" />
+      </NativeTabs.Trigger>
+
+      {/* Pestaña 4 — Acerca de: contexto del proyecto para la defensa oral */}
       <NativeTabs.Trigger name="acerca" accessibilityLabel="Acerca de">
         <NativeTabs.Trigger.Label>Acerca de</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon md="info" />
