@@ -88,3 +88,32 @@ function PickerBase<T>({ selectedValue, onValueChange, children, testID }: Picke
 }
 
 export const Picker = Object.assign(PickerBase, { Item });
+
+interface SliderProps {
+  readonly value: number;
+  readonly onValueChange: (valor: number) => void;
+  readonly min?: number;
+  readonly max?: number;
+  readonly step?: number;
+  readonly disabled?: boolean;
+  readonly testID?: string;
+}
+
+/**
+ * El `Slider` nativo es una pista que se arrastra. El doble expone su posición en
+ * `accessibilityValue` y reenvía `valueChange`: la prueba «arrastra» con
+ * `fireEvent(pista, 'valueChange', posicion)`, que llega igual que el gesto real.
+ */
+export function Slider({ value, onValueChange, min = 0, max = 1, disabled, testID }: SliderProps) {
+  return (
+    <View
+      testID={testID}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityState={{ disabled }}
+      accessibilityValue={{ min, max, now: value }}
+      // No es una prop de `View`: está para que `fireEvent` encuentre el manejador.
+      {...{ onValueChange }}
+    />
+  );
+}
