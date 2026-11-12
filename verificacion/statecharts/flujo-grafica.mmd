@@ -1,0 +1,44 @@
+---
+title: "De la Fórmula a su gráfica y de vuelta"
+---
+stateDiagram-v2
+  direction LR
+  state "At the same time" as all {
+    state "Pantalla" as r0 {
+      s0: Lista de Fórmulas
+      s1: Fórmula
+      s2: Gráfica sin valores: #171;sin cargar#187;
+      s3: Gráfica con deslizadores
+      [*] --> s0
+      s0 --> s1: tocás una Fórmula
+      s1 --> s0: volvés atrás [when Orientación is Vertical]
+      s1 --> s2: tocás #171;Ver gráfica#187; [when Campos is Vacíos and Orientación is Vertical]
+      s1 --> s3: tocás #171;Ver gráfica#187; [when Campos is not Vacíos and Orientación is Vertical]
+      s2 --> s1: tocás #171;#8592;#187; [when Orientación is Horizontal]
+      s3 --> s1: tocás #171;#8592;#187; [when Orientación is Horizontal]
+    }
+    --
+    state "Campos" as r1 {
+      s4: Vacíos
+      s5: Con lo que se escribió
+      s6: Con lo que dejó el deslizador
+      [*] --> s4
+      s4 --> s5: escribís un valor [when Pantalla is Fórmula and Orientación is Vertical]
+      s5 --> s4: volvés atrás or tocás #171;Limpiar campos#187; [when Pantalla is Fórmula and Orientación is Vertical]
+      s5 --> s6: movés un deslizador [when Pantalla is Gráfica con deslizadores and Orientación is Horizontal]
+      s6 --> s4: volvés atrás or tocás #171;Limpiar campos#187; [when Pantalla is Fórmula and Orientación is Vertical]
+      s6 --> s5: escribís un valor [when Pantalla is Fórmula and Orientación is Vertical]
+    }
+    --
+    state "Orientación" as r2 {
+      s7: Vertical
+      s8: Girando a horizontal
+      s9: Horizontal
+      s10: Girando a vertical
+      [*] --> s7
+      s7 --> s8: tocás #171;Ver gráfica#187; [when Pantalla is Fórmula]
+      s8 --> s9: el teléfono termina de girar
+      s9 --> s10: tocás #171;#8592;#187;
+      s10 --> s7: el teléfono termina de girar
+    }
+  }

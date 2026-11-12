@@ -1,0 +1,57 @@
+---
+title: "CRC paso a paso: emisor y receptor"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: entrada
+    lg1: division
+    lg2: resultado
+  }
+  class lg0 blue
+  class lg1 yellow
+  class lg2 teal
+  state "Emisor" as s0 {
+    s1: Entrada
+    s2: Resultado: R(x) y la trama T(x)
+    s3: División: un XOR por paso
+    s4: Entrada, con el aviso de entrada inválida
+  }
+  state "Receptor" as s5 {
+    s6: Entrada
+    s7: Resultado: resto 0, sin error
+    s8: División: un XOR por paso
+    s9: Entrada, con el aviso de entrada inválida
+    s10: Resultado: resto distinto de 0, hay error
+  }
+  [*] --> s1
+  s1 --> s2: tocás #171;Siguiente#187; [entrada válida#59; la división no tiene ningún XOR]
+  s1 --> s3: tocás #171;Siguiente#187; [entrada válida]
+  s1 --> s4: tocás #171;Siguiente#187; [entrada inválida]
+  s6 --> s7: tocás #171;Siguiente#187; [entrada válida#59; la división no tiene ningún XOR#59; el resto da 0]
+  s6 --> s8: tocás #171;Siguiente#187; [entrada válida]
+  s2 --> s1: tocás #171;Volver a la entrada#187;
+  s3 --> s1: tocás #171;Anterior#187;
+  s3 --> s2: tocás #171;Siguiente#187; [era el último XOR]
+  s4 --> s1: cambiás los bits
+  s6 --> s10: tocás #171;Siguiente#187; [entrada válida#59; la división no tiene ningún XOR#59; el resto no da 0]
+  s6 --> s9: tocás #171;Siguiente#187; [entrada inválida]
+  s7 --> s6: tocás #171;Volver a la entrada#187;
+  s8 --> s6: tocás #171;Anterior#187;
+  s8 --> s7: tocás #171;Siguiente#187; [era el último XOR#59; el resto da 0]
+  s2 --> s3: tocás #171;Anterior#187;
+  s9 --> s6: cambiás los bits
+  s10 --> s6: tocás #171;Volver a la entrada#187;
+  s8 --> s10: tocás #171;Siguiente#187; [era el último XOR#59; el resto no da 0]
+  s7 --> s8: tocás #171;Anterior#187;
+  s10 --> s8: tocás #171;Anterior#187;
+  s0 --> s6: elegís #171;Verificar en el receptor#187;
+  s5 --> s1: elegís #171;Emisor#187;
+  class s1 blue
+  class s2 teal
+  class s3 yellow
+  class s4 blue
+  class s6 blue
+  class s7 teal
+  class s8 yellow
+  class s9 blue
+  class s10 teal

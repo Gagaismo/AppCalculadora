@@ -1,0 +1,70 @@
+---
+title: "VRC/LRC, receptor de la tabla: de lo recibido a ﬂ°°171¶ßCorregir el bitﬂ°°187¶ß"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: entrada
+    lg1: revision
+    lg2: resultado
+    lg3: Breaks UnBitCambiadoSeDetecta
+    lg4: Breaks CorregirNoRompeUnBitSano in some cases
+    lg5: Path to the CorregirNoRompeUnBitSano or UnBitCambiadoSeDetecta bug
+  }
+  class lg0 blue
+  class lg1 yellow
+  class lg2 teal
+  class lg3 breaks
+  class lg4 mayBreak
+  class lg5 bugPath
+  s0: Tabla recibida
+  s1: Recalculando VRC por columna y LRC por fila
+  s2: #171;Sin error detectado#187;: llegó como se emitió
+  s3: Señala el dato que llegó cambiado y ofrece #171;Corregir el bit#187;
+  s4: #171;Sin error detectado#187;, y la esquina llegó cambiada
+  s5: #171;Error detectado, sin cruce único#187;
+  s6: Señala un dato que llegó bien y ofrece #171;Corregir el bit#187;
+  s7: Corregido: el dato quedó como se emitió
+  s8: #171;Corregido#187;: se invirtió un dato que había llegado bien
+  [*] --> s0
+  s0 --> s0: tocás un bit de la tabla
+  s0 --> s1: tocás #171;Siguiente#187;
+  s1 --> s0: tocás #171;Anterior#187;
+  s1 --> s1: tocás #171;Siguiente#187;
+  s1 --> s2: tocás #171;Siguiente#187; [no llegó ningún bit cambiado]
+  s1 --> s3: tocás #171;Siguiente#187; [fallan la fila y la columna del dato cambiado]
+  s1 --> s4: tocás #171;Siguiente#187; [sólo llegó cambiada la esquina]
+  s1 --> s5: tocás #171;Siguiente#187; [no falla exactamente una fila y una columna]
+  s2 --> s0: tocás #171;Volver a la entrada#187;
+  s2 --> s1: tocás #171;Anterior#187;
+  s3 --> s0: tocás #171;Volver a la entrada#187;
+  s3 --> s1: tocás #171;Anterior#187;
+  s3 --> s7: tocás #171;Corregir el bit#187;
+  s4 --> s0: tocás #171;Volver a la entrada#187;
+  s4 --> s1: tocás #171;Anterior#187;
+  s5 --> s0: tocás #171;Volver a la entrada#187;
+  s5 --> s1: tocás #171;Anterior#187;
+  s1 --> s6: tocás #171;Siguiente#187; [llegaron cambiados un VRC y un LRC]
+  s6 --> s0: tocás #171;Volver a la entrada#187;
+  s6 --> s1: tocás #171;Anterior#187;
+  s6 --> s8: tocás #171;Corregir el bit#187;
+  s7 --> s0: tocás #171;Volver a la entrada#187;
+  s7 --> s1: tocás #171;Anterior#187;
+  s8 --> s0: tocás #171;Volver a la entrada#187;
+  s8 --> s1: tocás #171;Anterior#187;
+  classDef breaks fill:#ffecee,stroke:#e72e3b,stroke-width:2.5px,color:#cd2834
+  classDef mayBreak fill:#fff3e6,stroke:#e8730c,stroke-width:2.5px,color:#b85a06
+  class s0 blue
+  class s0 bugPath
+  class s1 yellow
+  class s1 bugPath
+  class s2 teal
+  class s3 teal
+  class s4 teal
+  class s4 breaks
+  class s4 bugPath
+  class s5 teal
+  class s6 teal
+  class s6 mayBreak
+  class s6 bugPath
+  class s7 teal
+  class s8 teal
