@@ -51,11 +51,11 @@ Diseño elegido: `design/herramientas-bits/01-paso-a-paso.html` («Paso a paso»
 
 ## Tasks
 
-- [ ] T1 — S2–S4, S6 — lógica pura en `src/bits/`: `crc.ts`, `hamming.ts` y `paridad.ts`, con sus pasos para la UI y tests contra la cátedra — worker A — commit: —
-- [ ] T2 — S5 — UI compartida: teclado de bits, entrada de bits y stepper; sección y navegación; pantalla CRC — worker A — commit: —
-- [ ] T3 — S3, S5 — pantalla Hamming — worker B — commit: —
-- [ ] T4 — S4, S5 — pantalla VRC/LRC, más BCC — worker C — commit: —
-- [ ] T5 — todas — `npm test` y `npm run typecheck` en verde, revisión contra el artboard y handoff «implemented» — parent — commit: —
+- [x] T1 — S2–S4, S6 — lógica pura en `src/bits/`: `crc.ts`, `hamming.ts` y `paridad.ts`, con sus pasos para la UI y tests contra la cátedra — worker A — commit: 94baf58
+- [x] T2 — S5 — UI compartida: teclado de bits, entrada de bits y stepper; sección y navegación; pantalla CRC — worker A — commit: 011874e (diseños y plan en 4abb405)
+- [x] T3 — S3, S5 — pantalla Hamming — worker B — commit: da2a431
+- [x] T4 — S4, S5 — pantalla VRC/LRC, más BCC — worker C — commit: 8aadecd
+- [x] T5 — todas — `npm test` y `npm run typecheck` en verde, revisión contra el artboard y handoff «implemented» — parent — commit: este registro
 
 ## Log
 
@@ -63,3 +63,16 @@ Diseño elegido: `design/herramientas-bits/01-paso-a-paso.html` («Paso a paso»
 - **L2** «Si quiero agregar eso, necesitas que te pase un pdf para el vrc/lrc ?» → «Dale te doy el ok.» Se leyó `C:\Users\lautaro\Downloads\Test\Unidad 6 Errores en la transmisión de datos 2026.pdf`, págs. 18-25. El relevamiento verifica los ejemplos de las págs. 20, 23 y 25; texto y capturas en `C:/Users/lautaro/ego/u6-errores-20261112/`.
 - **L3** El humano eligió «Primero quiero ver un diseño». Se armaron tres direcciones en `design/herramientas-bits/`.
 - **L4** El humano pidió implementar `design/herramientas-bits/01-paso-a-paso.html`. Las preguntas abiertas sobre el cociente, el caso con error y la paridad impar no se contestaron; se aplicaron las recomendaciones D2–D4 y se informan al cierre.
+- **L5** T1 y T2 cerradas: dos corridas seguidas con 30 suites y 1053 tests en verde, typecheck sin errores.
+  - Navegación: cuarta pestaña nativa «Bits» que lista las tres herramientas, con rutas apiladas en `/bits/*`.
+  - El diff fue de unas 1471 líneas, por encima del tope de 900; se commiteó en tres unidades.
+  - Los tests de UI de T2 se escribieron después del código y no tuvieron RED.
+  - Falta probar en el teléfono la alineación monoespaciada de la división, sobre todo con CRC-16.
+  - T3 y T4 se lanzaron en paralelo, con superficies disjuntas.
+- **L6** T3–T5 cerradas: 32 suites y 1068 tests en verde, typecheck sin errores, ningún color escrito a mano en `src/screens/bits`.
+  Hamming: 8 tests, con RED de comportamiento contra un stub. VRC/LRC: 7 tests, también con RED. El diff de T4 fue de 922 líneas.
+  Pendientes:
+  - El orden del bloque BCC es ambiguo: la pág. 23 dibuja el BCC primero y la pág. 22 dice «al finalizar el bloque». La pantalla lo muestra como lo dibuja la pág. 23, sin afirmar cuál sale antes.
+  - La esquina recibida no se verifica.
+  - Las celdas de la tabla miden 34 px.
+  - Falta probar en el teléfono la alineación y el scroll horizontal (CRC-16, tablas de 15 columnas).

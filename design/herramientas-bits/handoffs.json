@@ -3,11 +3,12 @@
   "chosen": "01-paso-a-paso.html",
   "handoffs": {
     "01-paso-a-paso.html": {
-      "status": "sent",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-12T05:43:21.688Z",
       "startedAt": null,
-      "implementedAt": null
+      "implementedAt": "2026-11-12T06:01:29.171Z",
+      "note": "Implementado en la pestaña «Bits»: CRC, Hamming y VRC/LRC + BCC, con el paso a paso de la propuesta 01. 1068 tests en verde. No hay preview web corriendo: se prueba en Expo Go (npm start)."
     }
   }
 }
