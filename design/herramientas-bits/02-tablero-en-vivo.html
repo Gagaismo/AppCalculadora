@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Herramientas de bits · 02 Tablero en vivo</title>
+<style>
+:root{
+  --fondo:#F9F2ED;--superficie:#FFFFFF;--enfasis:#EDD6C8;--marca:#C67C4E;--accion:#9C5B32;--tinta:#313131;--gris:#E3E3E3;
+  --aviso:#7A5200;--avisoFondo:#F5EBD0;--error:#B3261E;--errorFondo:#FBE9E7;--exito:#2E6B4F;--exitoFondo:#E6F0EA;--brillo:#F2B35E;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Roboto Mono","DejaVu Sans Mono",Menlo,monospace;
+  --r8:8px;--r12:12px;--rp:999px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--enfasis);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:21px;width:1280px;min-height:900px}
+.lamina{padding:16px 60px}
+.lamina>header{display:flex;align-items:baseline;gap:16px;height:52px;margin-bottom:12px}
+.lamina>header h1{white-space:nowrap;font-size:22px;line-height:28px;margin:0}
+.lamina>header p{margin:0;font-size:13px;line-height:18px}
+.telefonos{display:flex;gap:50px}
+.telefono{width:360px;height:780px;border-radius:32px;background:var(--tinta);padding:6px;flex:none}
+.pantalla{width:100%;height:100%;border-radius:26px;background:var(--fondo);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.estado{height:24px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;line-height:16px;flex:none}
+.barra{height:56px;display:flex;align-items:center;gap:8px;padding:0 8px;flex:none}
+.barra h2{font-size:17px;line-height:22px;margin:0}
+.barra .sobre{margin:0;font-size:12px;line-height:16px}
+.gesto{height:16px;display:flex;justify-content:center;align-items:center;flex:none}
+.gesto span{width:96px;height:4px;border-radius:var(--rp);background:var(--tinta)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accion);outline-offset:2px}
+.icono{width:44px;height:44px;border:0;background:none;border-radius:var(--rp);display:grid;place-items:center}
+.pestanas{display:flex;gap:4px;padding:0 16px 8px;flex:none}
+.pestanas button{flex:1;min-height:36px;border:1px solid var(--gris);background:var(--superficie);border-radius:var(--rp);font-size:13px;line-height:18px;font-weight:600}
+.pestanas button[aria-current="page"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.segmentado{display:flex;border:1px solid var(--gris);border-radius:var(--rp);background:var(--superficie);padding:3px;gap:2px}
+.segmentado button{flex:1;min-height:36px;border:0;border-radius:var(--rp);background:none;font-size:13px;line-height:18px;font-weight:600}
+.segmentado button[aria-pressed="true"]{background:var(--enfasis)}
+.estado-ok{background:var(--exitoFondo);color:var(--exito)}
+.estado-error{background:var(--errorFondo);color:var(--error)}
+.estado-aviso{background:var(--avisoFondo);color:var(--aviso)}
+.tarjeta-estado{border-radius:var(--r12);padding:12px;display:flex;gap:12px;align-items:flex-start}
+.tarjeta-estado strong{display:block;font-size:15px;line-height:21px}
+.tarjeta-estado p{margin:0;font-size:13px;line-height:18px;color:var(--tinta)}
+.tarjeta-estado svg{flex:none;margin-top:2px}
+.teclado{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.teclado button{min-height:52px;border-radius:var(--r12);border:1px solid var(--gris);background:var(--superficie);font-family:var(--mono);font-size:22px;font-weight:600}
+.teclado button.borrar{font-family:var(--sans);font-size:15px}
+@media (prefers-reduced-motion:no-preference){.anima{transition:background-color .18s ease,opacity .18s ease}}
+
+.contenido{flex:1;overflow-y:auto;padding:0 16px 12px;display:flex;flex-direction:column;gap:10px}
+.contenido>*{flex:none}
+.seccion{font-size:12px;line-height:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:4px 0 -4px;display:flex;justify-content:space-between}
+.seccion span{text-transform:none;letter-spacing:0;font-weight:600}
+.campo{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:2px solid var(--gris);background:var(--superficie);border-radius:var(--r12);padding:6px 10px;min-height:48px}
+.campo[aria-pressed="true"]{border-color:var(--tinta)}
+.campo .nom{font-size:13px;line-height:18px;font-weight:700;width:46px;flex:none}
+.campo .val{font-family:var(--mono);font-size:19px;line-height:26px;letter-spacing:1px;word-break:break-all;flex:1}
+.campo .val .cursor{display:inline-block;width:2px;height:20px;background:var(--tinta);vertical-align:-3px;margin-left:1px}
+.campo .val .dif{color:var(--error);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.campo .cnt{font-size:12px;line-height:16px;flex:none}
+.par2{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+.par2 .campo{flex-direction:column;align-items:flex-start;gap:0}
+.par2 .campo .nom{width:auto}
+.segmentado button{white-space:nowrap;padding:0 10px}
+.fila{display:flex;gap:8px}.fila>*{flex:1}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chips button{min-height:36px;padding:0 12px;border-radius:var(--rp);border:1px solid var(--gris);background:var(--superficie);font-size:13px;font-weight:600;white-space:nowrap}
+.chips button[aria-pressed="true"]{background:var(--enfasis);border-color:var(--tinta)}
+.vivo{background:var(--superficie);border:1px solid var(--gris);border-radius:var(--r12);padding:8px 12px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline}
+.vivo dt{font-size:13px;line-height:18px;font-weight:700}
+.vivo dd{margin:0;font-family:var(--mono);font-size:17px;line-height:24px;word-break:break-all}
+.vivo dd u{text-underline-offset:3px;font-weight:700}
+.compacta{border-radius:var(--r12);padding:8px 12px;display:flex;gap:10px;align-items:center;font-size:13px;line-height:18px}
+.compacta strong{font-size:15px;line-height:21px}
+.compacta .acc{margin-left:auto;min-height:40px;padding:0 12px;border-radius:var(--rp);border:0;background:var(--tinta);color:var(--fondo);font-weight:700;font-size:13px;flex:none}
+details{background:var(--superficie);border:1px solid var(--gris);border-radius:var(--r12)}
+summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-weight:700;font-size:13px;cursor:pointer;list-style:none;border-radius:var(--r12)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"Mostrar";font-weight:600;color:var(--accion)}
+details[open] summary::after{content:"Ocultar"}
+details .dentro{padding:0 12px 12px;overflow-x:auto}
+.dock{flex:none;background:var(--superficie);border-top:1px solid var(--gris);padding:8px 16px 10px;display:flex;flex-direction:column;gap:6px}
+.dock p{margin:0;font-size:12px;line-height:16px;display:flex;justify-content:space-between}
+.dock p b{font-weight:700}
+.teclado button{min-height:48px}
+.div{display:grid;font-family:var(--mono);font-size:15px;line-height:21px;width:max-content}
+.div .c{width:16px;text-align:center}
+.div .lab{width:34px;font-family:var(--sans);font-size:12px;font-weight:700;text-align:right;padding-right:6px}
+.div .g{border-bottom:2px solid var(--tinta)}
+.div .baj{color:var(--accion);font-weight:700}
+.tira{display:grid;font-size:12px;line-height:16px;width:max-content}
+.tira>div{width:26px;height:24px;display:grid;place-items:center}
+.tira .b{font-family:var(--mono);font-size:17px;height:30px;border:1px solid var(--gris);background:var(--superficie)}
+.tira .b.par{background:var(--enfasis);font-weight:700}
+.tira .b.err{background:var(--error);color:var(--superficie);font-weight:700}
+.tira .lp{font-weight:700}
+.sindrome{display:flex;gap:4px;align-items:center;font-size:13px;line-height:18px}
+.sindrome b.caja{font-family:var(--mono);font-size:17px;width:28px;height:30px;display:grid;place-items:center;border:1px solid var(--gris);border-radius:var(--r8);background:var(--superficie)}
+.sindrome b.caja.uno{background:var(--errorFondo);color:var(--error);border-color:var(--error)}
+table.vrc{border-collapse:separate;border-spacing:2px;font-size:12px;line-height:16px;margin:0 auto}
+table.vrc th{font-weight:700;height:24px}
+table.vrc td{padding:0}
+table.vrc td button,table.vrc td span{width:30px;height:30px;display:grid;place-items:center;border-radius:6px;border:1px solid var(--gris);background:var(--superficie);font-family:var(--mono);font-size:17px;padding:0}
+table.vrc td span.ctl{background:var(--enfasis);border-color:var(--enfasis);font-weight:700}
+table.vrc td span.ctl.mal{background:var(--errorFondo);color:var(--error);border:2px solid var(--error)}
+table.vrc td button.linea{background:var(--avisoFondo);border-color:var(--avisoFondo)}
+table.vrc td button.volteado{background:var(--error);color:var(--superficie);border-color:var(--error);font-weight:700}
+.pista sup{font-size:11px;line-height:0;vertical-align:5px;margin-left:1px}
+.pista{font-size:12px;line-height:16px;margin:0;display:flex;gap:6px;align-items:center}
+.enlace{background:none;border:0;color:var(--accion);font-weight:700;font-size:13px;min-height:44px;padding:0 4px;text-decoration:underline;text-underline-offset:3px}
+.bcc{font-family:var(--mono);font-size:19px;line-height:28px;display:grid;grid-template-columns:24px auto;width:max-content;margin:0 auto}
+.bcc .linea{border-top:2px solid var(--tinta)}
+</style>
+</head>
+<body>
+<div class="lamina">
+<header>
+  <h1>02 · Tablero en vivo</h1>
+  <p>Una sola pantalla por herramienta: se escriben bits con el teclado 0 / 1 y el resultado se recalcula con cada tecla. Los pasos quedan plegados para quien los pida.</p>
+</header>
+<main class="telefonos">
+
+<section class="telefono" aria-labelledby="t-crc"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-crc">CRC · división módulo 2</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button aria-current="page">CRC</button><button>Hamming</button><button>VRC / LRC</button></nav>
+  <div class="contenido" id="crc"></div>
+  <div class="dock" id="crc-dock"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+<section class="telefono" aria-labelledby="t-ham"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-ham">Hamming · corrección FEC</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button>CRC</button><button aria-current="page">Hamming</button><button>VRC / LRC</button></nav>
+  <div class="contenido" id="ham"></div>
+  <div class="dock" id="ham-dock"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+<section class="telefono" aria-labelledby="t-vrc"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-vrc">VRC / LRC · paridad</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button>CRC</button><button>Hamming</button><button aria-current="page">VRC / LRC</button></nav>
+  <div class="contenido" id="vrc"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+</main>
+</div>
+<script>
+/* Motor de bits: CRC (módulo 2), Hamming (FEC) y VRC/LRC. Todo se calcula, nada se tipea a mano. */
+const Bits = {
+  xor(a, b) { let s = ''; for (let i = 0; i < a.length; i++) s += a[i] === b[i] ? '0' : '1'; return s; },
+  unos(s) { let c = 0; for (const ch of s) if (ch === '1') c++; return c; },
+
+  // División módulo 2 con la disposición del pizarrón: cada XOR se escribe debajo de su columna
+  // y se "bajan" los bits necesarios hasta que el próximo 1 quede alineado con G(x).
+  division(D, G) {
+    const n = G.length, r = n - 1, rem = D.split(''), pasos = [];
+    let off = rem.indexOf('1');
+    while (off !== -1 && off + n <= rem.length) {
+      const antes = rem.slice(off, off + n).join('');
+      for (let k = 0; k < n; k++) rem[off + k] = rem[off + k] === G[k] ? '0' : '1';
+      const sig = rem.indexOf('1', off);
+      const fin = (sig !== -1 && sig + n <= rem.length) ? sig + n : rem.length;
+      pasos.push({ off, antes, res: rem.slice(off, fin).join(''), fin, bajados: Math.max(0, fin - (off + n)) });
+      off = sig;
+    }
+    return { pasos, resto: rem.slice(rem.length - r).join(''), r };
+  },
+  crcEmisor(M, G) {
+    const r = G.length - 1, P = M + '0'.repeat(r), d = Bits.division(P, G);
+    return { r, P, pasos: d.pasos, resto: d.resto, corto: d.resto.replace(/^0+/, '') || '0', T: M + d.resto };
+  },
+  crcReceptor(T, G) {
+    const d = Bits.division(T, G);
+    return { r: d.r, pasos: d.pasos, resto: d.resto, ok: !d.resto.includes('1') };
+  },
+  generadores: [
+    { id: 'catedra', nombre: 'Cátedra', bits: '110011', poli: 'x⁵ + x⁴ + x + 1' },
+    { id: 'crc12', nombre: 'CRC-12', bits: '1100000001111', poli: 'x¹² + x¹¹ + x³ + x² + x + 1' },
+    { id: 'crc16', nombre: 'CRC-16', bits: '11000000000000101', poli: 'x¹⁶ + x¹⁵ + x² + 1' },
+    { id: 'ccitt', nombre: 'CRC-CCITT', bits: '10001000000100001', poli: 'x¹⁶ + x¹² + x⁵ + 1' },
+  ],
+
+  // Hamming: posiciones de n+p hacia 1, de izquierda a derecha, como en las págs. 49-50.
+  esPot(x) { return x > 0 && (x & (x - 1)) === 0; },
+  cuantosP(n) { let p = 1; while (2 ** p < n + p + 1) p++; return p; },
+  hammingCodificar(datos, par = true) {
+    const n = datos.length, p = Bits.cuantosP(n), t = n + p, bit = {}, etiqueta = {};
+    let k = 0, dn = n;
+    for (let pos = t; pos >= 1; pos--) {
+      if (Bits.esPot(pos)) etiqueta[pos] = 'p' + (Math.log2(pos) + 1);
+      else { etiqueta[pos] = 'n' + dn--; bit[pos] = datos[k++]; }
+    }
+    const grupos = [];
+    for (let i = 1; i <= p; i++) {
+      const m = 1 << (i - 1), miembros = [];
+      for (let pos = t; pos >= 1; pos--) if ((pos & m) && pos !== m) miembros.push(pos);
+      const unos = miembros.filter(q => bit[q] === '1').length;
+      bit[m] = String((unos % 2) ^ (par ? 0 : 1));
+      grupos.push({ i, pos: m, miembros, unos, bit: bit[m] });
+    }
+    let palabra = ''; for (let pos = t; pos >= 1; pos--) palabra += bit[pos];
+    return { n, p, t, etiqueta, bit, grupos, palabra };
+  },
+  hammingSindrome(palabra, par = true) {
+    const t = palabra.length, bit = {}, etiqueta = {};
+    for (let j = 0; j < t; j++) bit[t - j] = palabra[j];
+    let p = 0; while ((1 << p) <= t) p++;
+    let dn = t - p;
+    for (let pos = t; pos >= 1; pos--) etiqueta[pos] = Bits.esPot(pos) ? 'p' + (Math.log2(pos) + 1) : 'n' + dn--;
+    const grupos = [];
+    for (let i = 1; i <= p; i++) {
+      const m = 1 << (i - 1), miembros = [];
+      for (let pos = t; pos >= 1; pos--) if (pos & m) miembros.push(pos);
+      const unos = miembros.filter(q => bit[q] === '1').length;
+      grupos.push({ i, pos: m, miembros, unos, s: String((unos % 2) ^ (par ? 0 : 1)) });
+    }
+    const sindrome = grupos.map(g => g.s).reverse().join('');
+    const pos = parseInt(sindrome, 2);
+    let corregida = palabra;
+    if (pos > 0 && pos <= t) { const j = t - pos; corregida = palabra.slice(0, j) + (palabra[j] === '1' ? '0' : '1') + palabra.slice(j + 1); }
+    return { t, p, bit, etiqueta, grupos, sindrome, pos, corregida };
+  },
+
+  // VRC/LRC: filas B1..B7 (posición de bit), columnas D1..D8 (caracteres).
+  paridad(s, par) { return String((Bits.unos(s) % 2) ^ (par ? 0 : 1)); },
+  vrcLrc(filas, par = true) {
+    const cols = filas[0].length;
+    const lrc = filas.map(f => Bits.paridad(f, par));
+    const vrc = []; for (let j = 0; j < cols; j++) vrc.push(Bits.paridad(filas.map(f => f[j]).join(''), par));
+    return { lrc, vrc, esquina: Bits.paridad(vrc.join(''), par) };
+  },
+  vrcLrcVerificar(filas, vrcRx, lrcRx, par = true) {
+    const c = Bits.vrcLrc(filas, par);
+    const filasMal = c.lrc.map((v, i) => v !== lrcRx[i] ? i : -1).filter(i => i >= 0);
+    const colsMal = c.vrc.map((v, j) => v !== vrcRx[j] ? j : -1).filter(j => j >= 0);
+    return { ...c, filasMal, colsMal, celda: filasMal.length === 1 && colsMal.length === 1 ? [filasMal[0], colsMal[0]] : null };
+  },
+  bcc(bytes) { return bytes.reduce((a, b) => Bits.xor(a, b)); },
+
+  // Datos de la cátedra, Unidad 6.
+  catedra: {
+    crc: { M: '10110111', G: '110011', pag: '29-31' },
+    hamming: { datos: '1001101', tx: '10011100101', rx: '10001100101', pag: '48-50' },
+    vrc: {
+      pag: '25',
+      tx: ['00010101', '11110111', '10000101', '01010111', '01000100', '01110110', '01100100'],
+      vrc: '01100110'.split(''), lrc: '1111011'.split(''), error: [3, 5],
+    },
+    bcc: { pag: '23', bytes: ['10101001', '00111001', '11011101', '11100111'] },
+  },
+};
+if (typeof module !== 'undefined') module.exports = Bits;
+
+const $ = id => document.getElementById(id);
+const ICO = {
+  ok: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3.2 3L17 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  error: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v5M12 17.5v.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  dedo: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+};
+const teclas = '<div class="teclado" role="group" aria-label="Teclado de bits"><button data-tecla="0">0</button><button data-tecla="1">1</button><button class="borrar" data-tecla="b" aria-label="Borrar el último bit">⌫ Borrar</button></div>';
+function campo(clave, nombre, valor, activo, ref) {
+  const bits = [...valor].map((b, i) => ref && ref[i] !== undefined && ref[i] !== b ? `<span class="dif">${b}</span>` : b).join('');
+  return `<button class="campo" data-campo="${clave}" aria-pressed="${activo}" aria-label="${nombre}: ${valor || 'vacío'}"><span class="nom">${nombre}</span><span class="val">${bits}${activo ? '<span class="cursor" aria-hidden="true"></span>' : ''}</span><span class="cnt">${valor.length} bits</span></button>`;
+}
+function grilla(D, G, pasos) {
+  const L = D.length;
+  let h = `<div class="div" style="grid-template-columns:34px repeat(${L},16px)">` + `<div class="lab"></div>` + [...D].map(b => `<div class="c">${b}</div>`).join('');
+  pasos.forEach(p => {
+    h += `<div class="lab">⊕</div>`; for (let c = 0; c < L; c++) { const k = c - p.off, en = k >= 0 && k < G.length; h += `<div class="c${en ? ' g' : ''}">${en ? G[k] : ''}</div>`; }
+    h += `<div class="lab"></div>`; for (let c = 0; c < L; c++) { const k = c - p.off, en = k >= 0 && c < p.fin; h += `<div class="c${en && c >= p.fin - p.bajados && p.bajados ? ' baj' : ''}">${en ? p.res[k] : ''}</div>`; }
+  });
+  return h + '</div>';
+}
+
+/* ---------- CRC ---------- */
+const crc = { M: Bits.catedra.crc.M, G: Bits.catedra.crc.G, Tr: '1010011101001', campo: 'Tr' };
+function renderCRC() {
+  const okG = /^1[01]+$/.test(crc.G);
+  let h = `<p class="seccion">Emisor <span>págs. 29-31</span></p>`;
+  h += `<div class="par2">${campo('M', 'M(x)', crc.M, crc.campo === 'M')}${campo('G', 'G(x)', crc.G, crc.campo === 'G')}</div>`;
+  h += `<div class="chips" role="group" aria-label="Generadores estándar">${Bits.generadores.map(g => `<button data-gen="${g.bits}" aria-pressed="${g.bits === crc.G}" title="${g.poli}">${g.nombre}</button>`).join('')}</div>`;
+  if (!okG || !crc.M) {
+    h += `<div class="compacta estado-aviso" role="status">${ICO.error}<span>${!okG ? 'G(x) tiene que empezar con 1 y tener al menos 2 bits.' : 'Escribí el mensaje M(x).'}</span></div>`;
+    $('crc').innerHTML = h; dockCRC(); return;
+  }
+  const e = Bits.crcEmisor(crc.M, crc.G);
+  h += `<dl class="vivo" aria-live="polite"><dt>P(x)</dt><dd>${e.P}</dd><dt>R(x)</dt><dd>${e.corto} <span style="font-family:var(--sans);font-size:12px">r = ${e.r}: ${e.resto}</span></dd><dt>T(x)</dt><dd>${crc.M}<u>${e.resto}</u></dd></dl>`;
+  h += `<p class="seccion">Verificar en el receptor <span>pág. 31</span></p>`;
+  h += campo('Tr', "T'(x)", crc.Tr, crc.campo === 'Tr', e.T);
+  if (crc.Tr.length < crc.G.length) h += `<div class="compacta estado-aviso" role="status">${ICO.error}<span>T'(x) tiene que tener al menos ${crc.G.length} bits.</span></div>`;
+  else {
+    const r = Bits.crcReceptor(crc.Tr, crc.G), dif = [...crc.Tr].filter((b, i) => b !== e.T[i]).length + Math.abs(crc.Tr.length - e.T.length);
+    h += r.ok
+      ? `<div class="compacta estado-ok" role="status">${ICO.ok}<div><strong>Resto ${r.resto} · sin error</strong><br>T'(x) es divisible por G(x).</div></div>`
+      : `<div class="compacta estado-error" role="status">${ICO.error}<div><strong>Resto ${r.resto} ≠ 0 · hay error</strong><br>${dif ? `${dif} bit${dif > 1 ? 's' : ''} distinto${dif > 1 ? 's' : ''} de T(x), subrayado${dif > 1 ? 's' : ''}.` : ''} Se pide retransmitir.</div><button class="acc" data-copiar>Usar T(x)</button></div>`;
+  }
+  h += `<details><summary>Ver las divisiones paso a paso</summary><div class="dentro"><p class="pista" style="margin:0 0 4px"><b>Emisor · P(x) ÷ G(x)</b></p>${grilla(e.P, crc.G, e.pasos)}${crc.Tr.length >= crc.G.length ? `<p class="pista" style="margin:12px 0 4px"><b>Receptor · T'(x) ÷ G(x)</b></p>${grilla(crc.Tr, crc.G, Bits.crcReceptor(crc.Tr, crc.G).pasos)}` : ''}</div></details>`;
+  $('crc').innerHTML = h; dockCRC();
+}
+function dockCRC() {
+  const n = { M: 'M(x)', G: 'G(x)', Tr: "T'(x)" }[crc.campo];
+  $('crc-dock').innerHTML = `<p><span>Escribiendo en <b>${n}</b></span><span>Se recalcula con cada tecla</span></p>${teclas}`;
+}
+document.querySelectorAll('#crc, #crc-dock').forEach(el => el.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.campo) crc.campo = b.dataset.campo;
+  else if (b.dataset.gen) crc.G = b.dataset.gen;
+  else if ('copiar' in b.dataset) crc.Tr = Bits.crcEmisor(crc.M, crc.G).T;
+  else if (b.dataset.tecla) { const k = crc.campo; crc[k] = b.dataset.tecla === 'b' ? crc[k].slice(0, -1) : (crc[k] + b.dataset.tecla).slice(0, 40); }
+  else return;
+  renderCRC();
+}));
+
+/* ---------- Hamming ---------- */
+const ham = { datos: Bits.catedra.hamming.datos, rx: Bits.catedra.hamming.rx, campo: 'rx' };
+function tira(t, etiqueta, palabra, marcas) {
+  let h = `<div class="tira" style="grid-template-columns:repeat(${t},26px)" role="img" aria-label="Palabra ${palabra}, posiciones ${t} a 1">`;
+  for (let pos = t; pos >= 1; pos--) h += `<div class="${Bits.esPot(pos) ? 'lp' : ''}">${etiqueta[pos]}</div>`;
+  for (let j = 0; j < t; j++) { const pos = t - j; h += `<div class="b${Bits.esPot(pos) ? ' par' : ''}${marcas[pos] ? ' ' + marcas[pos] : ''}">${palabra[j]}</div>`; }
+  for (let pos = t; pos >= 1; pos--) h += `<div>${pos}</div>`;
+  return h + '</div>';
+}
+function renderHam() {
+  let h = `<p class="seccion">Codificar <span>paridad par · pág. 49</span></p>`;
+  h += campo('datos', 'n', ham.datos, ham.campo === 'datos');
+  if (ham.datos.length) {
+    const c = Bits.hammingCodificar(ham.datos);
+    h += `<p class="pista"><span>p = ${c.p} porque 2<sup>${c.p}</sup> = ${2 ** c.p} ≥ ${c.n} + ${c.p} + 1 = ${c.t + 1}${c.p > 1 ? ` (con p = ${c.p - 1}: ${2 ** (c.p - 1)} < ${c.n + c.p})` : ''}</span></p>`;
+    h += `<div style="overflow-x:auto">${tira(c.t, c.etiqueta, c.palabra, {})}</div>`;
+  }
+  h += `<p class="seccion">Verificar lo recibido <span>pág. 50</span></p>`;
+  const tx = ham.datos.length ? Bits.hammingCodificar(ham.datos).palabra : '';
+  h += campo('rx', 'RX', ham.rx, ham.campo === 'rx', tx.length === ham.rx.length ? tx : null);
+  if (ham.rx.length >= 3) {
+    const s = Bits.hammingSindrome(ham.rx), m = {}; if (s.pos && s.pos <= s.t) m[s.pos] = 'err';
+    h += `<div style="overflow-x:auto">${tira(s.t, s.etiqueta, ham.rx, m)}</div>`;
+    h += `<div class="sindrome"><span>Síndrome</span>${s.grupos.slice().reverse().map(g => `<b class="caja${g.s === '1' ? ' uno' : ''}" aria-label="p${g.i} = ${g.s}">${g.s}</b>`).join('')}<span>= ${s.pos}</span></div>`;
+    h += s.pos === 0
+      ? `<div class="compacta estado-ok" role="status">${ICO.ok}<div><strong>Sin error</strong><br>Los ${s.p} grupos cumplen la paridad.</div></div>`
+      : s.pos > s.t
+        ? `<div class="compacta estado-aviso" role="status">${ICO.error}<div><strong>Síndrome ${s.pos} fuera de la palabra</strong><br>Hay más de un error: Hamming corrige uno solo.</div></div>`
+        : `<div class="compacta estado-error" role="status">${ICO.error}<div><strong>Error en la posición ${s.pos} (${s.etiqueta[s.pos]})</strong><br>Llegó ${s.bit[s.pos]}, va ${s.bit[s.pos] === '1' ? '0' : '1'}.</div><button class="acc" data-corregir>Corregir</button></div>`;
+    h += `<details><summary>Tabla de grupos de paridad</summary><div class="dentro"><table style="border-collapse:collapse;font-size:13px;line-height:18px">${s.grupos.map(g => `<tr><th scope="row" style="text-align:left;padding:4px 8px 4px 0">p${g.i}</th><td style="padding:4px 8px 4px 0">pos. ${g.miembros.join(', ')}</td><td class="mono" style="padding:4px 0">${g.unos} ${g.unos === 1 ? 'uno' : 'unos'} → <b>${g.s}</b></td></tr>`).join('')}</table></div></details>`;
+  }
+  $('ham').innerHTML = h;
+  $('ham-dock').innerHTML = `<p><span>Escribiendo en <b>${ham.campo === 'rx' ? 'palabra recibida' : 'datos n'}</b></span><span>${(ham.campo === 'rx' ? ham.rx : ham.datos).length} bits</span></p>${teclas}`;
+}
+document.querySelectorAll('#ham, #ham-dock').forEach(el => el.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.campo) ham.campo = b.dataset.campo;
+  else if ('corregir' in b.dataset) ham.rx = Bits.hammingSindrome(ham.rx).corregida;
+  else if (b.dataset.tecla) { const k = ham.campo; ham[k] = b.dataset.tecla === 'b' ? ham[k].slice(0, -1) : (ham[k] + b.dataset.tecla).slice(0, 15); }
+  else return;
+  renderHam();
+}));
+
+/* ---------- VRC / LRC ---------- */
+const C = Bits.catedra.vrc;
+const vrc = { vista: 'tabla', par: true, filas: null };
+function rxInicial() { const f = C.tx.slice(); const [i, j] = C.error; f[i] = f[i].slice(0, j) + (f[i][j] === '1' ? '0' : '1') + f[i].slice(j + 1); return f; }
+vrc.filas = rxInicial();
+function renderVRC() {
+  const seg = (k, ops, v, et) => `<div class="segmentado" role="group" aria-label="${et}">${ops.map(([a, l]) => `<button data-${k}="${a}" aria-pressed="${a === v}">${l}</button>`).join('')}</div>`;
+  let h = `<div class="fila">${seg('vista', [['tabla', 'Tabla'], ['bcc', 'BCC lineal']], vrc.vista, 'Vista')}${vrc.vista === 'tabla' ? seg('par', [['par', 'Par'], ['impar', 'Impar']], vrc.par ? 'par' : 'impar', 'Tipo de paridad') : ''}</div>`;
+  if (vrc.vista === 'bcc') {
+    const by = Bits.catedra.bcc.bytes;
+    h += `<p class="seccion">BCC del bloque <span>pág. 23</span></p><div class="vivo" style="display:block"><div class="bcc">${by.map((b, i) => `<span>${i ? '⊕' : ''}</span><span>${b}</span>`).join('')}<span></span><span class="linea"></span><span>=</span><b>${Bits.bcc(by)}</b></div></div>`;
+    h += `<div class="compacta estado-ok">${ICO.ok}<span>XOR columna a columna de los 4 bytes: BCC = <b class="mono">${Bits.bcc(by)}</b>.</span></div>`;
+    $('vrc').innerHTML = h; return;
+  }
+  const v = Bits.vrcLrcVerificar(vrc.filas, C.vrc, C.lrc, vrc.par);
+  h += `<p class="pista">${ICO.dedo}Tocá un bit de datos para simular un error del canal. Recibido, con el VRC y el LRC tal como llegaron (pág. 25).</p>`;
+  h += `<table class="vrc"><caption class="sr">Tabla recibida: filas B1 a B7, columnas D1 a D8</caption><thead><tr><th scope="col"></th>${C.tx[0].split('').map((_, j) => `<th scope="col">D${j + 1}</th>`).join('')}<th scope="col">LRC</th></tr></thead><tbody>`;
+  vrc.filas.forEach((f, i) => {
+    h += `<tr><th scope="row">B${i + 1}</th>${[...f].map((b, j) => { const volt = b !== C.tx[i][j], lin = v.filasMal.includes(i) || v.colsMal.includes(j); return `<td><button data-celda="${i},${j}" class="${volt ? 'volteado' : lin ? 'linea' : ''}" aria-label="B${i + 1} D${j + 1}: ${b}${volt ? ', cambiado por el canal' : ''}">${b}</button></td>`; }).join('')}<td><span class="ctl${v.filasMal.includes(i) ? ' mal' : ''}">${C.lrc[i]}</span></td></tr>`;
+  });
+  h += `<tr><th scope="row">VRC</th>${C.vrc.map((b, j) => `<td><span class="ctl${v.colsMal.includes(j) ? ' mal' : ''}">${b}</span></td>`).join('')}<td><span class="ctl">0</span></td></tr></tbody></table>`;
+  const lista = `${v.filasMal.map(i => `LRC B${i + 1}`).concat(v.colsMal.map(j => `VRC D${j + 1}`)).join(' · ')}`;
+  if (!v.filasMal.length && !v.colsMal.length) h += `<div class="compacta estado-ok" role="status">${ICO.ok}<div><strong>Todas las paridades cumplen</strong><br>Sin error detectado.</div></div>`;
+  else if (v.celda) h += `<div class="compacta estado-error" role="status">${ICO.error}<div><strong>Error en B${v.celda[0] + 1} · D${v.celda[1] + 1}</strong><br>Fallan ${lista}. Llegó ${vrc.filas[v.celda[0]][v.celda[1]]}, va ${vrc.filas[v.celda[0]][v.celda[1]] === '1' ? '0' : '1'}.</div><button class="acc" data-corregir>Corregir</button></div>`;
+  else h += `<div class="compacta estado-aviso" role="status">${ICO.error}<div><strong>Error detectado, sin cruce único</strong><br>Fallan ${lista}. ${vrc.par ? 'Con más de un error no se ubica el bit.' : 'La tabla de la cátedra usa paridad par.'}</div></div>`;
+  h += `<button class="enlace" data-restaurar>Volver a la tabla de la cátedra</button>`;
+  $('vrc').innerHTML = h;
+}
+$('vrc').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.vista) vrc.vista = b.dataset.vista;
+  else if (b.dataset.par) vrc.par = b.dataset.par === 'par';
+  else if (b.dataset.celda) { const [i, j] = b.dataset.celda.split(',').map(Number); const f = vrc.filas[i]; vrc.filas[i] = f.slice(0, j) + (f[j] === '1' ? '0' : '1') + f.slice(j + 1); }
+  else if ('corregir' in b.dataset) { const v = Bits.vrcLrcVerificar(vrc.filas, C.vrc, C.lrc, vrc.par); if (v.celda) { const [i, j] = v.celda, f = vrc.filas[i]; vrc.filas[i] = f.slice(0, j) + (f[j] === '1' ? '0' : '1') + f.slice(j + 1); } }
+  else if ('restaurar' in b.dataset) { vrc.filas = rxInicial(); vrc.par = true; }
+  else return;
+  renderVRC();
+});
+// Al redibujar, el foco vuelve al control equivalente para no perder el lugar con teclado.
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'), tel = b && b.closest('.telefono'); if (!tel) return;
+  const ds = Object.entries(b.dataset)[0]; if (!ds) return;
+  const sel = `[data-${ds[0].replace(/[A-Z]/g, m => '-' + m.toLowerCase())}="${ds[1]}"]`;
+  setTimeout(() => { if (!document.contains(b)) tel.querySelector(sel)?.focus(); });
+});
+renderCRC(); renderHam(); renderVRC();
+</script>
+</body>
+</html>

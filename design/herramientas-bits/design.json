@@ -1,0 +1,27 @@
+{
+  "title": "Herramientas de bits",
+  "brief": "Nueva sección «Herramientas de bits» para la app Android de Comunicaciones (UTN-FRT): CRC con división módulo 2 y verificación en el receptor, Hamming (FEC) con tabla de grupos y síndrome, y VRC/LRC con tabla de paridad y corrección por cruce, más el BCC lineal. Datos de la cátedra, Unidad 6, págs. 23, 25, 29-31 y 48-50.",
+  "artboards": [
+    {
+      "file": "01-paso-a-paso.html",
+      "title": "Paso a paso",
+      "tradeoff": "Se sigue igual que en el pizarrón y cada XOR o grupo trae su explicación; pero ver el resultado final cuesta varios toques, así que es lento frente al tribunal.",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "02-tablero-en-vivo.html",
+      "title": "Tablero en vivo",
+      "tradeoff": "Entrega el resultado al instante con cada tecla y permite simular errores tocando bits, ideal para responder rápido; los pasos quedan plegados y no explican el porqué.",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "03-pizarron-del-profe.html",
+      "title": "Pizarrón del profe",
+      "tradeoff": "La cuenta completa siempre a la vista y el profe narra y reta en los errores, lo más memorable para estudiar; el guía y el globo ocupan un tercio de la pantalla y la tabla de Hamming queda justa de ancho.",
+      "width": 1280,
+      "height": 900
+    }
+  ]
+}

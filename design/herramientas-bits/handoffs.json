@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "chosen": "01-paso-a-paso.html",
+  "handoffs": {
+    "01-paso-a-paso.html": {
+      "status": "sent",
+      "queued": false,
+      "sentAt": "2026-11-12T05:43:21.688Z",
+      "startedAt": null,
+      "implementedAt": null
+    }
+  }
+}

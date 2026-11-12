@@ -1,0 +1,65 @@
+# Herramientas de bits (CRC, Hamming, VRC/LRC)
+
+Nueva sección de la app con tres herramientas paso a paso que trabajan sobre cadenas de bits. No son Fórmulas: el modelo de Fórmula solo admite Variables numéricas.
+Diseño elegido: `design/herramientas-bits/01-paso-a-paso.html` («Paso a paso»); 02 y 03 quedan como alternativas. Rama: `feature/herramientas-bits`, que sale de `feature/guia-profesor`.
+
+## Specs
+
+- **S1** Pedido textual: «Actualmente podemos usar la calculadora para calcular y obtener crc con modulo 2 y usando XOR , detectar errores con bit de pariedad con la tabla usando FEC - Codificacion hamming , Metodo de deteccion de errores con tabla vrc/lrc ?» Hoy no se puede; se agrega como sección «Herramientas de bits».
+- **S2** CRC, U06-F11, págs. 28-32: división módulo 2 por XOR, mostrada renglón por renglón como en la pág. 30.
+  - Emisor: M(x) y G(x) → P(x) = M·x^r, R(x) y T(x) = P(x) + R(x).
+  - Receptor: T'(x) / G(x); resto 0 = sin error, resto ≠ 0 = hay error.
+  - Ejemplo de la cátedra, con test obligatorio: M = 10110111, G = 110011, r = 5 → P = 1011011100000, R = 1001, T = 1011011101001; el receptor con T da resto 0.
+  - Generadores estándar de la pág. 32 como atajos: CRC-12 = x^12+x^11+x^3+x^2+x+1, CRC-16 = x^16+x^15+x^2+1, CRC-CCITT = x^16+x^12+x^5+1.
+  - El cociente no se muestra (decisión D2).
+- **S3** Hamming, U06-F09/F10, págs. 44-50.
+  - Emisor: n bits de datos; p es el menor entero con 2^p ≥ n+p+1; los bits de paridad van en las posiciones 1, 2, 4, 8…; se muestra la tabla de grupos con paridad par.
+  - Receptor: síndrome p4 p3 p2 p1 → posición del bit erróneo (0 = sin error) y corrección.
+  - Ejemplo de la cátedra, con test obligatorio: datos n7…n1 = 1001101, p = 4 → palabra 10011100101 (posiciones 11→1); paridades p4 = 1, p3 = 0, p2 = 0, p1 = 1. Recibida 10001100101 → síndrome 1000 = 8 → se corrige a 10011100101.
+- **S4** VRC/LRC, págs. 18-25.
+  - VRC: un bit de paridad por carácter; ejemplo de la pág. 20: 1000010 → VRC 0.
+  - LRC/BCC lineal: paridad por posición de bit sobre el bloque; ejemplo de la pág. 23: 10101001, 00111001, 11011101, 11100111 → BCC 10101010.
+  - Tabla bidimensional del Ejemplo 02 (pág. 25), con test obligatorio: filas B1..B7 y columnas D1..D8.
+    ```
+    B1: 0 0 0 1 0 1 0 1 | LRC 1
+    B2: 1 1 1 1 0 1 1 1 | 1
+    B3: 1 0 0 0 0 1 0 1 | 1
+    B4: 0 1 0 1 0 1 1 1 | 1
+    B5: 0 1 0 0 0 1 0 0 | 0
+    B6: 0 1 1 1 0 1 1 0 | 1
+    B7: 0 1 1 0 0 1 0 0 | 1
+    VRC: 0 1 1 0 0 1 1 0 | 0
+    ```
+    En el receptor llega B4/D6 = 0 → error VRC en D6 y error LRC en B4 → el bit erróneo es (B4, D6) y se corrige.
+  - Paridad par por defecto, con selector Par/Impar (decisión D4).
+- **S5** Diseño «Paso a paso» (artboard 01): Entrada → pasos con Anterior/Siguiente, cada paso con su explicación → resultado. Teclado de bits 0/1/⌫, chips de ejemplos (Cátedra, CRC-12, CRC-16, CRC-CCITT) y modos Emisor/Receptor. En VRC/LRC, la celda del cruce se marca y hay un botón «Corregir el bit», más una pestaña para el BCC lineal.
+- **S6** Reglas del repo (AGENTS.md):
+  - No se inventa nada: solo los procedimientos y ejemplos de las págs. citadas.
+  - Cada herramienta lleva un test contra su ejemplo resuelto.
+  - `src/dominio/` no se toca.
+  - El tema `src/tema/index.ts` es la única fuente de colores.
+  - Los componentes nativos vienen de `@expo/ui` universal.
+  - Los tests van al lado del archivo; en RNTL 14 `render` y `fireEvent` llevan `await`.
+  - Código, interfaz y commits en español.
+
+## Decisiones
+
+- **D1** Va como sección aparte, no como Fórmulas: el modelo de Fórmula solo admite números, y cambiarlo sería una escalación en `src/dominio/`.
+- **D2** No se muestra el cociente del CRC. La diapositiva 30 da 1101011 (7 bits), pero la cuenta correcta es 11010111 (8 bits), y U06-F11 solo pide R y T. Observación nueva, resuelta así y registrada acá.
+- **D3** Los ejemplos que se presentan como «de la cátedra» son solo los de las diapositivas. Los casos con error que arme quien usa la app son entrada suya, nunca un ejemplo de la cátedra.
+- **D4** El selector Par/Impar está solo en VRC/LRC. Hamming queda en paridad par, como la cátedra.
+
+## Tasks
+
+- [ ] T1 — S2–S4, S6 — lógica pura en `src/bits/`: `crc.ts`, `hamming.ts` y `paridad.ts`, con sus pasos para la UI y tests contra la cátedra — worker A — commit: —
+- [ ] T2 — S5 — UI compartida: teclado de bits, entrada de bits y stepper; sección y navegación; pantalla CRC — worker A — commit: —
+- [ ] T3 — S3, S5 — pantalla Hamming — worker B — commit: —
+- [ ] T4 — S4, S5 — pantalla VRC/LRC, más BCC — worker C — commit: —
+- [ ] T5 — todas — `npm test` y `npm run typecheck` en verde, revisión contra el artboard y handoff «implemented» — parent — commit: —
+
+## Log
+
+- **L1** (pedido, textual): «Actualmente podemos usar la calculadora para calcular y obtener crc con modulo 2 y usando XOR , detectar errores con bit de pariedad con la tabla usando FEC - Codificacion hamming , Metodo de deteccion de errores con tabla vrc/lrc ?»
+- **L2** «Si quiero agregar eso, necesitas que te pase un pdf para el vrc/lrc ?» → «Dale te doy el ok.» Se leyó `C:\Users\lautaro\Downloads\Test\Unidad 6 Errores en la transmisión de datos 2026.pdf`, págs. 18-25. El relevamiento verifica los ejemplos de las págs. 20, 23 y 25; texto y capturas en `C:/Users/lautaro/ego/u6-errores-20261112/`.
+- **L3** El humano eligió «Primero quiero ver un diseño». Se armaron tres direcciones en `design/herramientas-bits/`.
+- **L4** El humano pidió implementar `design/herramientas-bits/01-paso-a-paso.html`. Las preguntas abiertas sobre el cociente, el caso con error y la paridad impar no se contestaron; se aplicaron las recomendaciones D2–D4 y se informan al cierre.

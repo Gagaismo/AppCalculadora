@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Herramientas de bits · 01 Paso a paso</title>
+<style>
+:root{
+  --fondo:#F9F2ED;--superficie:#FFFFFF;--enfasis:#EDD6C8;--marca:#C67C4E;--accion:#9C5B32;--tinta:#313131;--gris:#E3E3E3;
+  --aviso:#7A5200;--avisoFondo:#F5EBD0;--error:#B3261E;--errorFondo:#FBE9E7;--exito:#2E6B4F;--exitoFondo:#E6F0EA;--brillo:#F2B35E;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Roboto Mono","DejaVu Sans Mono",Menlo,monospace;
+  --r8:8px;--r12:12px;--rp:999px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--enfasis);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:21px;width:1280px;min-height:900px}
+.lamina{padding:16px 60px}
+.lamina>header{display:flex;align-items:baseline;gap:16px;height:52px;margin-bottom:12px}
+.lamina>header h1{white-space:nowrap;font-size:22px;line-height:28px;margin:0}
+.lamina>header p{margin:0;font-size:13px;line-height:18px}
+.telefonos{display:flex;gap:50px}
+.telefono{width:360px;height:780px;border-radius:32px;background:var(--tinta);padding:6px;flex:none}
+.pantalla{width:100%;height:100%;border-radius:26px;background:var(--fondo);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.estado{height:24px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;line-height:16px;flex:none}
+.barra{height:56px;display:flex;align-items:center;gap:8px;padding:0 8px;flex:none}
+.barra h2{font-size:17px;line-height:22px;margin:0}
+.barra .sobre{margin:0;font-size:12px;line-height:16px}
+.gesto{height:16px;display:flex;justify-content:center;align-items:center;flex:none}
+.gesto span{width:96px;height:4px;border-radius:var(--rp);background:var(--tinta)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accion);outline-offset:2px}
+.icono{width:44px;height:44px;border:0;background:none;border-radius:var(--rp);display:grid;place-items:center}
+.pestanas{display:flex;gap:4px;padding:0 16px 8px;flex:none}
+.pestanas button{flex:1;min-height:36px;border:1px solid var(--gris);background:var(--superficie);border-radius:var(--rp);font-size:13px;line-height:18px;font-weight:600}
+.pestanas button[aria-current="page"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.segmentado{display:flex;border:1px solid var(--gris);border-radius:var(--rp);background:var(--superficie);padding:3px;gap:2px}
+.segmentado button{flex:1;min-height:36px;border:0;border-radius:var(--rp);background:none;font-size:13px;line-height:18px;font-weight:600}
+.segmentado button[aria-pressed="true"]{background:var(--enfasis)}
+.estado-ok{background:var(--exitoFondo);color:var(--exito)}
+.estado-error{background:var(--errorFondo);color:var(--error)}
+.estado-aviso{background:var(--avisoFondo);color:var(--aviso)}
+.tarjeta-estado{border-radius:var(--r12);padding:12px;display:flex;gap:12px;align-items:flex-start}
+.tarjeta-estado strong{display:block;font-size:15px;line-height:21px}
+.tarjeta-estado p{margin:0;font-size:13px;line-height:18px;color:var(--tinta)}
+.tarjeta-estado svg{flex:none;margin-top:2px}
+.teclado{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.teclado button{min-height:52px;border-radius:var(--r12);border:1px solid var(--gris);background:var(--superficie);font-family:var(--mono);font-size:22px;font-weight:600}
+.teclado button.borrar{font-family:var(--sans);font-size:15px}
+@media (prefers-reduced-motion:no-preference){.anima{transition:background-color .18s ease,opacity .18s ease}}
+
+.contenido{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+.contenido>*{flex:none}
+.fila{display:flex;gap:8px}.fila>*{flex:1}
+.progreso{display:flex;flex-direction:column;gap:6px}
+.progreso .rotulo{display:flex;justify-content:space-between;font-size:13px;line-height:18px}
+.progreso .rotulo b{font-weight:700}
+.tramos{display:flex;gap:3px}
+.tramos span{flex:1;height:6px;border-radius:var(--rp);background:var(--gris)}
+.tramos span.hecho{background:var(--marca)}
+.tramos span.actual{background:var(--tinta)}
+.hoja{background:var(--superficie);border:1px solid var(--gris);border-radius:var(--r12);padding:12px}
+.hoja.tabla{padding:8px}
+.hoja h3{margin:0 0 8px;font-size:13px;line-height:18px;font-weight:700}
+.datos{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:13px;line-height:18px;margin:0}
+.datos dt{font-weight:700}.datos dd{margin:0;font-family:var(--mono);font-size:15px}
+.desplaza{overflow-x:auto;padding-bottom:4px}
+.div{display:grid;font-family:var(--mono);font-size:17px;line-height:25px;width:max-content}
+.div .c{width:18px;text-align:center}
+.div .lab{width:40px;font-family:var(--sans);font-size:12px;font-weight:700;text-align:right;padding-right:6px}
+.div .g{border-bottom:2px solid var(--tinta)}
+.div .baj{color:var(--accion);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.div .fila-actual{background:var(--brillo)}
+.div .apagado{visibility:hidden}
+.div .resto-ok{background:var(--exitoFondo);color:var(--exito);font-weight:700}
+.div .resto-mal{background:var(--errorFondo);color:var(--error);font-weight:700}
+.explica{border-left:4px solid var(--marca);background:var(--superficie);border-radius:0 var(--r8) var(--r8) 0;padding:8px 12px;font-size:13px;line-height:18px}
+.explica b{font-size:15px;line-height:21px;display:block}
+.navpasos{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--gris);background:var(--superficie);flex:none}
+.navpasos button{flex:1;min-height:48px;border-radius:var(--rp);font-weight:700;font-size:15px}
+.navpasos .ant{background:var(--superficie);border:1px solid var(--gris)}
+.navpasos .sig{background:var(--tinta);color:var(--fondo);border:0}
+.navpasos button:disabled{opacity:.45;cursor:not-allowed}
+.campo{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;border:2px solid var(--gris);background:var(--superficie);border-radius:var(--r12);padding:8px 12px}
+.campo[aria-pressed="true"]{border-color:var(--tinta)}
+.campo .nom{font-size:12px;line-height:16px;font-weight:700}
+.campo .val{font-family:var(--mono);font-size:22px;line-height:28px;letter-spacing:2px;word-break:break-all}
+.campo .val .cursor{display:inline-block;width:2px;height:22px;background:var(--tinta);vertical-align:-3px;margin-left:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:36px;padding:0 12px;border-radius:var(--rp);border:1px solid var(--gris);background:var(--superficie);font-size:13px;font-weight:600}
+.chips button[aria-pressed="true"]{background:var(--enfasis);border-color:var(--tinta)}
+.aviso-linea{font-size:13px;line-height:18px;padding:8px 12px;border-radius:var(--r8)}
+/* Hamming */
+.ham{display:grid;font-size:12px;line-height:16px;width:max-content}
+.ham>div{height:28px;display:grid;place-items:center;border-bottom:1px solid var(--gris)}
+.ham .lab{font-weight:700;justify-items:end;padding-right:4px}
+.ham .par{background:var(--enfasis);font-weight:700}
+.ham .b{font-family:var(--mono);font-size:16px}
+.ham .m{background:var(--avisoFondo)}
+.ham .fila-actual{background:var(--brillo)}
+.ham .err{background:var(--errorFondo);color:var(--error);font-weight:700;outline:2px solid var(--error);outline-offset:-2px}
+.ham .fix{background:var(--exitoFondo);color:var(--exito);font-weight:700}
+.sindrome{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sindrome .caja{width:44px;border:2px solid var(--gris);border-radius:var(--r8);text-align:center;background:var(--superficie)}
+.sindrome .caja small{display:block;font-size:12px;line-height:16px;font-weight:700}
+.sindrome .caja span{display:block;font-family:var(--mono);font-size:20px;line-height:26px;min-height:26px}
+.sindrome .caja.uno{border-color:var(--error);background:var(--errorFondo);color:var(--error)}
+/* VRC */
+table.vrc{border-collapse:collapse;font-size:12px;line-height:16px}
+table.vrc th{font-weight:700;width:28px;height:28px}
+table.vrc td{width:28px;height:27px;text-align:center;font-family:var(--mono);font-size:17px;border:1px solid var(--gris);background:var(--superficie)}
+table.vrc td.ctl{background:var(--enfasis);font-weight:700}
+table.vrc tr.fila-mal td,table.vrc td.col-mal{background:var(--avisoFondo)}
+table.vrc tr td.ctl-mal{background:var(--errorFondo);color:var(--error);outline:2px solid var(--error);outline-offset:-2px}
+table.vrc tr td.cruce{background:var(--error);color:var(--superficie);font-weight:700}
+table.vrc tr td.corregido{background:var(--exitoFondo);color:var(--exito);font-weight:700;outline:2px solid var(--exito);outline-offset:-2px}
+.lista-chequeo{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:18px}
+.lista-chequeo li{display:flex;gap:8px;align-items:center;padding:4px 8px;border-radius:var(--r8)}
+.bcc{font-family:var(--mono);font-size:20px;line-height:30px;display:grid;grid-template-columns:24px auto;width:max-content;margin:0 auto}
+.bcc .linea{border-top:2px solid var(--tinta)}
+</style>
+</head>
+<body>
+<div class="lamina">
+<header>
+  <h1>01 · Paso a paso</h1>
+  <p>Entrada → pasos → resultado. Cada XOR, grupo de paridad o recálculo se revela con Anterior / Siguiente, como en el pizarrón. Datos: Unidad 6, págs. 25, 29-31 y 48-50.</p>
+</header>
+<main class="telefonos">
+
+<section class="telefono" aria-labelledby="t-crc"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-crc">CRC · división módulo 2</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button aria-current="page">CRC</button><button>Hamming</button><button>VRC / LRC</button></nav>
+  <div class="contenido" id="crc"></div>
+  <div class="navpasos" id="crc-nav"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+<section class="telefono" aria-labelledby="t-ham"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-ham">Hamming · corrección FEC</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button>CRC</button><button aria-current="page">Hamming</button><button>VRC / LRC</button></nav>
+  <div class="contenido" id="ham"></div>
+  <div class="navpasos" id="ham-nav"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+<section class="telefono" aria-labelledby="t-vrc"><div class="pantalla">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a Herramientas de bits"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Herramientas de bits · Unidad 6</p><h2 id="t-vrc">VRC / LRC · paridad</h2></div></header>
+  <nav class="pestanas" aria-label="Herramientas"><button>CRC</button><button>Hamming</button><button aria-current="page">VRC / LRC</button></nav>
+  <div class="contenido" id="vrc"></div>
+  <div class="navpasos" id="vrc-nav"></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+
+</main>
+</div>
+<script>
+/* Motor de bits: CRC (módulo 2), Hamming (FEC) y VRC/LRC. Todo se calcula, nada se tipea a mano. */
+const Bits = {
+  xor(a, b) { let s = ''; for (let i = 0; i < a.length; i++) s += a[i] === b[i] ? '0' : '1'; return s; },
+  unos(s) { let c = 0; for (const ch of s) if (ch === '1') c++; return c; },
+
+  // División módulo 2 con la disposición del pizarrón: cada XOR se escribe debajo de su columna
+  // y se "bajan" los bits necesarios hasta que el próximo 1 quede alineado con G(x).
+  division(D, G) {
+    const n = G.length, r = n - 1, rem = D.split(''), pasos = [];
+    let off = rem.indexOf('1');
+    while (off !== -1 && off + n <= rem.length) {
+      const antes = rem.slice(off, off + n).join('');
+      for (let k = 0; k < n; k++) rem[off + k] = rem[off + k] === G[k] ? '0' : '1';
+      const sig = rem.indexOf('1', off);
+      const fin = (sig !== -1 && sig + n <= rem.length) ? sig + n : rem.length;
+      pasos.push({ off, antes, res: rem.slice(off, fin).join(''), fin, bajados: Math.max(0, fin - (off + n)) });
+      off = sig;
+    }
+    return { pasos, resto: rem.slice(rem.length - r).join(''), r };
+  },
+  crcEmisor(M, G) {
+    const r = G.length - 1, P = M + '0'.repeat(r), d = Bits.division(P, G);
+    return { r, P, pasos: d.pasos, resto: d.resto, corto: d.resto.replace(/^0+/, '') || '0', T: M + d.resto };
+  },
+  crcReceptor(T, G) {
+    const d = Bits.division(T, G);
+    return { r: d.r, pasos: d.pasos, resto: d.resto, ok: !d.resto.includes('1') };
+  },
+  generadores: [
+    { id: 'catedra', nombre: 'Cátedra', bits: '110011', poli: 'x⁵ + x⁴ + x + 1' },
+    { id: 'crc12', nombre: 'CRC-12', bits: '1100000001111', poli: 'x¹² + x¹¹ + x³ + x² + x + 1' },
+    { id: 'crc16', nombre: 'CRC-16', bits: '11000000000000101', poli: 'x¹⁶ + x¹⁵ + x² + 1' },
+    { id: 'ccitt', nombre: 'CRC-CCITT', bits: '10001000000100001', poli: 'x¹⁶ + x¹² + x⁵ + 1' },
+  ],
+
+  // Hamming: posiciones de n+p hacia 1, de izquierda a derecha, como en las págs. 49-50.
+  esPot(x) { return x > 0 && (x & (x - 1)) === 0; },
+  cuantosP(n) { let p = 1; while (2 ** p < n + p + 1) p++; return p; },
+  hammingCodificar(datos, par = true) {
+    const n = datos.length, p = Bits.cuantosP(n), t = n + p, bit = {}, etiqueta = {};
+    let k = 0, dn = n;
+    for (let pos = t; pos >= 1; pos--) {
+      if (Bits.esPot(pos)) etiqueta[pos] = 'p' + (Math.log2(pos) + 1);
+      else { etiqueta[pos] = 'n' + dn--; bit[pos] = datos[k++]; }
+    }
+    const grupos = [];
+    for (let i = 1; i <= p; i++) {
+      const m = 1 << (i - 1), miembros = [];
+      for (let pos = t; pos >= 1; pos--) if ((pos & m) && pos !== m) miembros.push(pos);
+      const unos = miembros.filter(q => bit[q] === '1').length;
+      bit[m] = String((unos % 2) ^ (par ? 0 : 1));
+      grupos.push({ i, pos: m, miembros, unos, bit: bit[m] });
+    }
+    let palabra = ''; for (let pos = t; pos >= 1; pos--) palabra += bit[pos];
+    return { n, p, t, etiqueta, bit, grupos, palabra };
+  },
+  hammingSindrome(palabra, par = true) {
+    const t = palabra.length, bit = {}, etiqueta = {};
+    for (let j = 0; j < t; j++) bit[t - j] = palabra[j];
+    let p = 0; while ((1 << p) <= t) p++;
+    let dn = t - p;
+    for (let pos = t; pos >= 1; pos--) etiqueta[pos] = Bits.esPot(pos) ? 'p' + (Math.log2(pos) + 1) : 'n' + dn--;
+    const grupos = [];
+    for (let i = 1; i <= p; i++) {
+      const m = 1 << (i - 1), miembros = [];
+      for (let pos = t; pos >= 1; pos--) if (pos & m) miembros.push(pos);
+      const unos = miembros.filter(q => bit[q] === '1').length;
+      grupos.push({ i, pos: m, miembros, unos, s: String((unos % 2) ^ (par ? 0 : 1)) });
+    }
+    const sindrome = grupos.map(g => g.s).reverse().join('');
+    const pos = parseInt(sindrome, 2);
+    let corregida = palabra;
+    if (pos > 0 && pos <= t) { const j = t - pos; corregida = palabra.slice(0, j) + (palabra[j] === '1' ? '0' : '1') + palabra.slice(j + 1); }
+    return { t, p, bit, etiqueta, grupos, sindrome, pos, corregida };
+  },
+
+  // VRC/LRC: filas B1..B7 (posición de bit), columnas D1..D8 (caracteres).
+  paridad(s, par) { return String((Bits.unos(s) % 2) ^ (par ? 0 : 1)); },
+  vrcLrc(filas, par = true) {
+    const cols = filas[0].length;
+    const lrc = filas.map(f => Bits.paridad(f, par));
+    const vrc = []; for (let j = 0; j < cols; j++) vrc.push(Bits.paridad(filas.map(f => f[j]).join(''), par));
+    return { lrc, vrc, esquina: Bits.paridad(vrc.join(''), par) };
+  },
+  vrcLrcVerificar(filas, vrcRx, lrcRx, par = true) {
+    const c = Bits.vrcLrc(filas, par);
+    const filasMal = c.lrc.map((v, i) => v !== lrcRx[i] ? i : -1).filter(i => i >= 0);
+    const colsMal = c.vrc.map((v, j) => v !== vrcRx[j] ? j : -1).filter(j => j >= 0);
+    return { ...c, filasMal, colsMal, celda: filasMal.length === 1 && colsMal.length === 1 ? [filasMal[0], colsMal[0]] : null };
+  },
+  bcc(bytes) { return bytes.reduce((a, b) => Bits.xor(a, b)); },
+
+  // Datos de la cátedra, Unidad 6.
+  catedra: {
+    crc: { M: '10110111', G: '110011', pag: '29-31' },
+    hamming: { datos: '1001101', tx: '10011100101', rx: '10001100101', pag: '48-50' },
+    vrc: {
+      pag: '25',
+      tx: ['00010101', '11110111', '10000101', '01010111', '01000100', '01110110', '01100100'],
+      vrc: '01100110'.split(''), lrc: '1111011'.split(''), error: [3, 5],
+    },
+    bcc: { pag: '23', bytes: ['10101001', '00111001', '11011101', '11100111'] },
+  },
+};
+if (typeof module !== 'undefined') module.exports = Bits;
+
+const $ = id => document.getElementById(id);
+const ICO = {
+  ok: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3.2 3L17 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  error: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v5M12 17.5v.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+};
+function progreso(paso, total, nombre) {
+  let t = ''; for (let i = 0; i < total; i++) t += `<span class="${i < paso ? 'hecho' : i === paso ? 'actual' : ''}"></span>`;
+  return `<div class="progreso"><div class="rotulo"><b>${nombre}</b><span>Paso ${paso + 1} de ${total}</span></div><div class="tramos" aria-hidden="true">${t}</div></div>`;
+}
+function segmentado(nombre, opciones, valor) {
+  const etiq = { crcmodo: 'Modo', hammodo: 'Modo', vrcmodo: 'Modo', vrcvista: 'Vista', vrcpar: 'Tipo de paridad' }[nombre] || nombre;
+  return `<div class="segmentado" role="group" aria-label="${etiq}">${opciones.map(([v, l]) => `<button data-${nombre}="${v}" aria-pressed="${v === valor}">${l}</button>`).join('')}</div>`;
+}
+function navegar(id, paso, total, ultimo) {
+  $(id).innerHTML = `<button class="ant" data-nav="-1" ${paso === 0 ? 'disabled' : ''}>Anterior</button>` +
+    `<button class="sig" data-nav="1">${paso === total - 1 ? (ultimo || 'Volver a la entrada') : 'Siguiente'}</button>`;
+}
+function teclado() {
+  return `<div class="teclado" role="group" aria-label="Teclado de bits"><button data-tecla="0">0</button><button data-tecla="1">1</button><button class="borrar" data-tecla="b" aria-label="Borrar el último bit">⌫ Borrar</button></div>`;
+}
+
+/* ---------- CRC ---------- */
+const crc = { modo: 'receptor', paso: 7, M: Bits.catedra.crc.M, G: Bits.catedra.crc.G, T: '', campo: 'T' };
+crc.T = Bits.crcEmisor(crc.M, crc.G).T;
+function grilla(D, pasos, hasta, final, ok, r) {
+  const L = D.length, cols = `40px repeat(${L},18px)`;
+  let h = `<div class="div" style="grid-template-columns:${cols}" role="img" aria-label="División módulo 2 de ${D} por ${crc.G}, ${hasta} pasos a la vista">`;
+  h += `<div class="lab">${crc.modo === 'emisor' ? 'P(x)' : "T'(x)"}</div>` + [...D].map(b => `<div class="c">${b}</div>`).join('');
+  pasos.forEach((p, i) => {
+    const vis = i < hasta, act = i === hasta - 1 && !final;
+    const cls = vis ? (act ? ' fila-actual' : '') : ' apagado';
+    h += `<div class="lab${cls}">⊕</div>`;
+    for (let c = 0; c < L; c++) { const k = c - p.off; h += `<div class="c${cls}${k >= 0 && k < crc.G.length ? ' g' : ''}">${k >= 0 && k < crc.G.length ? crc.G[k] : ''}</div>`; }
+    h += `<div class="lab${cls}">${i === pasos.length - 1 && final ? 'R(x)' : ''}</div>`;
+    for (let c = 0; c < L; c++) {
+      const k = c - p.off, en = k >= 0 && c < p.fin, baj = en && c >= p.fin - p.bajados && p.bajados > 0;
+      const resto = final && i === pasos.length - 1 && c >= L - r;
+      h += `<div class="c${cls}${baj ? ' baj' : ''}${resto ? (ok ? ' resto-ok' : ' resto-mal') : ''}">${en ? p.res[k] : ''}</div>`;
+    }
+  });
+  return h + '</div>';
+}
+function renderCRC() {
+  const em = crc.modo === 'emisor';
+  const calc = em ? Bits.crcEmisor(crc.M, crc.G) : Bits.crcReceptor(crc.T, crc.G);
+  const D = em ? calc.P : crc.T, n = calc.pasos.length, total = n + 2;
+  crc.paso = Math.min(crc.paso, total - 1);
+  const p = crc.paso;
+  let h = segmentado('crcmodo', [['emisor', 'Emisor'], ['receptor', 'Verificar en el receptor']], crc.modo);
+  const nombre = p === 0 ? 'Entrada' : p === total - 1 ? 'Resultado' : `XOR ${p} de ${n}`;
+  h += progreso(p, total, nombre);
+  if (p === 0) {
+    const gen = Bits.generadores.find(g => g.bits === crc.G);
+    const val = s => `${s}<span class="cursor" aria-hidden="true"></span>`;
+    const campo = em ? 'M' : 'T';
+    h += `<button class="campo" data-campo="${campo}" aria-pressed="${crc.campo === campo}"><span class="nom">${em ? 'M(x) · mensaje' : "T'(x) · trama recibida"}</span><span class="val">${val(em ? crc.M : crc.T)}</span></button>`;
+    h += `<button class="campo" data-campo="G" aria-pressed="${crc.campo === 'G'}"><span class="nom">G(x) · generador${gen ? ' · ' + gen.poli : ''}</span><span class="val">${val(crc.G)}</span></button>`;
+    h += `<div class="chips" role="group" aria-label="Generadores estándar">${Bits.generadores.map(g => `<button data-gen="${g.bits}" aria-pressed="${g.bits === crc.G}">${g.nombre}</button>`).join('')}</div>`;
+    h += teclado();
+  } else {
+    h += `<div class="hoja"><dl class="datos"><dt>${em ? 'M(x)' : "T'(x)"}</dt><dd>${em ? crc.M : crc.T}</dd><dt>G(x)</dt><dd>${crc.G} · r = ${calc.r}</dd>${em ? `<dt>P(x)</dt><dd>${calc.P}</dd>` : ''}</dl></div>`;
+    const final = p === total - 1;
+    const cuenta = `<div class="hoja"><h3>${em ? 'P(x) ÷ G(x)' : "T'(x) ÷ G(x)"}${final ? ' · la cuenta completa' : ''}</h3><div class="desplaza">${grilla(D, calc.pasos, final ? n : p, final, em || calc.ok, calc.r)}</div></div>`;
+    if (!final) h += cuenta;
+    if (!final) {
+      const s = calc.pasos[p - 1];
+      h += `<div class="explica" aria-live="polite"><b>${s.antes} ⊕ ${crc.G} = ${Bits.xor(s.antes, crc.G)}</b>Columnas ${s.off + 1} a ${s.off + crc.G.length}. ${s.bajados ? `Bajo ${s.bajados} bit${s.bajados > 1 ? 's' : ''} (subrayado${s.bajados > 1 ? 's' : ''}) hasta que el próximo 1 quede bajo G(x).` : 'Ya no quedan bits para bajar: lo que queda es el resto.'}</div>`;
+    } else if (em) {
+      h += `<div class="tarjeta-estado estado-ok" role="status">${ICO.ok}<div><strong>R(x) = ${calc.corto}</strong><p>Con r = ${calc.r} bits: ${calc.resto}. Trama a transmitir T(x) = P(x) + R(x):</p><p class="mono" style="font-size:17px;line-height:24px;margin-top:4px">${crc.M}<b style="text-decoration:underline">${calc.resto}</b></p></div></div>`;
+    } else if (calc.ok) {
+      h += `<div class="tarjeta-estado estado-ok" role="status">${ICO.ok}<div><strong>Resto ${calc.resto} · sin error</strong><p>T'(x) es divisible por G(x): la trama llegó como se envió (pág. 31).</p></div></div>`;
+    } else {
+      h += `<div class="tarjeta-estado estado-error" role="status">${ICO.error}<div><strong>Resto ${calc.resto} ≠ 0 · hay error</strong><p>CRC detecta pero no corrige: se pide la retransmisión.</p></div></div>`;
+    }
+    if (final) h += cuenta;
+  }
+  $('crc').innerHTML = h;
+  navegar('crc-nav', p, total);
+}
+$('crc').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.crcmodo) { crc.modo = b.dataset.crcmodo; crc.paso = 0; crc.campo = crc.modo === 'emisor' ? 'M' : 'T'; }
+  else if (b.dataset.campo) crc.campo = b.dataset.campo;
+  else if (b.dataset.gen) crc.G = b.dataset.gen;
+  else if (b.dataset.tecla) {
+    const k = crc.campo; let v = crc[k];
+    v = b.dataset.tecla === 'b' ? v.slice(0, -1) : (v + b.dataset.tecla).slice(0, 32);
+    crc[k] = v;
+  } else return;
+  renderCRC();
+});
+$('crc-nav').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const em = crc.modo === 'emisor';
+  const total = (em ? Bits.crcEmisor(crc.M, crc.G) : Bits.crcReceptor(crc.T, crc.G)).pasos.length + 2;
+  const valido = /^1[01]+$/.test(crc.G) && (em ? crc.M.length > 0 : crc.T.length >= crc.G.length);
+  if (crc.paso === 0 && +b.dataset.nav > 0 && !valido) { alertaCRC(); return; }
+  crc.paso = crc.paso === total - 1 && +b.dataset.nav > 0 ? 0 : crc.paso + +b.dataset.nav;
+  renderCRC();
+});
+function alertaCRC() {
+  if ($('crc-aviso')) return;
+  $('crc').insertAdjacentHTML('beforeend', `<p id="crc-aviso" class="aviso-linea estado-aviso" role="alert">G(x) tiene que empezar con 1 y tener al menos 2 bits, y ${crc.modo === 'emisor' ? 'M(x) no puede quedar vacío' : "T'(x) tiene que ser al menos tan largo como G(x)"}.</p>`);
+}
+
+/* ---------- Hamming ---------- */
+const ham = { modo: 'receptor', paso: 4, datos: Bits.catedra.hamming.datos, rx: Bits.catedra.hamming.rx, campo: 'rx' };
+function tablaHam(t, etiqueta, filaBits, grupos, hasta, actual, marcas) {
+  let h = `<div class="ham" style="grid-template-columns:30px repeat(${t},24px)">`;
+  h += `<div class="lab"></div>`; for (let pos = t; pos >= 1; pos--) h += `<div class="${Bits.esPot(pos) ? 'par' : ''}">${etiqueta[pos]}</div>`;
+  h += `<div class="lab">pos.</div>`; for (let pos = t; pos >= 1; pos--) h += `<div>${pos}</div>`;
+  h += `<div class="lab">${filaBits.nombre}</div>`; for (let pos = t; pos >= 1; pos--) h += `<div class="b ${marcas[pos] || ''}">${filaBits.bit[pos] ?? ''}</div>`;
+  grupos.slice(0, hasta).forEach((g, i) => {
+    const act = i === actual ? ' fila-actual' : '';
+    h += `<div class="lab${act}">p${g.i}</div>`;
+    for (let pos = t; pos >= 1; pos--) { const en = (pos & g.pos) !== 0; h += `<div class="b${en ? ' m' : ''}${act}">${en ? (filaBits.bit[pos] ?? g.bit) : ''}</div>`; }
+  });
+  return h + '</div>';
+}
+function renderHam() {
+  const em = ham.modo === 'emisor';
+  let h = segmentado('hammodo', [['emisor', 'Codificar (emisor)'], ['receptor', 'Verificar (receptor)']], ham.modo);
+  if (em) {
+    const c = Bits.hammingCodificar(ham.datos);
+    const total = c.p + 3; ham.paso = Math.min(ham.paso, total - 1); const p = ham.paso;
+    const nombres = ['Datos', 'Cuántos bits de paridad', ...c.grupos.map(g => `Grupo p${g.i}`), 'Palabra a transmitir'];
+    h += progreso(p, total, nombres[p]);
+    if (p === 0) h += `<button class="campo" aria-pressed="true"><span class="nom">n · bits de datos (n${c.n} … n1)</span><span class="val">${ham.datos}<span class="cursor" aria-hidden="true"></span></span></button>` + teclado();
+    else if (p === 1) h += `<div class="hoja"><h3>2<sup>p</sup> ≥ n + p + 1 con n = ${c.n}</h3><p class="mono" style="margin:0;font-size:17px;line-height:26px">${[1, 2, 3, 4, 5].filter(q => q <= c.p).map(q => `p = ${q}: ${2 ** q} ≥ ${c.n + q + 1} ${2 ** q >= c.n + q + 1 ? '✓' : '✗'}`).join('<br>')}</p></div><div class="explica"><b>p = ${c.p} · palabra de ${c.t} bits</b>Los bits de paridad van en las posiciones ${c.grupos.map(g => g.pos).join(', ')}.</div>`;
+    else {
+      const gi = Math.min(p - 1, c.p);
+      const bitTx = {}; for (let pos = c.t; pos >= 1; pos--) if (!Bits.esPot(pos) || c.grupos.slice(0, gi).some(g => g.pos === pos)) bitTx[pos] = c.bit[pos];
+      h += `<div class="hoja tabla desplaza">${tablaHam(c.t, c.etiqueta, { nombre: p === total - 1 ? 'TX' : 'n', bit: p === total - 1 ? c.bit : bitTx }, c.grupos, gi, p === total - 1 ? -1 : gi - 1, {})}</div>`;
+      if (p < total - 1) { const g = c.grupos[gi - 1]; h += `<div class="explica" aria-live="polite"><b>p${g.i} = ${g.bit}</b>Posiciones ${g.miembros.join(', ')}: ${g.unos} ${g.unos === 1 ? 'uno' : 'unos'}. Con paridad par, p${g.i} completa un número par.</div>`; }
+      else h += `<div class="tarjeta-estado estado-ok" role="status">${ICO.ok}<div><strong>n+p a TX</strong><p class="mono" style="font-size:17px;line-height:24px">${c.palabra}</p><p>p4 p3 p2 p1 = ${c.grupos.map(g => g.bit).reverse().join(' ')} · paridad par (pág. 49)</p></div></div>`;
+    }
+    $('ham').innerHTML = h; navegar('ham-nav', p, total); return;
+  }
+  const s = Bits.hammingSindrome(ham.rx);
+  const total = s.p + 2; ham.paso = Math.min(ham.paso, total - 1); const p = ham.paso;
+  const nombres = ['Palabra recibida', ...s.grupos.map(g => `Grupo p${g.i}`), 'Síndrome y corrección'];
+  h += progreso(p, total, nombres[p]);
+  if (p === 0) {
+    h += `<button class="campo" aria-pressed="true"><span class="nom">n+p a RX · posición ${ham.rx.length} → 1</span><span class="val">${ham.rx}<span class="cursor" aria-hidden="true"></span></span></button>`;
+    h += `<p class="aviso-linea estado-aviso" style="margin:0">Paridad par, como en el ejemplo de la cátedra (págs. 49-50).</p>` + teclado();
+  } else {
+    const final = p === total - 1, gi = final ? s.p : p;
+    const marcas = {}; if (final && s.pos) marcas[s.pos] = 'err';
+    h += `<div class="hoja tabla desplaza">${tablaHam(s.t, s.etiqueta, { nombre: 'RX', bit: s.bit }, s.grupos, gi, final ? -1 : gi - 1, marcas)}</div>`;
+    h += `<div class="sindrome" aria-label="Síndrome p4 p3 p2 p1"><b style="font-size:13px">Síndrome</b>${s.grupos.slice().reverse().map(g => `<div class="caja${g.i <= gi && g.s === '1' ? ' uno' : ''}"><small>p${g.i}</small><span class="mono">${g.i <= gi ? g.s : ''}</span></div>`).join('')}</div>`;
+    if (!final) {
+      const g = s.grupos[gi - 1], v = g.miembros.map(q => s.bit[q]);
+      h += `<div class="explica ${g.s === '1' ? 'estado-aviso' : ''}" aria-live="polite"><b>p${g.i}: ${v.join(' + ')} → ${g.unos} ${g.unos === 1 ? 'uno' : 'unos'} → ${g.s}</b>Posiciones ${g.miembros.join(', ')}. ${g.s === '1' ? 'Cantidad impar: este grupo no cumple la paridad par.' : 'Cantidad par: el grupo cumple.'}</div>`;
+    } else if (s.pos) {
+      h += `<div class="tarjeta-estado estado-error" role="status">${ICO.error}<div><strong>${s.sindrome} = ${s.pos} · error en la posición ${s.pos} (${s.etiqueta[s.pos]})</strong><p>Llegó ${s.bit[s.pos]}, se corrige a ${s.bit[s.pos] === '1' ? '0' : '1'}. Palabra corregida:</p><p class="mono" style="font-size:17px;line-height:24px;margin-top:4px">${[...s.corregida].map((b, j) => s.t - j === s.pos ? `<b style="text-decoration:underline">${b}</b>` : b).join('')}</p></div></div>`;
+    } else {
+      h += `<div class="tarjeta-estado estado-ok" role="status">${ICO.ok}<div><strong>Síndrome 0000 · sin error</strong><p>Todos los grupos cumplen la paridad par.</p></div></div>`;
+    }
+  }
+  $('ham').innerHTML = h; navegar('ham-nav', p, total);
+}
+$('ham').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.hammodo) { ham.modo = b.dataset.hammodo; ham.paso = 0; }
+  else if (b.dataset.tecla) {
+    const k = ham.modo === 'emisor' ? 'datos' : 'rx';
+    ham[k] = b.dataset.tecla === 'b' ? ham[k].slice(0, -1) : (ham[k] + b.dataset.tecla).slice(0, 15);
+  } else return;
+  renderHam();
+});
+$('ham-nav').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const total = ham.modo === 'emisor' ? Bits.hammingCodificar(ham.datos).p + 3 : Bits.hammingSindrome(ham.rx).p + 2;
+  if (ham.paso === 0 && (ham.modo === 'emisor' ? ham.datos.length < 1 : ham.rx.length < 3)) return;
+  ham.paso = ham.paso === total - 1 && +b.dataset.nav > 0 ? 0 : ham.paso + +b.dataset.nav; renderHam();
+});
+
+/* ---------- VRC / LRC ---------- */
+const C = Bits.catedra.vrc;
+const vrc = { modo: 'receptor', vista: 'tabla', par: true, paso: 2, corregida: false };
+function rxTabla() { const f = C.tx.slice(); const [i, j] = C.error; f[i] = f[i].slice(0, j) + (f[i][j] === '1' ? '0' : '1') + f[i].slice(j + 1); return f; }
+function tablaVRC(filas, vrcF, lrcF, esquina, cls) {
+  let h = `<table class="vrc"><caption class="sr">Filas B1 a B7, columnas D1 a D8, VRC abajo y LRC a la derecha</caption><thead><tr><th scope="col"></th>${filas[0].split('').map((_, j) => `<th scope="col">D${j + 1}</th>`).join('')}<th scope="col">LRC</th></tr></thead><tbody>`;
+  filas.forEach((f, i) => {
+    h += `<tr class="${cls.fila === i ? 'fila-mal' : ''}"><th scope="row">B${i + 1}</th>${[...f].map((b, j) => `<td class="${cls.cruce && cls.cruce[0] === i && cls.cruce[1] === j ? cls.cruceCls : cls.col === j ? 'col-mal' : ''}">${b}</td>`).join('')}<td class="ctl${cls.lrcMal === i ? ' ctl-mal' : ''}">${lrcF[i] ?? ''}</td></tr>`;
+  });
+  h += `<tr><th scope="row">VRC</th>${vrcF.map((b, j) => `<td class="ctl${cls.vrcMal === j ? ' ctl-mal' : ''}">${b ?? ''}</td>`).join('')}<td class="ctl">${esquina ?? ''}</td></tr>`;
+  return h + '</tbody></table>';
+}
+function renderVRC() {
+  let h = segmentado('vrcmodo', [['emisor', 'Emisor'], ['receptor', 'Receptor']], vrc.modo);
+  h += `<div class="fila">${segmentado('vrcvista', [['tabla', 'Tabla'], ['bcc', 'BCC lineal']], vrc.vista)}${vrc.vista === 'tabla' ? segmentado('vrcpar', [['par', 'Par'], ['impar', 'Impar']], vrc.par ? 'par' : 'impar') : ''}</div>`;
+  if (vrc.vista === 'bcc') {
+    const by = Bits.catedra.bcc.bytes;
+    h += `<div class="hoja"><h3>BCC: XOR columna a columna (pág. 23)</h3><div class="bcc">${by.map((b, i) => `<span>${i ? '⊕' : ''}</span><span>${b}</span>`).join('')}<span></span><span class="linea"></span><span>=</span><b>${Bits.bcc(by)}</b></div></div>`;
+    h += `<div class="explica"><b>BCC = ${Bits.bcc(by)}</b>Se agrega al final del bloque. Equivale a paridad par por columna.</div>`;
+    $('vrc').innerHTML = h; $('vrc-nav').innerHTML = ''; return;
+  }
+  const total = 3, p = vrc.paso;
+  if (vrc.modo === 'emisor') {
+    const c = Bits.vrcLrc(C.tx, vrc.par);
+    h += progreso(p, total, ['Caracteres D1…D8', 'LRC por fila', 'VRC por columna'][p]);
+    h += `<div class="hoja tabla">${tablaVRC(C.tx, p >= 2 ? c.vrc : [], p >= 1 ? c.lrc : [], p >= 2 ? c.esquina : '', {})}</div>`;
+    h += `<div class="explica">${p === 0 ? '<b>Cada columna es un carácter de 7 bits</b>B1 a B7 son las posiciones de bit.' : p === 1 ? '<b>LRC: un bit por fila</b>Completa la cantidad de unos de cada fila B1…B7.' : `<b>VRC: un bit por carácter</b>La esquina (${c.esquina}) es la paridad del propio VRC.`}</div>`;
+  } else {
+    const rx = rxTabla(), v = Bits.vrcLrcVerificar(rx, C.vrc, C.lrc, vrc.par);
+    h += progreso(p, total, ['Tabla recibida', 'Recalcular VRC y LRC', 'Cruce y corrección'][p]);
+    const cel = v.celda, cls = p === 0 ? {} : { lrcMal: v.filasMal[0], vrcMal: v.colsMal[0] };
+    if (p === 2 && cel) Object.assign(cls, { fila: cel[0], col: cel[1], cruce: cel, cruceCls: vrc.corregida ? 'corregido' : 'cruce' });
+    const filas = vrc.corregida && cel ? C.tx : rx;
+    h += `<div class="hoja tabla desplaza">${tablaVRC(filas, C.vrc, C.lrc, '0', cls)}</div>`;
+    if (p === 0) h += `<div class="explica"><b>Llegan los 8 caracteres con su VRC y LRC</b>Cada recuadro beige es un bit de control tal como llegó del canal.</div>`;
+    else if (p === 1) h += `<ul class="lista-chequeo" aria-live="polite">${v.filasMal.map(i => `<li class="estado-error">${ICO.error}<span>LRC de B${i + 1}: llegó ${C.lrc[i]}, da ${v.lrc[i]}</span></li>`).join('')}${v.colsMal.map(j => `<li class="estado-error">${ICO.error}<span>VRC de D${j + 1}: llegó ${C.vrc[j]}, da ${v.vrc[j]}</span></li>`).join('')}<li class="estado-ok">${ICO.ok}<span>Las otras ${7 - v.filasMal.length} filas y ${8 - v.colsMal.length} columnas cumplen</span></li></ul>`;
+    else if (cel) h += `<div class="tarjeta-estado ${vrc.corregida ? 'estado-ok' : 'estado-error'}" role="status">${vrc.corregida ? ICO.ok : ICO.error}<div><strong>${vrc.corregida ? `Corregido: B${cel[0] + 1} · D${cel[1] + 1} = ${C.tx[cel[0]][cel[1]]}` : `Error en B${cel[0] + 1} · D${cel[1] + 1}`}</strong><p>${vrc.corregida ? 'La tabla vuelve a cumplir todas las paridades.' : `El cruce de la fila y la columna que fallan. Llegó ${rx[cel[0]][cel[1]]}, era ${C.tx[cel[0]][cel[1]]}.`}</p>${vrc.corregida ? '' : '<button data-corregir style="margin-top:8px;min-height:44px;padding:0 16px;border-radius:999px;border:0;background:var(--tinta);color:var(--fondo);font-weight:700">Corregir el bit</button>'}</div></div>`;
+    else h += `<div class="tarjeta-estado estado-aviso" role="status">${ICO.error}<div><strong>Error detectado, sin cruce único</strong><p>Fallan ${v.filasMal.length} filas y ${v.colsMal.length} columnas: no hay un único cruce. ${vrc.par ? 'Con más de un error no se puede ubicar el bit.' : 'La tabla de la cátedra se armó con paridad par: probá con «Par».'}</p></div></div>`;
+  }
+  $('vrc').innerHTML = h; navegar('vrc-nav', p, total);
+}
+$('vrc').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.vrcmodo) { vrc.modo = b.dataset.vrcmodo; vrc.paso = 0; vrc.corregida = false; }
+  else if (b.dataset.vrcvista) vrc.vista = b.dataset.vrcvista;
+  else if (b.dataset.vrcpar) { vrc.par = b.dataset.vrcpar === 'par'; vrc.corregida = false; }
+  else if ('corregir' in b.dataset) vrc.corregida = true;
+  else return;
+  renderVRC();
+});
+$('vrc-nav').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  vrc.paso = vrc.paso === 2 && +b.dataset.nav > 0 ? 0 : vrc.paso + +b.dataset.nav; vrc.corregida = false; renderVRC();
+});
+// Al redibujar, el foco vuelve al control equivalente para no perder el lugar con teclado.
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'), tel = b && b.closest('.telefono'); if (!tel) return;
+  const ds = Object.entries(b.dataset)[0]; if (!ds) return;
+  const sel = `[data-${ds[0].replace(/[A-Z]/g, m => '-' + m.toLowerCase())}="${ds[1]}"]`;
+  setTimeout(() => { if (!document.contains(b)) tel.querySelector(sel)?.focus(); });
+});
+renderCRC(); renderHam(); renderVRC();
+</script>
+</body>
+</html>
