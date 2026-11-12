@@ -1,16 +1,13 @@
 import { Stack } from 'expo-router';
-import { Text } from 'react-native';
 
-import { colores, espacio, tipografia } from '@/tema';
+import { PantallaVrcLrc } from '@/screens/bits/vrc-lrc';
 
-// Provisorio: la pantalla de esta herramienta la reemplaza la tarea que le corresponde.
+/** VRC/LRC paso a paso, apilada sobre la pestaña «Bits». */
 export default function RutaVrcLrc() {
   return (
     <>
       <Stack.Screen options={{ title: 'VRC / LRC · paridad' }} />
-      <Text style={{ ...tipografia.cuerpo, color: colores.textoSuave, padding: espacio.lg }}>
-        Próximamente
-      </Text>
+      <PantallaVrcLrc />
     </>
   );
 }
