@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Formula } from '@/dominio/formula';
-import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import { conMultiplo } from '@/dominio/multiplos';
 import { diagnosticar } from '@/guia/diagnostico';
+import { esGraficable } from '@/graficas/muestreo';
+import { useSesionFormula } from '@/graficas/sesion';
+import { VistaPrevia } from '@/graficas/vista-previa';
 import { fraseDelGuia } from '@/guia/frases';
 import { ALTO_GUIA, Guia } from '@/guia/guia';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
@@ -36,10 +39,12 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
 
   // Toda Variable guarda un arreglo de textos. Una escalar simplemente tiene uno,
   // así el resto de la pantalla no necesita dos caminos para cada cosa.
-  const [textos, setTextos] = useState<Record<string, string[]>>(() => camposIniciales(formula));
-  const [multiplos, setMultiplos] = useState<Record<string, Multiplo>>(() =>
-    Object.fromEntries(formula.entradas.map((v) => [v.simbolo, v.multiploCanonico])),
-  );
+  //
+  // El estado vive en la sesión de la Fórmula y no acá adentro porque la pantalla de
+  // la gráfica lo lee y lo cambia con sus deslizadores. Al cerrar la pantalla se
+  // olvida: la próxima vez la Fórmula abre vacía, como siempre.
+  const { textos, multiplos, setTextos, setMultiplos, olvidar } = useSesionFormula(formula);
+  useEffect(() => olvidar, [olvidar]);
 
   if (esFicha) {
     return (
@@ -234,6 +239,8 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
           )}
         </View>
       </View>
+
+      {esGraficable(formula) && <VistaPrevia formula={formula} sesion={{ textos, multiplos }} />}
 
       <FichaFormula formula={formula} />
     </ScrollView>

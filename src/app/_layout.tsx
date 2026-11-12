@@ -13,6 +13,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { ProveedorSesion } from '@/graficas/sesion';
 import { colores, fuentes } from '@/tema';
 
 /**
@@ -60,8 +61,10 @@ export default function DisposicionRaiz() {
     return null;
   }
 
+  // La sesión de cada Fórmula va por encima de la pila: la leen la pantalla de la
+  // Fórmula y la de su gráfica, que se apila sobre ella.
   return (
-    <>
+    <ProveedorSesion>
       {/* Fondo crema y tema claro fijo: los íconos de la barra de estado van oscuros. */}
       <StatusBar style="dark" />
       <Stack
@@ -78,6 +81,6 @@ export default function DisposicionRaiz() {
         {/* La barra de pestañas trae su propio encabezado por pantalla. */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-    </>
+    </ProveedorSesion>
   );
 }
