@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formulasDeUnidad } from '@/formulas';
+import { ALTO_GUIA, Guia } from '@/guia/guia';
 import { colores, espacio, radio, tipografia } from '@/tema';
 
 import { InfoUnidad, UNIDADES } from './datos';
@@ -47,7 +48,7 @@ export function PantallaUnidades({ onSeleccionarUnidad, onBuscar }: PantallaUnid
     }
   };
 
-  return (
+  const contenido = (
     <ScrollView
       testID="lista-unidades"
       style={estilos.pantalla}
@@ -105,6 +106,16 @@ export function PantallaUnidades({ onSeleccionarUnidad, onBuscar }: PantallaUnid
       })}
     </ScrollView>
   );
+
+  return (
+    <View style={estilos.pantalla}>
+      {contenido}
+      <Guia
+        animacion="hablando"
+        texto="¡Bienvenidos! Elegí una Unidad y buscá la fórmula que necesitás."
+      />
+    </View>
+  );
 }
 
 const estilos = StyleSheet.create({
@@ -115,7 +126,8 @@ const estilos = StyleSheet.create({
   contenido: {
     padding: espacio.lg,
     gap: espacio.md,
-    paddingBottom: espacio.xxl,
+    // Aire para llevar la última Unidad por encima del guía.
+    paddingBottom: espacio.xxl + ALTO_GUIA,
   },
   encabezado: {
     marginBottom: espacio.xs,

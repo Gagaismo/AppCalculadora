@@ -77,4 +77,12 @@ describe('PantallaUnidades', () => {
     await fireEvent.press(screen.getByTestId('boton-buscar-inicio'));
     expect(onBuscar).toHaveBeenCalledTimes(1);
   });
+
+  it('el guía da la bienvenida', async () => {
+    await render(<PantallaUnidades />);
+
+    expect(screen.getByTestId('guia-globo')).toHaveTextContent(
+      '¡Bienvenidos! Elegí una Unidad y buscá la fórmula que necesitás.',
+    );
+  });
 });

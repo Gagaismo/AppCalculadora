@@ -198,4 +198,18 @@ describe('PantallaBusqueda', () => {
 
     expect(screen.getByTestId('resultado-formula-U10-F07')).toBeTruthy();
   });
+
+  it('el guía da un tip para buscar y, si no hay resultados, sugiere otra cosa', async () => {
+    await render(<PantallaBusqueda catalogo={catalogoMock} />);
+
+    expect(screen.getByTestId('guia-globo')).toHaveTextContent(
+      'Buscá por nombre o por símbolo, como SNR o B.',
+    );
+
+    await fireEvent.changeText(screen.getByTestId('input-busqueda'), 'termino_inexistente_xyz');
+
+    expect(screen.getByTestId('guia-globo')).toHaveTextContent(
+      'Mmm, eso no lo tengo. Probá con otra palabra o con el símbolo.',
+    );
+  });
 });

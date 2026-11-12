@@ -4,6 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import type { Formula } from '@/dominio/formula';
 import { FORMULAS } from '@/formulas';
+import type { Frase } from '@/guia/frases';
+import { ALTO_GUIA, Guia } from '@/guia/guia';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { buscarFormulas } from './buscar';
@@ -40,6 +42,14 @@ export function PantallaBusqueda({
 
   const resultados = buscarFormulas(termino, catalogo);
   const busquedaActiva = termino.trim().length > 0;
+
+  const fraseGuia: Frase =
+    busquedaActiva && resultados.length === 0
+      ? {
+          animacion: 'confundido',
+          texto: 'Mmm, eso no lo tengo. Probá con otra palabra o con el símbolo.',
+        }
+      : { animacion: 'pensando', texto: 'Buscá por nombre o por símbolo, como SNR o B.' };
 
   const manejarSeleccion = (id: string) => {
     if (onSeleccionarFormula) {
@@ -167,6 +177,7 @@ export function PantallaBusqueda({
           </>
         )}
       </ScrollView>
+      <Guia {...fraseGuia} />
     </View>
   );
 }
@@ -217,7 +228,8 @@ const estilos = StyleSheet.create({
   contenido: {
     padding: espacio.lg,
     gap: espacio.md,
-    paddingBottom: espacio.xxl,
+    // Aire para llevar el último resultado por encima del guía.
+    paddingBottom: espacio.xxl + ALTO_GUIA,
   },
   conteoResultados: {
     ...tipografia.etiqueta,
