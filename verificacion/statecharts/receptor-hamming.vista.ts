@@ -6,7 +6,7 @@ const final = (v: V) => v.paso === p(v) + 1;
 /** El síndrome: el XOR de las posiciones que llegaron cambiadas. */
 const posicion = (v: V) => v.cambiados.reduce((a, b) => a ^ b, 0);
 
-export const title = "Hamming, receptor: de la palabra recibida a «Corregir el bit»";
+export const title = "Hamming, receptor: de la palabra recibida a Corregir el bit";
 
 export const state = (v: V) => {
   if (v.paso === 0) return "Palabra recibida";

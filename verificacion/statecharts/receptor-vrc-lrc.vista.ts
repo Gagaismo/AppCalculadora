@@ -17,7 +17,7 @@ function fallan(v: V) {
   return { filas: impares(filas), columnas: impares(columnas) };
 }
 
-export const title = "VRC/LRC, receptor de la tabla: de lo recibido a «Corregir el bit»";
+export const title = "VRC/LRC, receptor de la tabla: de lo recibido a Corregir el bit";
 
 function resultado(v: V) {
   const { filas, columnas } = fallan(v);
