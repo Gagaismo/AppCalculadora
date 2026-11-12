@@ -1,5 +1,5 @@
 import { Text } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { act, renderRouter } from 'expo-router/testing-library';
 
 import { OrientationLock, lockAsync } from '@/pruebas/screen-orientation-doble';
@@ -39,7 +39,9 @@ describe('useOrientacionHorizontal', () => {
     await renderRouter(rutas, { initialUrl: '/' });
     expect(lockAsync).not.toHaveBeenCalled();
 
-    await act(() => router.push('/grafica'));
+    // `/grafica` es una ruta de este árbol de prueba, no de la app: las rutas tipadas
+    // (`.expo/types/router.d.ts`) no la conocen.
+    await act(() => router.push('/grafica' as Href));
     expect(lockAsync).toHaveBeenLastCalledWith(OrientationLock.LANDSCAPE);
 
     await act(() => router.back());
