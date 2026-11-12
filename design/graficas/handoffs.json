@@ -3,13 +3,13 @@
   "chosen": "03-pantalla-completa-horizontal.html",
   "handoffs": {
     "03-pantalla-completa-horizontal.html": {
-      "status": "in_progress",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-12T06:59:55.502Z",
       "startedAt": "2026-11-12T07:00:15.596Z",
-      "implementedAt": null,
+      "implementedAt": "2026-11-12T18:22:59.886Z",
       "feature": "odd/tasks/graficas.md",
-      "note": "Planificando: orientación, motor de muestreo de la curva y lienzo SVG."
+      "note": "Implementado: vista previa en Fórmula con «Ver gráfica» y pantalla horizontal con lienzo, chips de eje X, deslizadores, Lineal/Log y Encuadrar. 1143 tests en verde y verify independiente aprobado con notas. Falta probarlo en el teléfono (Expo Go): no hay preview web."
     }
   }
 }
