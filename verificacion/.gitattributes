@@ -1,0 +1,2 @@
+# Los scripts, los modelos y sus listas se leen línea por línea desde bash: con CRLF se rompen.
+* text eol=lf
