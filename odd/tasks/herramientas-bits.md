@@ -89,3 +89,4 @@ Diseño elegido: `design/herramientas-bits/01-paso-a-paso.html` («Paso a paso»
   - En CRC, una trama editada puede quedar truncada.
   - El comentario sobre el máximo de bits del CRC.
   - Un BCC vacío.
+- **L8** El hook RDD volvió a marcar como pendiente el target de la rama entera (base `5fd93bd`), que no entra en el presupuesto. El humano eligió la opción «1»: dejarlo así. Ese target queda sin revisar a propósito, porque la revisión por commit cubre el código de la app. Los mockups (`4abb405`) y los registros (`0b731ac`, `5bb272d` y este) quedan sin revisión RDD.
