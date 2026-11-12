@@ -37,12 +37,12 @@ Rama: `feature/graficas`, que sale de `feature/herramientas-bits`.
 
 ## Tasks
 
-- [x] T1 — S2–S4 — mockups de la etapa 1 en `design/graficas/` — worker de diseño — commit: — (sin commitear todavía)
-- [ ] T2 — S2, S3, S5, D2, D3 — motor puro en `src/graficas/`: muestreo de la curva con la `calcular()` del motor y huecos donde no está definida, rango y escala, marcas y formato de la lectura; tests contra los Ejemplos de U05-F17, U03-F07 y U03-F01 — worker A — commit: —
-- [ ] T3 — S3, S6 — componente `Lienzo` con `react-native-svg`: curva con huecos, ejes, marcas, punto actual y cruz al tocar o arrastrar — worker A — commit: —
-- [ ] T4 — S6, D1 — orientación con `expo-screen-orientation` y `app.json`, y componente `Deslizador` (¿hay Slider en `@expo/ui`?, con su doble de prueba) — worker B, en paralelo — commit: —
-- [ ] T5 — S6 — integración: vista previa en la pantalla de Fórmula y pantalla horizontal con el panel de control — worker — commit: —
-- [ ] T6 — todas — suite y typecheck, verificación independiente por el riesgo 5, handoff «implemented» — parent — commit: —
+- [x] T1 — S2–S4 — mockups de la etapa 1 en `design/graficas/` — worker de diseño — commit: 77a5cdf
+- [x] T2 — S2, S3, S5, D2, D3 — motor puro en `src/graficas/`: muestreo de la curva con la `calcular()` del motor y huecos donde no está definida, rango y escala, marcas y formato de la lectura; tests contra los Ejemplos de U05-F17, U03-F07 y U03-F01 — worker A — commit: 678ab3b
+- [x] T3 — S3, S6 — componente `Lienzo` con `react-native-svg`: curva con huecos, ejes, marcas, punto actual y cruz al tocar o arrastrar — worker A — commit: bdf2000
+- [x] T4 — S6, D1 — orientación con `expo-screen-orientation` y `app.json`, y componente `Deslizador` (¿hay Slider en `@expo/ui`?, con su doble de prueba) — worker B, en paralelo — commit: 714ef2d
+- [x] T5 — S6 — integración: vista previa en la pantalla de Fórmula y pantalla horizontal con el panel de control — worker — commit: 45d33cc, 6c158ad
+- [x] T6 — todas — suite y typecheck, verificación independiente por el riesgo 5, handoff «implemented» — parent — commit: este registro
 
 ## Log
 
@@ -58,3 +58,20 @@ Rama: `feature/graficas`, que sale de `feature/herramientas-bits`.
   - U03-F01 (dB), pág. 12, con la zona no definida.
   Preguntas abiertas: dirección o mezcla, rango del eje X, escala log automática, múltiplo en las marcas log, botón «Probar con el Ejemplo», y pasar la lectura al campo.
 - **L4** El humano pidió implementar `design/graficas/03-pantalla-completa-horizontal.html` (handoff en curso). Las demás preguntas quedaron sin responder; se aplicaron las recomendaciones D2–D4. Se encontró que `app.json` traba la app en `"orientation": "portrait"` y que `expo-screen-orientation` no está instalado; de ahí sale D1.
+- **L5** El primer intento de T2–T4 se cortó porque el disco C: estaba lleno (`ENOSPC`). El humano liberó espacio y se reinstaló `expo-screen-orientation ~57.0.3`, que sumó solo ese paquete.
+  - T4: la app queda trabada en vertical desde el manifiesto; en iOS el `Info.plist` y el plugin `initialOrientation PORTRAIT_UP`. El Deslizador usa el `Slider` universal de `@expo/ui`.
+  - T2/T3: 40 tests.
+  - Suite completa: 37 suites y 1122 tests en verde en dos corridas seguidas; typecheck 0. En una corrida anterior fallaron de forma intermitente `hamming.test.tsx` y `vrc-lrc.test.tsx` (pasan solos y en las corridas siguientes), probablemente por carga.
+  - El diff de T2/T3 fue de 1197 líneas; se commiteó en dos unidades.
+- **L6** T5 se cerró en `45d33cc` y `6c158ad`: 40 suites y 1143 tests en verde, typecheck 0. La copia de la vista previa pasó a «Se abre en horizontal, a pantalla completa», porque la app está trabada en vertical y girar el teléfono no hace nada.
+- **L7** Verificación independiente (gentle-ai-verify), riesgo 5: **pasa con notas**.
+  - La dependencia es compatible: SDK `~57.0.2`, instalada 57.0.3. `expo install --check` salió bien pero corrió offline; falta revalidar con red.
+  - Config: el manifiesto queda en portrait y el Info.plist tiene las horizontales.
+  - S1–S6 y D1–D4 se cumplen. Nota en S2: la curva usa `formula.calcular()` directo, no el motor; está justificado en `muestreo.ts`.
+  - Avisos:
+    - (1) si el `lockAsync(PORTRAIT_UP)` de salida falla, nada vuelve a trabar en vertical;
+    - (2) el gesto de volver en iOS anima en horizontal;
+    - (3) no hay cancelación de un lock pendiente.
+  - Solo en dispositivo: el giro real, el splash, las tres formas de volver, el segundo plano y el deslizador nativo.
+  - La falla intermitente de `hamming.test.tsx` y `vrc-lrc.test.tsx` bajo carga volvió a aparecer: queda para diagnosticar.
+  - El aviso (1) se está modelando en `verificar-orientacion-grafica`.
