@@ -1,0 +1,15 @@
+# Anclas del modelo SesionFormula.tla en el código.
+# Formato: archivo | texto literal | acción o definición del modelo que lo representa
+# Dentro de un mismo archivo, las anclas tienen que aparecer en este orden.
+src/graficas/sesion.tsx | [formula.id]: cambio(previas[formula.id] ?? sesionInicial(formula)), | sesion (la clave es sólo el id), Escribir, MoverDeslizador
+src/graficas/sesion.tsx | const { [id]: _, ...resto } = previas; | Volver (olvidar borra la entrada)
+src/graficas/sesion.tsx | const sesion = contexto ? (contexto.sesiones[formula.id] ?? local) : local; | Mostrado
+src/graficas/sesion.tsx | contexto ? contexto.cambiar(formula, cambio) : setLocal(cambio); | Escribir, MoverDeslizador (con proveedor, local no cambia)
+src/screens/formula/index.tsx | useEffect(() => olvidar, [olvidar]); | Volver (la Fórmula olvida al desmontarse)
+src/screens/formula/index.tsx | setTextos(camposIniciales(formula)); | Limpiar
+src/screens/grafica/index.tsx | const { textos, multiplos, setTextos } = useSesionFormula(formula); | MoverDeslizador (la gráfica no pide olvidar)
+src/screens/grafica/index.tsx | setTextos((previos) => ({ | MoverDeslizador
+src/screens/grafica/index.tsx | if (valor === undefined) { | MoverDeslizador (sin valor no hay deslizador)
+src/app/_layout.tsx | <ProveedorSesion> | sesion (un solo proveedor, sobre toda la pila)
+src/graficas/vista-previa.tsx | router.push({ pathname: '/formula/[id]/grafica', params: { id: formula.id } }) | VerGrafica
+app.json | "scheme": "appcalculadora" | AbrirLaMismaFormulaEncima, AbrirGraficaPorEnlace (hay enlaces)

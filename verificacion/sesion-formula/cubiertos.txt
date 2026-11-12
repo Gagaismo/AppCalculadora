@@ -1,0 +1,7 @@
+src/graficas/sesion.tsx
+src/screens/formula/index.tsx
+src/screens/grafica/index.tsx
+src/app/_layout.tsx
+src/app/formula/[id].tsx
+src/app/formula/[id]/grafica.tsx
+src/graficas/vista-previa.tsx
