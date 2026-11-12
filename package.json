@@ -56,7 +56,8 @@
   "jest": {
     "preset": "jest-expo",
     "setupFilesAfterEnv": [
-      "<rootDir>/src/pruebas/safe-area-doble.ts"
+      "<rootDir>/src/pruebas/safe-area-doble.ts",
+      "<rootDir>/src/pruebas/movimiento-reducido-doble.ts"
     ],
     "moduleNameMapper": {
       "^@expo/ui$": "<rootDir>/src/pruebas/expo-ui-doble.tsx"

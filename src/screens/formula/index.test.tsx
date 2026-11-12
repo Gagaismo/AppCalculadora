@@ -139,6 +139,19 @@ describe('la pantalla genérica maneja errores y validación', () => {
     expect(screen.getByTestId('error-campo-f_inf')).toHaveTextContent('Debe ser un número válido');
   });
 
+  it('el guía reta nombrando el campo no numérico, sin tapar el mensaje de la pantalla', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), 'abc');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+
+    expect(screen.getByTestId('guia-globo')).toHaveTextContent(
+      '¡Eso no es un número! Mirá el campo f_inf.',
+    );
+    expect(screen.getByTestId('error-campo-f_inf')).toHaveTextContent('Debe ser un número válido');
+    expect(screen.getByTestId('resultado')).toHaveTextContent('Entrada no numérica en f_inf');
+  });
+
   it('indica múltiples campos con entrada no numérica', async () => {
     await render(<PantallaFormula formula={formula} />);
 

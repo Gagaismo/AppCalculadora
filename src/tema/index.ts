@@ -79,6 +79,13 @@ export const colores = {
   exito: '#2E6B4F',
   /** Fondo del bloque de resultado cuando el cálculo salió bien. */
   exitoFondo: '#E6F0EA',
+
+  /**
+   * El halo cálido del guía, la luz de fuego fatuo que lo rodea. Igual que `marca`,
+   * sólo rellena: nunca lleva texto. El globo de diálogo va en `superficie` con
+   * `texto` encima.
+   */
+  brilloGuia: '#F2B35E',
 } as const;
 
 /**

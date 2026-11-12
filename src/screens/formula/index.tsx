@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Formula } from '@/dominio/formula';
 import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
 import { diagnosticar } from '@/guia/diagnostico';
+import { fraseDelGuia } from '@/guia/frases';
+import { ALTO_GUIA, Guia } from '@/guia/guia';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { FichaFormula } from './ficha';
@@ -86,10 +88,15 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
       return { ...previos, [simbolo]: campos.length > 0 ? campos : [''] };
     });
 
-  return (
+  // El relleno extra (`ALTO_GUIA`) deja llevar el último campo y el resultado por
+  // encima del guía, que flota abajo a la derecha.
+  const contenido = (
     <ScrollView
       style={estilos.pantalla}
-      contentContainerStyle={[estilos.contenido, { paddingBottom: espacio.xl + margenInferior }]}
+      contentContainerStyle={[
+        estilos.contenido,
+        { paddingBottom: espacio.xl + margenInferior + ALTO_GUIA },
+      ]}
     >
       <Text style={estilos.identificador}>{formula.id}</Text>
       <Text style={estilos.nombre}>{formula.nombre}</Text>
@@ -230,6 +237,13 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
 
       <FichaFormula formula={formula} />
     </ScrollView>
+  );
+
+  return (
+    <View style={estilos.pantalla}>
+      {contenido}
+      <Guia {...fraseDelGuia(diagnostico, formula)} />
+    </View>
   );
 }
 
