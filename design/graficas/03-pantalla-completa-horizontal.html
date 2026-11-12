@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Gráficas · 03 Pantalla completa horizontal</title>
+<style>
+/*<base-css>*/
+:root{
+  --fondo:#F9F2ED;--superficie:#FFFFFF;--enfasis:#EDD6C8;--marca:#C67C4E;--accion:#9C5B32;--tinta:#313131;--gris:#E3E3E3;
+  --aviso:#7A5200;--avisoFondo:#F5EBD0;--error:#B3261E;--errorFondo:#FBE9E7;--exito:#2E6B4F;--exitoFondo:#E6F0EA;--brillo:#F2B35E;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Roboto Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--enfasis);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:21px;width:1280px;min-height:900px}
+.lamina{padding:16px 40px}
+.lamina>header{display:flex;align-items:baseline;gap:16px;min-height:44px;margin-bottom:8px}
+.lamina>header h1{white-space:nowrap;font-size:22px;line-height:28px;margin:0}
+.lamina>header p{margin:0;font-size:13px;line-height:18px}
+.telefonos{display:flex;gap:40px;align-items:flex-start}
+figure{margin:0}
+figcaption{font-size:13px;line-height:18px;font-weight:700;height:22px}
+.telefono{width:360px;height:780px;border-radius:32px;background:var(--tinta);padding:6px;flex:none}
+.telefono.horizontal{width:780px;height:360px}
+.pantalla{width:100%;height:100%;border-radius:26px;background:var(--fondo);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.estado{height:24px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:12px;line-height:16px;flex:none}
+.barra{min-height:56px;display:flex;align-items:center;gap:4px;padding:4px 8px;flex:none}
+.barra h2{font-size:15px;line-height:20px;margin:0}
+.barra .sobre{margin:0;font-size:12px;line-height:16px;font-family:var(--mono);color:var(--accion);font-weight:700}
+.gesto{height:16px;display:flex;justify-content:center;align-items:center;flex:none}
+.gesto span{width:96px;height:4px;border-radius:999px;background:var(--tinta)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accion);outline-offset:2px}
+.icono{width:44px;height:44px;border:0;background:none;border-radius:999px;display:grid;place-items:center;flex:none}
+.mono{font-family:var(--mono)}
+sub{font-size:.72em;line-height:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.expr{font-family:var(--mono);font-size:15px;line-height:21px;font-weight:700}
+.rot{font-size:12px;line-height:16px;font-weight:700}
+/* Selector de eje X y escala */
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chips button{min-height:36px;min-width:48px;padding:0 12px;border-radius:999px;border:1px solid var(--gris);background:var(--superficie);font-family:var(--mono);font-weight:700;font-size:14px}
+.chips button[aria-pressed="true"]{background:var(--enfasis);border-color:var(--tinta)}
+.chips button[aria-pressed="true"]::before{content:"✓ ";font-family:var(--sans)}
+.segmentado{display:flex;border:1px solid var(--gris);border-radius:999px;background:var(--superficie);padding:3px;gap:2px}
+.segmentado button{flex:1;min-height:32px;padding:0 10px;border:0;border-radius:999px;background:none;font-size:13px;line-height:18px;font-weight:600;white-space:nowrap}
+.segmentado button[aria-pressed="true"],.segmentado button[aria-selected="true"]{background:var(--enfasis);box-shadow:inset 0 0 0 1px var(--tinta)}
+.segmentado button:disabled{text-decoration:line-through}
+.boton-texto{min-height:36px;padding:0 10px;border:1px solid var(--gris);border-radius:999px;background:var(--superficie);font-size:13px;font-weight:600;color:var(--accion);display:inline-flex;align-items:center;gap:4px}
+.nota-escala{font-size:12px;line-height:16px;color:var(--aviso);margin:0}
+/* La gráfica */
+.graf{position:relative}
+.graf svg{display:block;width:100%;height:auto;touch-action:none;border-radius:8px;cursor:crosshair}
+.graf svg.solo-ver{cursor:default}
+.graf svg .tick{font-family:var(--mono);font-size:11px;fill:var(--tinta)}
+.graf svg .fuerte{font-weight:700;font-family:var(--sans)}
+.titulos{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.titulo-eje{font-size:12px;line-height:16px;font-weight:700}
+.titulo-eje.x{text-align:right}
+.vacio{position:absolute;inset:20px 8px 28px 46px;display:flex;align-items:center;justify-content:center}
+.vacio[hidden]{display:none}
+.vacio .tarjeta{background:var(--superficie);border:1px dashed var(--tinta);border-radius:12px;padding:12px;font-size:13px;line-height:18px;display:flex;flex-direction:column;gap:8px;max-width:260px}
+.vacio .tarjeta strong{font-size:15px;line-height:21px}
+.vacio .tarjeta button{align-self:flex-start;min-height:44px;padding:0 14px;border-radius:999px;border:0;background:var(--tinta);color:var(--fondo);font-weight:700;font-size:13px}
+.lectura{min-height:44px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:13px;line-height:18px;background:var(--superficie);border:1px solid var(--gris);border-radius:8px;padding:4px 4px 4px 8px}
+.lectura:empty{display:none}
+.lectura .tag{font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.lectura .val{font-family:var(--mono);font-size:13px}
+.lectura .pista{font-size:12px;line-height:16px;flex-basis:100%}
+.lectura .soltar{margin-left:auto;min-height:36px;padding:0 10px;border:1px solid var(--gris);border-radius:999px;background:var(--fondo);font-size:12px;font-weight:600}
+/* Resultado */
+.franja{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:8px 12px;border-radius:12px;border:1px solid var(--gris);background:var(--superficie);font-size:13px;line-height:18px}
+.franja .et{font-weight:700}
+.franja output{font-family:var(--mono);font-size:20px;line-height:26px;font-weight:700}
+.franja small{font-family:var(--mono);font-size:12px;line-height:16px;flex-basis:100%}
+.franja.ok{background:var(--exitoFondo);border-color:var(--exito);color:var(--exito)}
+.franja.error{background:var(--errorFondo);border-color:var(--error);color:var(--error)}
+.franja.error span,.franja.vacio span{color:var(--tinta)}
+.salida{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--gris);padding-top:16px}
+.salida .sim{font-family:var(--mono);font-weight:700}
+.salida .sig{margin:0}
+.bloque{min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:16px;border-radius:12px;border:1px solid var(--gris);background:var(--superficie)}
+.bloque output{font-family:var(--mono);font-size:28px;line-height:36px;font-weight:700}
+.bloque small{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--tinta)}
+.bloque.ok{background:var(--exitoFondo);border-color:var(--exito);color:var(--exito)}
+.bloque.error{background:var(--errorFondo);border-color:var(--error);color:var(--error)}
+/* Variables */
+.var{display:flex;flex-direction:column;gap:6px}
+.var-cab{display:flex;align-items:center;gap:8px}
+.var .sim{font-family:var(--mono);font-weight:700;font-size:15px}
+.var .sig{margin:0;font-size:13px;line-height:18px}
+.es-x{font-family:var(--sans);font-size:11px;line-height:16px;font-weight:700;padding:0 6px;border-radius:999px;background:var(--tinta);color:var(--fondo)}
+.es-x[hidden]{display:none}
+.fila-campo{display:flex;gap:8px}
+.campo-num{flex:1;min-width:0;min-height:44px;border:1px solid var(--gris);border-radius:8px;padding:0 12px;font-family:var(--mono);font-size:15px;background:var(--superficie);color:var(--tinta)}
+.campo-num[aria-invalid="true"]{border:2px solid var(--error)}
+select{min-height:44px;min-width:96px;border:1px solid var(--gris);border-radius:8px;background:var(--superficie);font:inherit;font-size:14px;padding:0 8px;color:var(--tinta)}
+.err{color:var(--error);font-size:12px;line-height:16px;margin:0;font-weight:600}
+.err[hidden]{display:none}
+.vc{display:grid;grid-template-columns:52px 1fr auto;column-gap:8px;align-items:center}
+.vc .vc-sim{font-family:var(--mono);font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.vc .desl{grid-column:1/-1}
+.vc .err{grid-column:1/-1}
+.vc select{min-width:0;width:112px}
+.vd{display:grid;grid-template-columns:52px 1fr 104px;align-items:center;column-gap:8px}
+.vd-sim{font-family:var(--mono);font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.vd-val{min-height:44px;border:1px solid var(--gris);border-radius:8px;background:var(--superficie);font-family:var(--mono);font-size:13px;padding:0 8px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Deslizador: pista de 6 px, pulgar dibujado de 22 px dentro de un área táctil de 44 × 44 */
+.desl{-webkit-appearance:none;appearance:none;width:100%;height:44px;margin:0;background:transparent;--p:50%}
+.desl::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(to right,var(--marca) var(--p),var(--gris) var(--p))}
+.desl::-moz-range-track{height:6px;border-radius:999px;background:linear-gradient(to right,var(--marca) var(--p),var(--gris) var(--p))}
+.desl::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;margin-top:-19px;border:0;border-radius:50%;background:radial-gradient(circle,var(--accion) 0 9px,var(--superficie) 9.5px 12px,transparent 12.5px)}
+.desl::-moz-range-thumb{width:44px;height:44px;border:0;border-radius:50%;background:radial-gradient(circle,var(--accion) 0 9px,var(--superficie) 9.5px 12px,transparent 12.5px)}
+.desl.sin-valor::-webkit-slider-thumb{background:radial-gradient(circle,var(--superficie) 0 6px,var(--accion) 6.5px 10px,transparent 10.5px)}
+.desl.sin-valor::-moz-range-thumb{background:radial-gradient(circle,var(--superficie) 0 6px,var(--accion) 6.5px 10px,transparent 10.5px)}
+.desl:disabled{opacity:.4}
+/* Guía */
+.guia{position:absolute;right:12px;bottom:24px;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+.guia .globo{max-width:196px;margin:0;background:var(--superficie);border:1px solid var(--gris);border-radius:12px 12px 4px 12px;padding:8px 10px;font-size:12px;line-height:16px;box-shadow:0 2px 8px rgba(49,49,49,.12)}
+.guia .orbe{width:44px;height:44px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 45%,var(--superficie) 0 5px,var(--brillo) 6px 13px,var(--enfasis) 15px 21px,transparent 22px)}
+@media (prefers-reduced-motion:no-preference){
+  .guia .orbe{animation:vaiven 2.8s ease-in-out infinite}
+  @keyframes vaiven{50%{transform:translateY(-4px)}}
+}
+/*</base-css>*/
+
+/* ── Dirección 03: lienzo horizontal tipo GeoGebra ────────────────────────── */
+.columna{display:flex;flex-direction:column;gap:16px}
+.contenido{flex:1;overflow-y:auto;padding:4px 16px 120px;display:flex;flex-direction:column;gap:16px}
+.contenido>*{flex:none}
+.ident{margin:0;font-size:13px;line-height:18px;font-weight:700;color:var(--accion);font-family:var(--mono)}
+.nombre{margin:0;font-size:20px;line-height:26px}
+.previa{background:var(--superficie);border:1px solid var(--gris);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.previa .graf svg{border:0}
+.previa .acceso{display:flex;align-items:center;gap:8px}
+.previa .ampliar{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:var(--tinta);color:var(--fondo);font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.previa .acceso span{font-size:12px;line-height:16px}
+.horizontal .pantalla{flex-direction:row}
+.lienzo{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;padding:4px 8px 6px 4px}
+.lienzo .cab{display:flex;align-items:center;gap:8px;min-height:44px}
+.lienzo .cab .expr{font-size:14px}
+.lienzo .cab .titulo-eje{margin-left:auto}
+.panel{width:276px;flex:none;background:var(--superficie);border-left:1px solid var(--gris);overflow-y:auto;padding:8px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.panel .fila-ctrl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.panel [data-rol=variables]{display:flex;flex-direction:column;gap:4px}
+.panel .encabezado{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.panel .encabezado p{margin:0;font-size:12px;line-height:16px;font-family:var(--mono);font-weight:700;color:var(--accion)}
+.lienzo .lectura{min-height:40px}
+.realce{animation:none}
+@media (prefers-reduced-motion:no-preference){.realce{animation:realce 1.2s ease}@keyframes realce{30%{box-shadow:0 0 0 6px var(--brillo)}}}
+.pie-nota{margin-top:12px;font-size:13px;line-height:18px;max-width:1200px}
+</style>
+</head>
+<body>
+<div class="lamina">
+<header>
+  <h1>03 · Gráfica a pantalla completa (horizontal)</h1>
+  <p>En vertical la calculadora queda como hoy, con una vista previa chica. Al girar el teléfono, o con «Ver gráfica», se abre un lienzo horizontal tipo GeoGebra con un panel angosto de deslizadores. Datos: Ejemplo 06 de U05-F17 (pág. 27) y U03-F01.</p>
+</header>
+<main class="telefonos">
+
+<figure>
+<figcaption>A · Vertical: vista previa y cómo se llega</figcaption>
+<section class="telefono" aria-labelledby="t3a"><div class="pantalla" id="p3a">
+  <div class="estado" aria-hidden="true"><span>9:41</span><span>82 %</span></div>
+  <header class="barra"><button class="icono" aria-label="Volver a la Unidad 5"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><p class="sobre">Unidad 5</p><h2 id="t3a">Fórmula de Shannon</h2></div></header>
+  <div class="contenido">
+    <p class="ident">U05-F17</p>
+    <h3 class="nombre">Fórmula de Shannon: capacidad de un canal con ruido</h3>
+    <div class="expr">C = B · log₂(1 + SNR)</div>
+    <section class="previa" aria-label="Vista previa de la gráfica">
+      <div class="titulos"><span class="titulo-eje" data-rol="titulo-y"></span><span class="titulo-eje x" data-rol="titulo-x"></span></div>
+      <div class="graf"><svg class="solo-ver" data-rol="grafica" viewBox="0 0 312 120"></svg><div class="vacio" data-rol="vacio" hidden></div></div>
+      <div class="acceso"><button class="ampliar" data-accion="ampliar"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Ver gráfica</button><span>o girá el teléfono <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-3px"><rect x="4" y="1" width="8" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 9a6 6 0 0 1-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span></div>
+    </section>
+    <div data-rol="variables" data-variante="completo" data-deslizador="no" style="display:flex;flex-direction:column;gap:16px"></div>
+    <div data-rol="resultado" data-variante="bloque"></div>
+  </div>
+  <div class="guia"><p class="globo">¿Querés ver cómo crece C? Girá el teléfono.</p><span class="orbe" aria-hidden="true"></span></div>
+  <div class="gesto" aria-hidden="true"><span></span></div>
+</div></section>
+</figure>
+
+<div class="columna">
+<figure>
+<figcaption>B · Horizontal: eje X = SNR en log, lectura en SNR = 1000</figcaption>
+<section class="telefono horizontal" aria-labelledby="t3b"><div class="pantalla" id="p3b">
+  <section class="lienzo" aria-label="Lienzo de la gráfica">
+    <div class="cab"><button class="icono" aria-label="Salir de la pantalla completa"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 1v4H1M15 5h-4V1M11 15v-4h4M1 11h4v4" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+      <span class="expr" id="t3b">C = B · log₂(1 + SNR)</span><span class="titulo-eje" data-rol="titulo-y"></span></div>
+    <div class="graf"><svg data-rol="grafica" viewBox="0 0 480 206"></svg><div class="vacio" data-rol="vacio" hidden></div></div>
+    <div class="titulo-eje x" data-rol="titulo-x"></div>
+    <div class="lectura" data-rol="lectura" aria-live="polite"></div>
+  </section>
+  <aside class="panel" aria-label="Controles">
+    <div class="encabezado"><p>U05-F17</p><button class="boton-texto" data-accion="encuadrar">Encuadrar</button></div>
+    <div class="fila-ctrl"><span class="rot">Eje X</span><div class="chips" data-rol="chips"></div></div>
+    <div class="segmentado" data-rol="escala" role="group" aria-label="Escala del eje X"><button data-escala="lin">Lineal</button><button data-escala="log">Log</button></div>
+    <p class="nota-escala" data-rol="nota-escala" hidden></p>
+    <div data-rol="variables" data-variante="compacto"></div>
+    <div data-rol="resultado" data-variante="franja"></div>
+  </aside>
+</div></section>
+</figure>
+
+<figure>
+<figcaption>C · Borde: P<sub>i</sub> negativo, la curva no existe en todo el rango</figcaption>
+<section class="telefono horizontal" aria-labelledby="t3c"><div class="pantalla" id="p3c">
+  <section class="lienzo" aria-label="Lienzo de la gráfica">
+    <div class="cab"><button class="icono" aria-label="Salir de la pantalla completa"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 1v4H1M15 5h-4V1M11 15v-4h4M1 11h4v4" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+      <span class="expr" id="t3c">dB = 10 · log₁₀(P<sub>o</sub> / P<sub>i</sub>)</span><span class="titulo-eje" data-rol="titulo-y"></span></div>
+    <div class="graf"><svg data-rol="grafica" viewBox="0 0 480 206"></svg><div class="vacio" data-rol="vacio" hidden></div></div>
+    <div class="titulo-eje x" data-rol="titulo-x"></div>
+    <div class="lectura" data-rol="lectura" aria-live="polite"></div>
+  </section>
+  <aside class="panel" aria-label="Controles">
+    <div class="encabezado"><p>U03-F01</p><button class="boton-texto" data-accion="encuadrar">Encuadrar</button></div>
+    <div class="fila-ctrl"><span class="rot">Eje X</span><div class="chips" data-rol="chips"></div></div>
+    <div class="segmentado" data-rol="escala" role="group" aria-label="Escala del eje X"><button data-escala="lin">Lineal</button><button data-escala="log">Log</button></div>
+    <p class="nota-escala" data-rol="nota-escala" hidden></p>
+    <div data-rol="variables" data-variante="compacto"></div>
+    <div data-rol="resultado" data-variante="franja"></div>
+  </aside>
+</div></section>
+</figure>
+</div>
+
+</main>
+<p class="pie-nota"><b>Ficha de consulta</b> (por ejemplo U02-F02, Relación de Euler): sin entradas no hay vista previa ni «Ver gráfica», y girar el teléfono no abre nada. En el lienzo horizontal el guía no aparece: el ancho es todo para la curva.</p>
+</div>
+<script>
+/*<motor>*/
+// ── Motor de la gráfica, común a las tres direcciones ──────────────────────────────
+// Los valores viajan en unidad canónica, igual que en src/dominio/motor.ts: el múltiplo se
+// aplica una sola vez al leer el campo, y calcular() recibe Hz, W, m, sin prefijo.
+const FACTOR = { p:1e-12, n:1e-9, 'µ':1e-6, m:1e-3, '':1, k:1e3, M:1e6, G:1e9, T:1e12 };
+const MULTIPLOS = ['p','n','µ','m','','k','M','G','T'];
+const MARGEN = { l:46, r:12, t:10, b:24 };
+
+// Copia de elegirMultiplo (src/dominio/multiplos.ts): deja la parte entera entre 1 y 999.
+function elegirMultiplo(v) {
+  if (!Number.isFinite(v) || v === 0) return '';
+  const a = Math.abs(v);
+  for (let i = MULTIPLOS.length - 1; i >= 0; i--) if (a / FACTOR[MULTIPLOS[i]] >= 1) return MULTIPLOS[i];
+  return 'p';
+}
+const SUP = { '-':'⁻', '0':'⁰', '1':'¹', '2':'²', '3':'³', '4':'⁴', '5':'⁵', '6':'⁶', '7':'⁷', '8':'⁸', '9':'⁹' };
+const sup = (n) => String(n).split('').map((c) => SUP[c]).join('');
+function fmt(v, cifras = 4) {
+  if (!Number.isFinite(v)) return '—';
+  if (v === 0) return '0';
+  const a = Math.abs(v);
+  let s;
+  if (a >= 1e-3 && a < 1e7) s = String(Number(v.toPrecision(cifras)));
+  else { const e = Math.floor(Math.log10(a)); s = Number((v / 10 ** e).toPrecision(cifras)) + '·10' + sup(e); }
+  return s.replace('.', ',').replace('-', '−');
+}
+// Lo que el deslizador escribe en el campo: tres cifras, como lo tipearía una persona.
+const aTexto = (v) => String(Number(v.toPrecision(3))).replace('.', ',');
+function leer(t) {
+  t = String(t).trim().replace(',', '.').replace('−', '-');
+  if (t === '') return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : NaN;
+}
+const uniMult = (m, u) => m + u;                                 // conMultiplo de la app
+const uniEje = (m, u) => (u === 'adimensional' ? m : m + u);
+const simb = (s) => { const i = s.indexOf('_'); return i < 0 ? s : s.slice(0, i) + '<sub>' + s.slice(i + 1) + '</sub>'; };
+function conUnidad(v, u, m, cifras = 4) {
+  if (m === undefined) m = elegirMultiplo(v);
+  const t = uniEje(m, u);
+  return fmt(v / FACTOR[m], cifras) + (t ? ' ' + t : '');
+}
+function lista(ss) {
+  const t = ss.map(simb);
+  return t.length < 2 ? t.join('') : t.slice(0, -1).join(', ') + ' y ' + t[t.length - 1];
+}
+
+// Las Fórmulas son las del catálogo, con su calcular() copiada sin cambios.
+// `desl` es sólo el recorrido del deslizador (en unidad canónica), no parte de la Fórmula.
+const FORMULAS = {
+  'U05-F17': {
+    id: 'U05-F17',
+    entradas: [
+      { s: 'B', sig: 'Ancho de banda del canal', u: 'Hz', m: '', desl: { min: 10, max: 1e8, log: true, ref: 3000 } },
+      { s: 'SNR', sig: 'Relación señal a ruido lineal (S/N)', u: 'adimensional', m: '', desl: { min: 0.01, max: 1e6, log: true, ref: 1023 } },
+    ],
+    salida: { s: 'C', sig: 'Capacidad máxima del canal (tasa de bits de información)', u: 'bit/s', m: '' },
+    // U05-F17 · src/formulas/unidad-05.ts: calcular: ({ B, SNR }) => B * Math.log2(1 + SNR)
+    calcular: ({ B, SNR }) => B * Math.log2(1 + SNR),
+    motivo: (v) => (v.SNR !== undefined && 1 + v.SNR <= 0 ? '1 + SNR ≤ 0: log₂ no está definido.' : ''),
+    ejemplo: { rotulo: 'Ejemplo 07 (pág. 27)', textos: { B: '3000', SNR: '1023' }, mults: { B: '', SNR: '' } },
+  },
+  'U03-F07': {
+    id: 'U03-F07',
+    entradas: [
+      { s: 'f', sig: 'Frecuencia de operación', u: 'Hz', m: 'G', desl: { min: 1e8, max: 1e11, log: true, ref: 5.8e9 } },
+      { s: 'd', sig: 'Distancia entre transmisor y receptor', u: 'm', m: 'k', desl: { min: 1, max: 1e5, log: true, ref: 100 } },
+    ],
+    salida: { s: 'L_0', sig: 'Pérdida básica de propagación en el espacio libre', u: 'dB', m: '' },
+    // U03-F07 · src/formulas/unidad-03.ts: calcular: ({ f, d }) => 92.44 + 20 * Math.log10(f / 1e9) + 20 * Math.log10(d / 1e3)
+    calcular: ({ f, d }) => 92.44 + 20 * Math.log10(f / 1e9) + 20 * Math.log10(d / 1e3),
+    motivo: (v) => (v.f <= 0 ? 'f ≤ 0: log₁₀ no está definido.' : v.d <= 0 ? 'd ≤ 0: log₁₀ no está definido.' : ''),
+    ejemplo: { rotulo: 'Ejercicio de la pág. 26', textos: { f: '5,8', d: '100' }, mults: { f: 'G', d: '' } },
+  },
+  'U03-F01': {
+    id: 'U03-F01',
+    entradas: [
+      { s: 'P_o', sig: 'Potencia de la señal en el punto de salida', u: 'W', m: 'm', desl: { min: 0, max: 0.2, log: false, ref: 0.07981 } },
+      { s: 'P_i', sig: 'Potencia de la señal en el punto de entrada', u: 'W', m: 'm', desl: { min: 0, max: 0.02, log: false, ref: 0.004 } },
+    ],
+    salida: { s: 'dB', sig: 'Ganancia o atenuación entre dos puntos', u: 'dB', m: '' },
+    // U03-F01 · src/formulas/unidad-03.ts: calcular: ({ P_o, P_i }) => 10 * Math.log10(P_o / P_i)
+    calcular: ({ P_o, P_i }) => 10 * Math.log10(P_o / P_i),
+    motivo: (v) => (v.P_i === 0 ? 'P<sub>i</sub> = 0: la división no está definida.' : v.P_o / v.P_i <= 0 ? 'P<sub>o</sub>/P<sub>i</sub> ≤ 0: log₁₀ no está definido.' : ''),
+    ejemplo: { rotulo: 'Ejemplo05 (pág. 12)', textos: { P_o: '79,81', P_i: '4' }, mults: { P_o: 'm', P_i: 'm' } },
+  },
+};
+
+const entrada = (st, s) => st.f.entradas.find((e) => e.s === s);
+function base(st, s) { const n = leer(st.textos[s]); return n === null ? null : Number.isNaN(n) ? NaN : n * FACTOR[st.mults[s]]; }
+function leerTodo(st) {
+  const vals = {}, faltan = [], invalidos = [];
+  for (const e of st.f.entradas) {
+    const v = base(st, e.s);
+    if (v === null) faltan.push(e.s); else if (Number.isNaN(v)) invalidos.push(e.s); else vals[e.s] = v;
+  }
+  return { vals, faltan, invalidos };
+}
+// Igual que el motor: un resultado no finito es «no definido», nunca un número.
+function evaluar(st, vals) { try { const y = st.f.calcular(vals); return Number.isFinite(y) ? y : NaN; } catch (_) { return NaN; } }
+
+// ── Dominio del eje X: centrado en el valor cargado, fijo hasta que se encuadra ──
+function refX(st) { const v = base(st, st.x); return Number.isFinite(v) && v !== 0 ? v : entrada(st, st.x).desl.ref; }
+function puedeLog(st) { const v = base(st, st.x); return !(Number.isFinite(v) && v <= 0); }
+function encuadrar(st) {
+  if (st.log && !puedeLog(st)) st.log = false;
+  const r = refX(st);
+  st.dom = st.log ? [Math.abs(r) / 100, Math.abs(r) * 100] : r > 0 ? [0, 2 * r] : [2 * r, -2 * r];
+  st.yDom = null;
+  st.cursor = null;
+}
+const tDe = (st, v) => { const [lo, hi] = st.dom; return st.log ? (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) : (v - lo) / (hi - lo); };
+const vDe = (st, t) => { const [lo, hi] = st.dom; return st.log ? 10 ** (Math.log10(lo) + t * (Math.log10(hi) - Math.log10(lo))) : lo + t * (hi - lo); };
+function muestrear(st, vals) {
+  const N = 241, xs = [], ys = [];
+  for (let i = 0; i < N; i++) { const x = vDe(st, i / (N - 1)); xs.push(x); ys.push(evaluar(st, { ...vals, [st.x]: x })); }
+  return { xs, ys };
+}
+
+// ── Eje Y: escalones «lindos», se agranda solo y se achica sólo al encuadrar ──
+function pasoLindo(r, n) { const c = r / n, e = 10 ** Math.floor(Math.log10(c)), f = c / e; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * e; }
+function redondearY([lo, hi]) { const p = pasoLindo(hi - lo, 5); return [Math.floor(lo / p + 1e-9) * p, Math.ceil(hi / p - 1e-9) * p]; }
+function rangoY(ys, yAct) {
+  const f = ys.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!f.length) return null;
+  const n = f.length - 1, p3 = f[Math.floor(n * 0.03)], p97 = f[Math.ceil(n * 0.97)];
+  // Cerca de una asíntota (log de algo que tiende a 0) se descartan las puntas.
+  let [lo, hi] = f[n] - f[0] <= 3 * (p97 - p3) ? [f[0], f[n]] : [p3, p97];
+  if (Number.isFinite(yAct)) { lo = Math.min(lo, yAct); hi = Math.max(hi, yAct); }
+  if (hi - lo < 1e-9 * Math.max(1, Math.abs(hi))) { const d = Math.abs(hi) || 1; lo -= d / 2; hi += d / 2; }
+  const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+  if (f[0] >= 0 && lo < 0) lo = 0;
+  if (f[n] <= 0 && hi > 0) hi = 0;
+  if (lo > 0 && lo < 0.4 * hi) lo = 0;
+  return redondearY([lo, hi]);
+}
+function actualizarYDom(st, r) {
+  if (!r) return;
+  if (!st.yDom) { st.yDom = r; return; }
+  if (r[0] < st.yDom[0] || r[1] > st.yDom[1]) st.yDom = redondearY([Math.min(r[0], st.yDom[0]), Math.max(r[1], st.yDom[1])]);
+}
+function ticksLin(lo, hi, n) {
+  const p = pasoLindo(hi - lo, n), t = [];
+  for (let k = Math.ceil(lo / p - 1e-9); k * p <= hi + p * 1e-9; k++) t.push(Math.abs(k * p) < p * 1e-9 ? 0 : k * p);
+  return t;
+}
+function ticksLog(lo, hi) { const t = []; for (let e = Math.ceil(Math.log10(lo) - 1e-9); e <= Math.floor(Math.log10(hi) + 1e-9); e++) t.push(10 ** e); return t; }
+// En escala log cada marca lleva su propio múltiplo: «100 Hz», «10 kHz», «1 MHz».
+function etiquetaLog(v, u) {
+  const e = Math.round(Math.log10(v));
+  if (u === 'adimensional') return e >= -2 && e <= 3 ? fmt(10 ** e) : '10' + sup(e);
+  return conUnidad(v, u, undefined, 3);
+}
+
+// ── Dibujo ──
+function dibujar(st, svg, m) {
+  const [, , W, H] = svg.getAttribute('viewBox').split(' ').map(Number);
+  const x0 = MARGEN.l, x1 = W - MARGEN.r, y0 = MARGEN.t, y1 = H - MARGEN.b, id = svg.id;
+  let s = `<defs><pattern id="${id}-raya" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#F5EBD0"/><line x1="0" y1="0" x2="0" y2="7" stroke="#7A5200" stroke-width="1.4"/></pattern><clipPath id="${id}-area"><rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}"/></clipPath></defs>`;
+  s += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" fill="#FFFFFF"/>`;
+  const marco = `<path d="M${x0} ${y0}V${y1}H${x1}" fill="none" stroke="#313131" stroke-width="1.2"/>`;
+  if (!m.mu) { svg.innerHTML = s + marco; svg.setAttribute('aria-valuetext', 'Sin curva: faltan datos'); return; }
+  const [lo, hi] = st.dom, L = st.log, e = entrada(st, st.x), mx = st.mults[st.x];
+  const yd = st.yDom || [0, 1];
+  const tx = (v) => x0 + tDe(st, v) * (x1 - x0);
+  const ty = (v) => Math.max(-5 * H, Math.min(6 * H, y1 - ((v - yd[0]) / (yd[1] - yd[0])) * (y1 - y0)));
+  if (L) {
+    for (let d = Math.floor(Math.log10(lo)); d <= Math.ceil(Math.log10(hi)); d++)
+      for (let k = 2; k < 10; k++) { const v = k * 10 ** d; if (v > lo && v < hi) s += `<line x1="${tx(v)}" x2="${tx(v)}" y1="${y0}" y2="${y1}" stroke="#E3E3E3" stroke-width=".6"/>`; }
+  }
+  for (const v of L ? ticksLog(lo, hi) : ticksLin(lo, hi, 4)) {
+    const px = tx(v);
+    s += `<line x1="${px}" x2="${px}" y1="${y0}" y2="${y1 + 4}" stroke="#E3E3E3"/><text x="${px}" y="${y1 + 16}" text-anchor="middle" class="tick">${L ? etiquetaLog(v, e.u) : fmt(v / FACTOR[mx], 3)}</text>`;
+  }
+  if (st.yDom) for (const v of ticksLin(yd[0], yd[1], 4)) {
+    const py = ty(v);
+    s += `<line x1="${x0 - 4}" x2="${x1}" y1="${py}" y2="${py}" stroke="#E3E3E3"/><text x="${x0 - 6}" y="${py + 4}" text-anchor="end" class="tick">${fmt(v / FACTOR[m.ym], 3)}</text>`;
+  }
+  if (st.yDom && yd[0] < 0 && yd[1] > 0) s += `<line x1="${x0}" x2="${x1}" y1="${ty(0)}" y2="${ty(0)}" stroke="#313131"/>`;
+  if (!L && lo < 0 && hi > 0) s += `<line x1="${tx(0)}" x2="${tx(0)}" y1="${y0}" y2="${y1}" stroke="#313131"/>`;
+  // Zonas donde la Fórmula no está definida: rayadas y rotuladas, nunca sólo de color.
+  const { xs, ys } = m.mu;
+  let g = '';
+  for (let i = 0; i < xs.length;) {
+    if (Number.isFinite(ys[i])) { i++; continue; }
+    let j = i;
+    while (j + 1 < xs.length && !Number.isFinite(ys[j + 1])) j++;
+    const a = i > 0 ? (tx(xs[i - 1]) + tx(xs[i])) / 2 : x0, b = j < xs.length - 1 ? (tx(xs[j]) + tx(xs[j + 1])) / 2 : x1;
+    g += `<rect x="${a}" y="${y0}" width="${Math.max(2, b - a)}" height="${y1 - y0}" fill="url(#${id}-raya)"/>`;
+    if (b - a > 74) g += `<rect x="${(a + b) / 2 - 34}" y="${y0 + 8}" width="68" height="20" rx="4" fill="#F5EBD0" stroke="#7A5200"/><text x="${(a + b) / 2}" y="${y0 + 22}" text-anchor="middle" class="tick fuerte" fill="#7A5200">sin valor</text>`;
+    i = j + 1;
+  }
+  let d = '', abierto = false;
+  for (let i = 0; i < xs.length; i++) {
+    if (!Number.isFinite(ys[i])) { abierto = false; continue; }
+    d += (abierto ? 'L' : 'M') + tx(xs[i]).toFixed(1) + ' ' + ty(ys[i]).toFixed(1);
+    abierto = true;
+  }
+  s += `<g clip-path="url(#${id}-area)">${g}<path d="${d}" fill="none" stroke="#9C5B32" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // Punto actual: disco lleno. Si ahí no hay valor, una cruz sobre el eje.
+  if (m.completo && m.xv >= lo && m.xv <= hi) {
+    const px = tx(m.xv);
+    if (Number.isFinite(m.yAct)) s += `<circle cx="${px}" cy="${ty(m.yAct)}" r="7" fill="#9C5B32" stroke="#FFFFFF" stroke-width="2.5"/>`;
+    else s += `<path d="M${px - 7} ${y1 - 19}l14 14m0 -14l-14 14" stroke="#B3261E" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  // Lectura: anillo hueco y cruz de líneas punteadas, para no confundirse con el punto actual.
+  if (st.cursor != null) {
+    const cx = tx(st.cursor), cy = evaluar(st, { ...m.vals, [st.x]: st.cursor });
+    s += `<line x1="${cx}" x2="${cx}" y1="${y0}" y2="${y1}" stroke="#313131" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+    if (Number.isFinite(cy)) { const py = ty(cy); s += `<line x1="${x0}" x2="${x1}" y1="${py}" y2="${py}" stroke="#313131" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="${cx}" cy="${py}" r="9" fill="none" stroke="#313131" stroke-width="2.5"/>`; }
+  }
+  svg.innerHTML = s + '</g>' + marco;
+  svg.setAttribute('aria-valuetext', textoLectura(st, m, true));
+}
+
+function textoLectura(st, m, plano) {
+  const e = entrada(st, st.x), sal = st.f.salida, S = plano ? (x) => x : simb;
+  if (st.cursor != null) {
+    const cy = evaluar(st, { ...m.vals, [st.x]: st.cursor });
+    return `${S(st.x)} = ${conUnidad(st.cursor, e.u, st.mults[st.x])} → ${S(sal.s)} = ${Number.isFinite(cy) ? conUnidad(cy, sal.u) : 'sin valor'}`;
+  }
+  if (m.completo) return `${S(st.x)} = ${conUnidad(m.xv, e.u, st.mults[st.x])} → ${S(sal.s)} = ${Number.isFinite(m.yAct) ? conUnidad(m.yAct, sal.u) : 'sin valor'}`;
+  return `Sin punto actual: falta ${S(st.x)}`;
+}
+
+function pintar(st, m, origen) {
+  const R = st.raiz, sal = st.f.salida, e = entrada(st, st.x);
+  R.querySelectorAll('[data-rol=grafica]').forEach((svg) => dibujar(st, svg, m));
+  R.querySelectorAll('[data-rol=titulo-y]').forEach((el) => { el.innerHTML = `${simb(sal.s)} [${uniEje(m.ym, sal.u) || '—'}] ↑`; });
+  R.querySelectorAll('[data-rol=titulo-x]').forEach((el) => {
+    el.innerHTML = st.log ? `${simb(st.x)} → · escala log${e.u === 'adimensional' ? '' : ', cada marca con su múltiplo'}` : `${simb(st.x)} [${uniEje(st.mults[st.x], e.u) || 'adimensional'}] →`;
+  });
+  // Lectura
+  R.querySelectorAll('[data-rol=lectura]').forEach((el) => {
+    if (!m.mu) { el.innerHTML = ''; return; }
+    if (!m.yDom) {
+      el.innerHTML = `<span class="tag">Sin curva</span><span>La fórmula no está definida en todo este rango. ${st.f.motivo({ ...m.vals, [st.x]: vDe(st, 0.5) })}</span>`;
+      return;
+    }
+    if (st.cursor != null) {
+      const cy = evaluar(st, { ...m.vals, [st.x]: st.cursor });
+      el.innerHTML = `<span class="tag"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#313131" stroke-width="2"/></svg>Lectura</span><span class="val">${textoLectura(st, m)}</span>` +
+        (Number.isFinite(cy) ? '' : `<span class="pista">${st.f.motivo({ ...m.vals, [st.x]: st.cursor })}</span>`) +
+        `<button class="soltar" data-accion="soltar">Soltar</button>`;
+    } else if (m.completo) {
+      el.innerHTML = `<span class="tag"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#9C5B32"/></svg>Punto actual</span><span class="val">${textoLectura(st, m)}</span><span class="pista">${Number.isFinite(m.yAct) ? 'Tocá o arrastrá sobre la gráfica para leer otro punto.' : st.f.motivo(m.vals) + ' Tocá la curva para leer donde sí hay valor.'}</span>`;
+    } else {
+      el.innerHTML = `<span class="tag">Sin punto actual</span><span>Cargá ${simb(st.x)} para marcarlo. Tocá la curva para leer cualquier punto.</span>`;
+    }
+  });
+  // Estado vacío: qué falta para dibujar. El eje X puede quedar vacío.
+  R.querySelectorAll('[data-rol=vacio]').forEach((el) => {
+    el.hidden = !!m.mu;
+    if (m.mu) return;
+    const inval = m.invalidos.filter((s) => s !== st.x);
+    const falta = m.faltan.filter((s) => s !== st.x);
+    el.innerHTML = `<div class="tarjeta"><strong>${simb(sal.s)} en función de ${simb(st.x)}</strong>` +
+      (falta.length ? `<span>Para dibujar la curva cargá ${lista(falta)}. ${simb(st.x)} va en el eje X: puede quedar vacío.</span>` : '') +
+      (inval.length ? `<span>Revisá ${lista(inval)}: debe ser un número válido.</span>` : '') +
+      (st.ofrecerEjemplo ? `<button data-accion="ejemplo">Probar con el ${st.f.ejemplo.rotulo}</button>` : '') + '</div>';
+  });
+  // Resultado
+  R.querySelectorAll('[data-rol=resultado]').forEach((el) => {
+    let cls, cuerpo;
+    if (m.invalidos.length) { cls = 'error'; cuerpo = ['Sin resultado', `<span>Revisá ${lista(m.invalidos)}: debe ser un número válido.</span>`]; }
+    else if (m.faltan.length) { cls = 'vacio'; cuerpo = ['Falta cargar', `<span>${lista(m.faltan)} para calcular ${simb(sal.s)}.</span>`]; }
+    else if (!Number.isFinite(m.yAct)) { cls = 'error'; cuerpo = ['Sin resultado', `<span>La fórmula no está definida para los valores cargados. ${st.f.motivo(m.vals)}</span>`]; }
+    else { cls = 'ok'; cuerpo = ['Resultado', `<output class="mono">${simb(sal.s)} = ${conUnidad(m.yAct, sal.u, undefined, 10)}</output>`, `= ${fmt(m.yAct, 10)} ${sal.u}`]; }
+    if (el.dataset.variante === 'bloque') {
+      el.innerHTML = `<div class="salida"><span class="sim">${simb(sal.s)}</span><p class="sig">${sal.sig}</p><div class="bloque ${cls}">` +
+        (cls === 'ok' ? `<output>${conUnidad(m.yAct, sal.u, undefined, 10)}</output><small>${cuerpo[2]}</small>` : `<span>${cuerpo[1]}</span>`) + '</div></div>';
+    } else {
+      el.innerHTML = `<div class="franja ${cls}"><span class="et">${cuerpo[0]}</span>${cuerpo[1]}${cls === 'ok' && el.dataset.canonico ? `<small>${cuerpo[2]}</small>` : ''}</div>`;
+    }
+  });
+  // Chips de eje X y escala
+  R.querySelectorAll('[data-rol=chips] [data-x]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.x === st.x)));
+  const okLog = puedeLog(st);
+  R.querySelectorAll('[data-rol=escala] [data-escala]').forEach((b) => {
+    b.setAttribute('aria-pressed', String((b.dataset.escala === 'log') === st.log));
+    if (b.dataset.escala === 'log') b.disabled = !okLog;
+  });
+  R.querySelectorAll('[data-rol=nota-escala]').forEach((el) => { el.hidden = okLog; el.innerHTML = okLog ? '' : `Log no disponible: ${simb(st.x)} ≤ 0.`; });
+  // Controles de cada Variable
+  for (const ev of st.f.entradas) {
+    const v = base(st, ev.s);
+    R.querySelectorAll(`[data-var="${ev.s}"]`).forEach((c) => {
+      const campo = c.querySelector('.campo-num'), sel = c.querySelector('select'), desl = c.querySelector('.desl'), val = c.querySelector('.vd-val');
+      if (campo) {
+        if (campo !== origen && document.activeElement !== campo) campo.value = st.textos[ev.s];
+        sel.value = st.mults[ev.s];
+        campo.setAttribute('aria-invalid', String(Number.isNaN(v)));
+        c.querySelector('.err').hidden = !Number.isNaN(v);
+      }
+      if (val) {
+        val.textContent = Number.isFinite(v) ? conUnidad(v, ev.u, st.mults[ev.s]) : Number.isNaN(v) ? 'no válido' : 'sin cargar';
+        val.setAttribute('aria-label', `Editar ${ev.s}: ${val.textContent}`);
+      }
+      c.querySelector('.es-x').hidden = st.x !== ev.s;
+      if (!desl) return;
+      const r = rangoDesl(ev, v);
+      desl.disabled = !r;
+      desl.classList.toggle('sin-valor', !Number.isFinite(v));
+      if (r && desl !== origen) desl.value = Math.round(1000 * tDesl(r, Number.isFinite(v) ? v : ev.desl.ref));
+      desl.style.setProperty('--p', desl.value / 10 + '%');
+      desl.setAttribute('aria-valuetext', Number.isFinite(v) ? conUnidad(v, ev.u, st.mults[ev.s]) : 'sin cargar');
+    });
+  }
+}
+
+// El deslizador recorre un rango pensado para la Variable y se estira si el campo lo excede.
+function rangoDesl(e, v) {
+  const d = e.desl, vv = Number.isFinite(v) ? v : null;
+  if (d.log) {
+    if (vv !== null && vv <= 0) return null;
+    return { lo: Math.min(d.min, vv ?? Infinity), hi: Math.max(d.max, vv ?? 0), log: true };
+  }
+  return { lo: Math.min(d.min, vv ?? d.min), hi: Math.max(d.max, vv ?? d.max), log: false };
+}
+const tDesl = (r, v) => (r.log ? (Math.log10(v) - Math.log10(r.lo)) / (Math.log10(r.hi) - Math.log10(r.lo)) : (v - r.lo) / (r.hi - r.lo));
+const vDesl = (r, t) => (r.log ? 10 ** (Math.log10(r.lo) + t * (Math.log10(r.hi) - Math.log10(r.lo))) : r.lo + t * (r.hi - r.lo));
+
+function render(st, origen) {
+  const { vals, faltan, invalidos } = leerTodo(st);
+  const xv = base(st, st.x);
+  if (Number.isFinite(xv) && (xv < st.dom[0] || xv > st.dom[1] || (st.log && xv <= 0))) encuadrar(st);
+  const otras = [...faltan, ...invalidos].filter((s) => s !== st.x);
+  const completo = !faltan.length && !invalidos.length;
+  const yAct = completo ? evaluar(st, vals) : null;
+  let mu = null;
+  if (!otras.length) { mu = muestrear(st, vals); actualizarYDom(st, rangoY(mu.ys, yAct)); }
+  const ym = st.yDom ? elegirMultiplo(Math.max(Math.abs(st.yDom[0]), Math.abs(st.yDom[1]))) : '';
+  pintar(st, { vals, faltan, invalidos, xv, yAct, completo, mu, ym, yDom: st.yDom }, origen);
+}
+
+function construir(st) {
+  const R = st.raiz;
+  R.querySelectorAll('[data-rol=chips]').forEach((c) => {
+    c.setAttribute('role', 'group'); c.setAttribute('aria-label', 'Variable del eje X');
+    c.innerHTML = st.f.entradas.map((e) => `<button type="button" data-x="${e.s}" aria-label="Eje X: ${e.s}, ${e.sig}">${simb(e.s)}</button>`).join('');
+  });
+  R.querySelectorAll('[data-rol=variables]').forEach((cont, k) => {
+    const comp = cont.dataset.variante === 'compacto', sinDesl = cont.dataset.deslizador === 'no';
+    cont.innerHTML = st.f.entradas.map((e) => {
+      const idb = `${R.id}-${k}-${e.s}`;
+      const op = MULTIPLOS.map((mu) => `<option value="${mu}">${uniMult(mu, e.u)}</option>`).join('');
+      const desl = sinDesl ? '' : `<input type="range" class="desl" min="0" max="1000" step="1" aria-label="Deslizador de ${e.s}, ${e.sig}">`;
+      const campo = `<input id="${idb}" class="campo-num" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="${e.s}, ${e.sig}"><select aria-label="Múltiplo de ${e.s}">${op}</select>`;
+      const err = `<p class="err" hidden>Debe ser un número válido</p>`;
+      if (cont.dataset.variante === 'deslizadores') return `<div class="vd" data-var="${e.s}"><span class="vd-sim">${simb(e.s)}<span class="es-x" hidden>eje X</span></span>${desl}<button type="button" class="vd-val" data-accion="editar" data-s="${e.s}"></button></div>`;
+      if (comp) return `<div class="vc" data-var="${e.s}"><label class="vc-sim" for="${idb}">${simb(e.s)}<span class="es-x" hidden>eje X</span></label>${campo}${desl}${err}</div>`;
+      return `<div class="var" data-var="${e.s}"><div class="var-cab"><label class="sim" for="${idb}">${simb(e.s)}</label><span class="es-x" hidden>eje X</span></div><p class="sig">${e.sig}</p><div class="fila-campo">${campo}</div>${desl}${err}</div>`;
+    }).join('');
+  });
+  R.addEventListener('input', (ev) => {
+    const c = ev.target.closest('[data-var]'); if (!c) return;
+    const s = c.dataset.var, e = entrada(st, s);
+    if (ev.target.classList.contains('campo-num')) { st.textos[s] = ev.target.value; render(st, ev.target); }
+    if (ev.target.classList.contains('desl')) {
+      const r = rangoDesl(e, base(st, s)); if (!r) return;
+      st.textos[s] = aTexto(vDesl(r, ev.target.value / 1000) / FACTOR[st.mults[s]]);
+      render(st, ev.target);
+    }
+  });
+  R.addEventListener('change', (ev) => {
+    const c = ev.target.closest('[data-var]');
+    if (c && ev.target.tagName === 'SELECT') { st.mults[c.dataset.var] = ev.target.value; render(st); }
+  });
+  R.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.x) { st.x = b.dataset.x; st.log = entrada(st, st.x).desl.log && puedeLog(st); encuadrar(st); render(st); }
+    else if (b.dataset.escala) { st.log = b.dataset.escala === 'log'; encuadrar(st); render(st); }
+    else if (b.dataset.accion === 'encuadrar') { encuadrar(st); render(st); }
+    else if (b.dataset.accion === 'soltar') { st.cursor = null; render(st); }
+    else if (b.dataset.accion === 'ejemplo') { Object.assign(st.textos, st.f.ejemplo.textos); Object.assign(st.mults, st.f.ejemplo.mults); encuadrar(st); render(st); }
+    else if (b.dataset.accion === 'limpiar') { for (const e of st.f.entradas) { st.textos[e.s] = ''; st.mults[e.s] = e.m; } encuadrar(st); render(st); }
+  });
+  // Tocar o arrastrar sobre la curva: lee (x, y) exactos con la misma calcular(), sin interpolar.
+  R.querySelectorAll('[data-rol=grafica]').forEach((svg, k) => {
+    svg.id = `${R.id}-g${k}`;
+    if (svg.classList.contains('solo-ver')) { svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Vista previa de la gráfica'); return; }
+    svg.setAttribute('tabindex', '0'); svg.setAttribute('role', 'slider');
+    svg.setAttribute('aria-label', `Lectura sobre la curva de ${st.f.salida.s}. Flechas para mover, Escape para soltar.`);
+    const aT = (ev) => { const r = svg.getBoundingClientRect(), W = +svg.getAttribute('viewBox').split(' ')[2]; const px = ((ev.clientX - r.left) * W) / r.width; return Math.min(1, Math.max(0, (px - MARGEN.l) / (W - MARGEN.l - MARGEN.r))); };
+    let arrastre = false;
+    svg.addEventListener('pointerdown', (ev) => { if (!st.dom) return; arrastre = true; svg.setPointerCapture(ev.pointerId); st.cursor = vDe(st, aT(ev)); render(st); });
+    svg.addEventListener('pointermove', (ev) => { if (!arrastre) return; st.cursor = vDe(st, aT(ev)); render(st); });
+    const fin = () => { arrastre = false; };
+    svg.addEventListener('pointerup', fin); svg.addEventListener('pointercancel', fin);
+    svg.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape') { st.cursor = null; render(st); return; }
+      if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+      ev.preventDefault();
+      const xv = base(st, st.x);
+      let t = st.cursor != null ? tDe(st, st.cursor) : Number.isFinite(xv) ? tDe(st, xv) : 0.5;
+      t = Math.min(1, Math.max(0, t + (ev.key === 'ArrowRight' ? 1 : -1) * (ev.shiftKey ? 0.1 : 0.02)));
+      st.cursor = vDe(st, t); render(st);
+    });
+  });
+}
+
+function montar(idRaiz, idFormula, o = {}) {
+  const f = FORMULAS[idFormula];
+  const st = { f, textos: {}, mults: {}, x: o.x || f.entradas[0].s, log: !!o.log, cursor: null, dom: null, yDom: null, ofrecerEjemplo: !!o.ofrecerEjemplo, raiz: document.getElementById(idRaiz) };
+  for (const e of f.entradas) { st.textos[e.s] = o.textos?.[e.s] ?? ''; st.mults[e.s] = o.mults?.[e.s] ?? e.m; }
+  construir(st);
+  encuadrar(st);
+  if (o.cursor != null) st.cursor = o.cursor;
+  render(st);
+  return st;
+}
+/*</motor>*/
+
+// Estados de esta lámina. Los valores son los de los Ejemplos resueltos del catálogo.
+montar('p3a', 'U05-F17', { textos: { B: '1', SNR: '255' }, mults: { B: 'M' }, x: 'B' });                          // Ejemplo 06, pág. 27
+montar('p3b', 'U05-F17', { textos: { B: '1', SNR: '255' }, mults: { B: 'M' }, x: 'SNR', log: true, cursor: 1000 });  // mismo, en horizontal
+montar('p3c', 'U03-F01', { textos: { P_o: '79,81', P_i: '-4' }, x: 'P_o' });                                           // P_o del Ejemplo05 (pág. 12), P_i con signo equivocado
+
+// «Ver gráfica» en la maqueta: lleva el foco al lienzo horizontal y lo resalta.
+document.querySelector('#p3a [data-accion=ampliar]').addEventListener('click', () => {
+  const t = document.querySelector('#p3b');
+  t.classList.remove('realce'); void t.offsetWidth; t.classList.add('realce');
+  t.querySelector('[data-rol=grafica]').focus();
+});
+</script>
+</body>
+</html>

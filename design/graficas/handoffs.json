@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "03-pantalla-completa-horizontal.html",
+  "handoffs": {
+    "03-pantalla-completa-horizontal.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-12T06:59:55.502Z",
+      "startedAt": "2026-11-12T07:00:15.596Z",
+      "implementedAt": null,
+      "feature": "odd/tasks/graficas.md",
+      "note": "Planificando: orientación, motor de muestreo de la curva y lienzo SVG."
+    }
+  }
+}

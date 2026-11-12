@@ -1,0 +1,28 @@
+{
+  "title": "Gráficas interactivas · etapa 1",
+  "brief": "Gráfica estilo GeoGebra en la pantalla de Fórmula: salida vs. una Variable elegible, con deslizador por Variable, punto actual sobre la curva, lectura (x, y) al tocar o arrastrar, ejes con unidad y múltiplo, escala lineal/log y estados de borde (hueco donde la Fórmula no está definida, campos vacíos, ficha de consulta sin gráfica). Curvas calculadas con la calcular() real de U05-F17, U03-F07 y U03-F01.",
+  "feature": "odd/tasks/graficas.md",
+  "artboards": [
+    {
+      "file": "01-grafica-arriba.html",
+      "title": "Gráfica arriba",
+      "tradeoff": "La curva nunca sale de pantalla mientras se mueve un deslizador y todo vive en una sola vista; a cambio la gráfica queda chica (176 px de alto) y los campos se aprietan debajo: con más de dos Variables hay que desplazarse para llegar a los deslizadores.",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "02-pestanas-calcular-graficar.html",
+      "title": "Pestañas Calcular / Graficar",
+      "tradeoff": "La calculadora de hoy no se toca y la gráfica gana alto con los deslizadores en un panel fijo; a cambio el número exacto se tipea en la otra pestaña (un toque de ida y vuelta) y nunca se ven el cálculo completo y la curva a la vez.",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "03-pantalla-completa-horizontal.html",
+      "title": "Gráfica a pantalla completa (horizontal)",
+      "tradeoff": "El lienzo más ancho y lo más parecido a GeoGebra, ideal para mostrar en el oral; a cambio hay que girar el teléfono, el panel de controles es angosto, el guía desaparece y el teclado en horizontal tapa casi todo el lienzo al tipear.",
+      "width": 1280,
+      "height": 900
+    }
+  ]
+}
