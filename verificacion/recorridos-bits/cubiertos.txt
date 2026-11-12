@@ -1,0 +1,6 @@
+src/screens/bits/pasos.tsx
+src/screens/bits/crc.tsx
+src/screens/bits/hamming.tsx
+src/screens/bits/vrc-lrc.tsx
+src/bits/hamming.ts
+src/bits/paridad.ts

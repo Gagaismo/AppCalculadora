@@ -1,0 +1,34 @@
+# Anclas de Crc.tla, Hamming.tla y VrcLrc.tla en el código.
+# Formato: archivo | texto literal | acción o definición del modelo que lo representa
+# Dentro de un mismo archivo, las anclas tienen que aparecer en este orden.
+src/screens/bits/pasos.tsx | disabled={paso === 0} | Anterior (los tres modelos)
+src/screens/bits/pasos.tsx | onPress={() => onIr(paso - 1)} | Anterior
+src/screens/bits/pasos.tsx | onPress={() => onIr(ultimo ? 0 : paso + 1)} | Siguiente
+src/screens/bits/crc.tsx | const total = (division?.pasos.length ?? 0) + 2; | Crc: Total
+src/screens/bits/crc.tsx | if (paso === 0 && destino === 1 && error) { | Crc: Ir
+src/screens/bits/crc.tsx | setPaso(0); | Crc: CambiarDeModo
+src/screens/bits/crc.tsx | {paso === 0 ? ( | Crc: EditarLaEntrada (teclado y generadores sólo en el paso 0)
+src/screens/bits/hamming.tsx | const total = emisor ? p + 4 : receptor ? p + 2 : 2; | Hamming: Total
+src/screens/bits/hamming.tsx | if (paso === 0 && destino === 1 && error) { | Hamming: Ir
+src/screens/bits/hamming.tsx | setCorregido(false); | Hamming: Ir (descorrige)
+src/screens/bits/hamming.tsx | setPaso(0); | Hamming: CambiarDeModo
+src/screens/bits/hamming.tsx | {paso === 0 ? ( | Hamming: EditarLosDatos, EditarElLargoDeLaRecibida, UnBitLlegaCambiado
+src/screens/bits/hamming.tsx | onCorregir={() => setCorregido(true)} | Hamming: Corregir
+src/screens/bits/hamming.tsx | ) : posicion === 0 ? ( | Hamming: DiceSinError
+src/screens/bits/hamming.tsx | ) : corregida === null || !erronea ? ( | Hamming: DiceQueNoSePuedeCorregir, SenialaUnaPosicion
+src/bits/hamming.ts | const p = Math.floor(Math.log2(total)) + 1; | Hamming: PDe
+src/bits/hamming.ts | const cumple = unos % 2 === 0; | Hamming: GrupoFalla
+src/bits/hamming.ts | if (posicion > total) corregida = null; | Hamming: DiceQueNoSePuedeCorregir
+src/screens/bits/vrc-lrc.tsx | const verificacion = verificarTabla(recibida, lrcRx, vrcRx, tipo); | VrcLrc: FilasConError, ColumnasConError (la esquina recibida no entra)
+src/screens/bits/vrc-lrc.tsx | const total = vista === 'bcc' ? ancho + 2 : modo === 'emisor' ? 5 : 4; | VrcLrc: Total
+src/screens/bits/vrc-lrc.tsx | const reiniciar = () => { | VrcLrc: Reiniciar
+src/screens/bits/vrc-lrc.tsx | if (vista === 'bcc' && paso === 0 && destino === 1 && errorBcc) { | VrcLrc: Ir
+src/screens/bits/vrc-lrc.tsx | setCorregida(false); | VrcLrc: Ir (descorrige)
+src/screens/bits/vrc-lrc.tsx | setTipo(nuevo); | VrcLrc: CambiarLaParidad
+src/screens/bits/vrc-lrc.tsx | onCorregir={() => setCorregida(true)} | VrcLrc: Corregir
+src/screens/bits/vrc-lrc.tsx | paso === 0 | VrcLrc: UnBitLlegaCambiado (onCelda y onControl sólo en el paso 0)
+src/screens/bits/vrc-lrc.tsx | if (filas + columnas === 0) { | VrcLrc: DiceSinError
+src/screens/bits/vrc-lrc.tsx | if (paso === 0) { | VrcLrc: EditarElBloque (el BCC se edita sólo en el paso 0)
+src/bits/paridad.ts | const filasConError = distintos(tabla.lrc, lrcRecibido); | VrcLrc: FilasConError
+src/bits/paridad.ts | const columnasConError = distintos(tabla.vrc, vrcRecibido); | VrcLrc: ColumnasConError
+src/bits/paridad.ts | filasConError.length === 1 && columnasConError.length === 1 | VrcLrc: HayCruceUnico
