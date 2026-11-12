@@ -1,0 +1,12 @@
+# Anclas del modelo OrientacionGrafica.tla en el código.
+# Formato: archivo | texto literal | acción o definición del modelo que lo representa
+# Dentro de un mismo archivo, las anclas tienen que aparecer en este orden.
+# Si una falta o cambia de orden, el modelo ya no describe el código: verificar.sh sale con 2.
+src/graficas/orientacion.ts | useFocusEffect( | AbrirGrafica, AbrirOtraGraficaEncima, SalirGrafica (foco y limpieza)
+src/graficas/orientacion.ts | lockAsync(OrientationLock.LANDSCAPE).catch(() => {}); | PedidoAlEnfocar
+src/graficas/orientacion.ts | return () => { | PedidoAlSalir (la limpieza)
+src/graficas/orientacion.ts | lockAsync(OrientationLock.PORTRAIT_UP).catch(() => {}); | PedidoAlSalir
+src/screens/grafica/index.tsx | useOrientacionHorizontal(); | AbrirGrafica (la pantalla de gráfica usa el hook)
+src/screens/grafica/index.tsx | onPress={() => router.back()} | SalirGrafica (botón «←», testID salir-grafica)
+src/graficas/vista-previa.tsx | router.push({ pathname: '/formula/[id]/grafica', params: { id: formula.id } }) | AbrirGrafica, AbrirOtraGraficaEncima («Ver gráfica»)
+app.json | "orientation": "portrait" | OrientacionDelManifiesto (la actividad nace vertical)

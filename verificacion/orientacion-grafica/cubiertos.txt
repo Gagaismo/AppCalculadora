@@ -1,0 +1,5 @@
+src/graficas/orientacion.ts
+src/screens/grafica/index.tsx
+src/graficas/vista-previa.tsx
+src/app/formula/[id]/grafica.tsx
+app.json
