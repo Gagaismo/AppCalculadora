@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { EntradaCargada, Formula } from '@/dominio/formula';
-import { calcular } from '@/dominio/motor';
-import { aCanonico, conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import type { Formula } from '@/dominio/formula';
+import { conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import { diagnosticar } from '@/guia/diagnostico';
 import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 import { FichaFormula } from './ficha';
 import { Expresion, ExpresionesRelacionadas } from './expresion';
 import { SelectorMultiplo } from './selector-multiplo';
-import { formatearNumero, parsearEntrada } from './numeros';
+import { formatearNumero } from './numeros';
 
 /**
  * La pantalla genérica.
@@ -55,65 +55,13 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
     );
   }
 
-  const noNumericos: string[] = [];
-  const entradas: Record<string, EntradaCargada> = {};
-
-  for (const variable of formula.entradas) {
-    const crudos = textos[variable.simbolo] ?? [''];
-    const parseadas = crudos.map(parsearEntrada);
-
-    if (parseadas.some((e) => e.estado === 'invalida')) {
-      noNumericos.push(variable.simbolo);
-      continue;
-    }
-
-    const cargados = parseadas.flatMap((e) => (e.estado === 'cargada' ? [e.valor] : []));
-    const multiplo = multiplos[variable.simbolo];
-
-    if (variable.esLista) {
-      // Una lista vacía la resuelve el motor como Variable faltante, que es lo
-      // correcto: sumar sobre nada daría cero, un resultado plausible y equivocado.
-      entradas[variable.simbolo] = { valores: cargados, multiplo };
-    } else if (cargados.length > 0) {
-      entradas[variable.simbolo] = { valor: cargados[0], multiplo };
-    }
-  }
-
-  let mensajeResultado: string;
-  let valorCanonico: number | null = null;
-  let esExito = false;
-  let esError = false;
-
-  if (noNumericos.length > 0) {
-    esError = true;
-    mensajeResultado =
-      noNumericos.length === 1
-        ? `Entrada no numérica en ${noNumericos[0]}`
-        : `Entrada no numérica en: ${noNumericos.join(', ')}`;
-  } else {
-    const resultado = calcular(formula.id, entradas);
-    if (resultado.ok) {
-      esExito = true;
-      mensajeResultado = `${formatearNumero(resultado.valor)} ${conMultiplo(resultado.multiplo, resultado.unidadDeMedida)}`;
-      valorCanonico = aCanonico(resultado.valor, resultado.multiplo);
-    } else {
-      switch (resultado.error.tipo) {
-        case 'variables-faltantes':
-          mensajeResultado =
-            resultado.error.simbolos.length === 1
-              ? `Falta: ${resultado.error.simbolos[0]}`
-              : `Faltan: ${resultado.error.simbolos.join(', ')}`;
-          break;
-        case 'calculo-no-definido':
-          mensajeResultado = resultado.error.motivo;
-          break;
-        case 'formula-desconocida':
-          esError = true;
-          mensajeResultado = `Fórmula desconocida: ${resultado.error.id}`;
-          break;
-      }
-    }
-  }
+  // El diagnóstico es el mismo que lee el guía: la pantalla sólo lo dibuja.
+  const diagnostico = diagnosticar(formula, textos, multiplos);
+  const noNumericos = diagnostico.estado === 'no-numerica' ? diagnostico.simbolos : [];
+  const mensajeResultado = diagnostico.mensaje;
+  const valorCanonico = diagnostico.valorCanonico;
+  const esExito = diagnostico.estado === 'exito';
+  const esError = diagnostico.estado === 'no-numerica' || diagnostico.estado === 'desconocida';
 
   const limpiarCampos = () => {
     setTextos(camposIniciales(formula));
