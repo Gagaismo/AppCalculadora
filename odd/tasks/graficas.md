@@ -75,3 +75,15 @@ Rama: `feature/graficas`, que sale de `feature/herramientas-bits`.
   - Solo en dispositivo: el giro real, el splash, las tres formas de volver, el segundo plano y el deslizador nativo.
   - La falla intermitente de `hamming.test.tsx` y `vrc-lrc.test.tsx` bajo carga volvió a aparecer: queda para diagnosticar.
   - El aviso (1) se está modelando en `verificar-orientacion-grafica`.
+- **L8** Revisión RDD por commit de los de mayor riesgo (decisión del humano: «Solo los de mayor riesgo»):
+  - `714ef2d` (orientación y deslizador): aprobado, con 3 lentes (risk, resilience, reliability).
+  - `45d33cc` (sesión y vista previa): aprobado, con 2 lentes.
+  - `6c158ad` (pantalla horizontal): aprobado, con 2 lentes.
+  - Los tres tienen el acknowledgement hecho. Dejaron 20 avisos no bloqueantes; entre ellos:
+    - la sesión con clave por id;
+    - el PORTRAIT de salida sin reintento;
+    - `router.back()` sin historial;
+    - casos sin test: eje X viejo, ficha de consulta y salida;
+    - la orientación de arranque en iOS.
+  - `0a279c3` (SDK 58): `lens_context_budget_exceeded` por el `package-lock.json` regenerado, que no se puede partir. El humano decidió («1. ok») que queda **sin revisión RDD**, cubierto por la verificación independiente (expo-doctor 20/20, 1247 dependencias del registro oficial con integrity) y por la prueba en el teléfono.
+  - El humano autorizó además actualizar las versiones de la verificación TLA+ de orientación, fusionar en `main` y hacer push.
