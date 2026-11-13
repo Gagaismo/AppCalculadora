@@ -23,7 +23,7 @@ if [ -n "$otros$usos" ]; then
   exit 2
 fi
 # Las citas nativas del modelo valen para estas versiones.
-for par in expo-screen-orientation:57.0.3 expo-modules-core:57.0.14 expo-router:57.0.17 react-native:0.86.3; do
+for par in expo-screen-orientation:58.0.4 expo-modules-core:58.1.0 expo-router:58.0.31 react-native:0.88.1; do
   paquete=${par%%:*}; esperada=${par#*:}
   instalada=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "node_modules/$paquete/package.json" 2>/dev/null || true)
   [ "$instalada" = "$esperada" ] || echo "AVISO: $paquete instalado es «$instalada» y el modelo citó $esperada. Releé las citas nativas de OrientacionGrafica.tla." >&2

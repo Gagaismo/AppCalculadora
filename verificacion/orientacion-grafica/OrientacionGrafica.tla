@@ -6,18 +6,18 @@
 (* y en la gráfica termina en horizontal.                                   *)
 (*                                                                          *)
 (* Cada acción es un paso indivisible del código; la cita está al lado.     *)
-(* Versiones leídas: expo-screen-orientation 57.0.3, expo-modules-core      *)
-(* 57.0.14, expo-router 57.0.17, react-native 0.86.3 (rutas relativas a     *)
+(* Versiones leídas: expo-screen-orientation 58.0.4, expo-modules-core      *)
+(* 58.1.0, expo-router 58.0.31, react-native 0.88.1 (rutas relativas a      *)
 (* node_modules/).                                                          *)
 (*                                                                          *)
 (* Qué orden garantiza cada capa, y dónde está leído:                       *)
 (*  - JS: `lockAsync` llama a la función nativa en su parte síncrona, antes *)
 (*    del primer `await` (expo-screen-orientation/src/ScreenOrientation.ts  *)
-(*    :47-63). Como `orientacion.ts` no espera la promesa, cada efecto      *)
+(*    :46-62). Como `orientacion.ts` no espera la promesa, cada efecto      *)
 (*    encola su pedido en el mismo paso en que corre.                       *)
 (*  - Android: toda AsyncFunction corre en un único HandlerThread           *)
-(*    (expo-modules-core/android/.../kotlin/AppContext.kt:71-92 y           *)
-(*    functions/AsyncFunctionComponent.kt:61-66). Los pedidos se aplican de *)
+(*    (expo-modules-core/android/.../kotlin/AppContext.kt:70-91 y           *)
+(*    functions/AsyncFunctionComponent.kt:61-65). Los pedidos se aplican de *)
 (*    a uno y en el orden en que JS los hizo: la cola es FIFO.              *)
 (*  - Aplicar un pedido es una asignación:                                  *)
 (*    `currentActivity.requestedOrientation = ...`                          *)
@@ -133,8 +133,8 @@ VolverAlFrente ==
     /\ UNCHANGED <<graficas, arbol, cola, nativa, actividad>>
 
 \* Android destruye la actividad en segundo plano. ReactDelegate.onHostDestroy
-\* (react-native/ReactAndroid/.../ReactDelegate.kt:164-175) detiene la superficie
-\* (unloadApp, :344-347) y currentActivity queda en null.
+\* (react-native/ReactAndroid/.../ReactDelegate.kt:161-172) detiene la superficie
+\* (unloadApp, :343-345) y currentActivity queda en null.
 \* SUPUESTO: para entonces el hilo nativo ya aplicó lo pendiente (milisegundos contra un
 \* ciclo pause -> stop -> destroy). La variante "destruyeConPedidosPendientes" lo quita.
 ElSistemaDestruyeLaActividad ==
@@ -155,7 +155,7 @@ ElArbolSeDesmonta ==
     /\ UNCHANGED <<nativa, actividad, frente>>
 
 \* Quien usa la app vuelve y Android crea una actividad nueva: nace con la orientación
-\* del manifiesto y ReactDelegate.loadApp (:322-329) arranca una superficie nueva, que
+\* del manifiesto y ReactDelegate.loadApp (:322-327) arranca una superficie nueva, que
 \* monta la app desde la ruta inicial, fuera de la gráfica.
 VolverYRecrear ==
     /\ ~frente /\ actividad = "destruida" /\ arbol = "desmontado"

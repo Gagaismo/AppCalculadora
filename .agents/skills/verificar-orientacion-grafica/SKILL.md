@@ -31,10 +31,10 @@ de orientación sin aplicar.
 Está leído en `node_modules/` y citado en la cabecera de `OrientacionGrafica.tla`:
 
 - **JS**: `lockAsync` llama a la función nativa antes de su primer `await`
-  (`expo-screen-orientation/src/ScreenOrientation.ts:47-63`). Cada efecto encola su
+  (`expo-screen-orientation/src/ScreenOrientation.ts:46-62`). Cada efecto encola su
   pedido en el momento en que corre.
 - **Android**: toda `AsyncFunction` corre en un único `HandlerThread`
-  (`expo-modules-core/android/.../kotlin/AppContext.kt:71-92`). Los pedidos se aplican de
+  (`expo-modules-core/android/.../kotlin/AppContext.kt:70-91`). Los pedidos se aplican de
   a uno y en el orden en que JS los hizo. **El módulo nativo no desordena.**
 - **iOS**: la cola por defecto también es serie
   (`expo-modules-core/ios/Core/Functions/AsyncFunctionDefinition.swift:20`). El modelo es
@@ -49,7 +49,7 @@ Está leído en `node_modules/` y citado en la cabecera de `OrientacionGrafica.t
 
 ## Cobertura
 
-Commit de sincronización: `d8942313af22e499fd8e351863ee17924a10e577`
+Commit de sincronización: `7a7fc9a3cfa1d34e0b7461901dcea1fa66a4eab6`
 
 | Código | Parte del modelo |
 |---|---|
@@ -111,7 +111,7 @@ algún paso no puede ocurrir. Tres supuestos que conviene mirar primero:
   en milisegundos y Android tarda mucho más en destruir una actividad. La variante
   `destruyeConPedidosPendientes` muestra qué pasa sin ese supuesto.
 - `ElArbolSeDesmonta` admite que la limpieza del efecto corra o no corra. No está leído
-  cuál de las dos pasa en React Native 0.86; la regla vale con las dos.
+  cuál de las dos pasa en React Native 0.88; la regla vale con las dos.
 - Los toques durante un giro pendiente sí están modelados (`MaxCola = 4`).
 
 Antes de dar por real un error, repetilo en `repeticion.verif.tsx` como un recorrido
