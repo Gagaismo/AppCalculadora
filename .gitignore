@@ -45,5 +45,10 @@ example
 # wizard de EAS (valores locales, no van al repo)
 .eas-wizard.env
 
+# Los genera `eas credentials` (y scripts/cargar-keystore.sh): contienen el keystore de
+# firma y sus contraseñas en texto plano. Nunca van al repositorio.
+credentials.json
+/credentials/
+
 # Impeccable: skill de diseño, se instala con `npx impeccable install`
 .claude/skills/impeccable/

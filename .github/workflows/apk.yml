@@ -1,0 +1,226 @@
+# Compila el APK de Android sin EAS Build: `expo prebuild` genera el proyecto nativo en el
+# runner y Gradle lo compila. No consume la cuota de EAS (el repositorio es público y los
+# minutos de los runners estándar no se cobran).
+#
+# Se corre sólo en hitos: a mano o al empujar un tag `v*`. Nunca en cada push ni en PR.
+# La guía para cargar el keystore y disparar la compilación está en docs/compilar-apk.md.
+
+name: Compilar APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+# Permisos mínimos por defecto; sólo el job que publica la Release pide escritura.
+permissions:
+  contents: read
+
+# Una sola compilación por ref: si se vuelve a disparar sobre el mismo ref, la nueva reemplaza
+# a la que estaba en curso en lugar de apilarse.
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compilar:
+    name: Compilar y firmar APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      nombre-apk: ${{ steps.firmar.outputs.nombre }}
+
+    steps:
+      # Se verifica primero, antes de gastar minutos compilando: sin keystore no hay APK
+      # publicable, y nunca se entrega uno firmado con la clave de debug.
+      - name: Verificar secretos de firma
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          faltantes=""
+          for nombre in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!nombre}" ]; then
+              faltantes="$faltantes $nombre"
+            fi
+          done
+          if [ -n "$faltantes" ]; then
+            echo "::error::Faltan secretos de firma:$faltantes. Cargalos siguiendo docs/compilar-apk.md; no se publica un APK firmado con la clave de debug."
+            exit 1
+          fi
+
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          # El token no queda guardado en .git/config, fuera del alcance de npm y Gradle.
+          persist-credentials: false
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # No se compila un APK roto: los mismos controles que la integración continua.
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Ejecutar pruebas
+        run: npm test
+
+      # El plugin de Gradle de React Native declara `jvmToolchain(17)`.
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Gradle con caché
+        uses: gradle/actions/setup-gradle@v4
+
+      # EAS lleva el versionCode en la nube (`appVersionSource: remote` con `autoIncrement`) y
+      # app.json no lo define. Android rechaza instalar un APK encima de otro con versionCode
+      # mayor, así que este se fija bien por encima del contador de EAS: 1000 + número de
+      # corrida, que además crece en cada compilación. El cambio vive sólo en el runner; no se
+      # commitea.
+      - name: Fijar versionCode
+        id: version
+        run: |
+          # Las expresiones de Actions no suman: la cuenta se hace en bash.
+          export VERSION_CODE=$((1000 + GITHUB_RUN_NUMBER))
+          node -e '
+            const fs = require("fs");
+            const app = JSON.parse(fs.readFileSync("app.json", "utf8"));
+            app.expo.android = app.expo.android || {};
+            app.expo.android.versionCode = Number(process.env.VERSION_CODE);
+            fs.writeFileSync("app.json", JSON.stringify(app, null, 2) + "\n");
+          '
+          version_name=$(node -p 'require("./app.json").expo.version')
+          echo "version-name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "version-code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "versionName $version_name, versionCode $VERSION_CODE"
+
+      # Genera android/ a partir de app.json. Esa carpeta no se commitea: se regenera en cada corrida.
+      - name: Generar proyecto nativo
+        run: npx expo prebuild --platform android --no-install
+
+      # arm64-v8a cubre los celulares de 64 bits y armeabi-v7a los de 32 bits de gama baja: el
+      # celular con el que se defiende puede ser cualquiera. Se omiten x86 y x86_64, que sólo usan
+      # los emuladores, y así el código nativo se compila dos veces en lugar de cuatro.
+      - name: Compilar APK de release
+        working-directory: android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon
+
+      # El release que genera prebuild sale firmado con el keystore de debug. Se vuelve a firmar
+      # con el keystore de la app (el mismo que tiene EAS), para que se pueda instalar encima de
+      # los APK anteriores. El keystore se decodifica fuera del workspace.
+      - name: Firmar APK con el keystore de la app
+        id: firmar
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          VERSION_NAME: ${{ steps.version.outputs.version-name }}
+          VERSION_CODE: ${{ steps.version.outputs.version-code }}
+        run: |
+          set -euo pipefail
+
+          # apksigner viene en las build-tools del SDK preinstalado; se usa la versión estable más
+          # alta. Sólo cuentan los nombres numéricos, para no elegir una preliminar (34.0.0-rc1).
+          build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+            | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -n 1 || true)
+          if [ -z "$build_tools" ]; then
+            echo "::error::No se encontraron build-tools en $ANDROID_HOME/build-tools."
+            exit 1
+          fi
+          apksigner="$ANDROID_HOME/build-tools/$build_tools/apksigner"
+          echo "apksigner de build-tools $build_tools"
+
+          # Se toma el único APK que dejó Gradle, sin suponer su nombre.
+          mapfile -t apks < <(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk')
+          if [ "${#apks[@]}" -ne 1 ]; then
+            echo "::error::Se esperaba un único APK en android/app/build/outputs/apk/release y hay ${#apks[@]}."
+            exit 1
+          fi
+
+          # Tolera el base64 de PowerShell (una sola línea) y el de certutil (con encabezados
+          # y saltos de línea).
+          keystore="$RUNNER_TEMP/firma.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | sed '/-----/d' | tr -d ' \r\n' | base64 --decode > "$keystore"
+
+          nombre="calculadora-comunicaciones-v${VERSION_NAME}-${VERSION_CODE}"
+          mkdir -p "$RUNNER_TEMP/salida"
+          salida="$RUNNER_TEMP/salida/$nombre.apk"
+
+          # Las contraseñas se leen de variables de entorno (`env:`), nunca de la línea de comandos.
+          "$apksigner" sign \
+            --ks "$keystore" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --key-pass env:ANDROID_KEY_PASSWORD \
+            --out "$salida" \
+            "${apks[0]}"
+
+          certificados=$("$apksigner" verify --print-certs "$salida")
+          echo "$certificados"
+          if grep -q 'CN=Android Debug' <<< "$certificados"; then
+            echo "::error::El APK quedó firmado con la clave de debug; revisá el keystore cargado (docs/compilar-apk.md)."
+            exit 1
+          fi
+
+          echo "nombre=$nombre" >> "$GITHUB_OUTPUT"
+          echo "ruta=$salida" >> "$GITHUB_OUTPUT"
+
+      # El runner es efímero, pero el keystore no tiene por qué sobrevivir al paso que lo usó.
+      - name: Borrar keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firma.jks"
+
+      - name: Subir APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.firmar.outputs.nombre }}
+          path: ${{ steps.firmar.outputs.ruta }}
+          if-no-files-found: error
+          # Al re-correr una corrida fallida el artefacto conserva el mismo nombre: se reemplaza.
+          overwrite: true
+
+  publicar:
+    name: Publicar Release
+    needs: compilar
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.compilar.outputs.nombre-apk }}
+          path: apk
+
+      - name: Crear Release con el APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Si la Release del tag ya existe (una corrida repetida), se reemplaza el APK adjunto
+          # en lugar de fallar.
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" apk/*.apk --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$GITHUB_REF_NAME" apk/*.apk \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes
+          fi
