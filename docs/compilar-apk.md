@@ -9,60 +9,53 @@ de los APK que compiló EAS sin desinstalar nada. Para eso hay que cargar el key
 secret del repositorio. Sin esos secrets el workflow falla a propósito: nunca publica un APK firmado
 con la clave de debug.
 
-## 1. Bajar el keystore de EAS
+## 1. Cargar el keystore (una sola vez)
 
-```
-npx eas-cli credentials
-```
-
-Elegí **Android** → el perfil (`apk`) → **Keystore: Manage everything needed to build your project**
-→ **Download existing keystore**. El CLI guarda un archivo `.jks` (indica en qué ruta) y muestra
-por pantalla el **alias de la clave**, la **contraseña del keystore** y la **contraseña de la clave**.
-Anotá los tres: son tres de los cuatro secrets.
-
-El `.jks` **no se commitea**: si quedó dentro del repositorio, movelo afuera antes de cualquier
-`git add`. Después de cargarlo en GitHub (paso 3), borralo de la PC.
-
-## 2. Pasar el keystore a base64
-
-Un secret es texto, así que el `.jks` se carga codificado en base64. En PowerShell:
-
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("ruta\al\keystore.jks")) | Set-Clipboard
-```
-
-Queda en el portapapeles, listo para pegar. Alternativa con `certutil`, que lo escribe en un archivo
-(el workflow tolera los encabezados y saltos de línea que agrega):
-
-```
-certutil -encode ruta\al\keystore.jks keystore.b64.txt
-```
-
-Si usás `certutil`, borrá también `keystore.b64.txt` al terminar: es el keystore, sólo que en texto.
-
-## 3. Cargar los cuatro secrets
+Son cuatro secrets del repositorio:
 
 | Secret | Valor |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | El base64 del paso 2 |
+| `ANDROID_KEYSTORE_BASE64` | El `.jks` codificado en base64 |
 | `ANDROID_KEYSTORE_PASSWORD` | Contraseña del keystore |
 | `ANDROID_KEY_ALIAS` | Alias de la clave |
 | `ANDROID_KEY_PASSWORD` | Contraseña de la clave |
 
-Desde la web: **Settings → Secrets and variables → Actions → New repository secret**, uno por fila.
+### Camino principal: el asistente
 
-O con `gh`, que pide el valor sin mostrarlo:
+Desde la raíz del repositorio, en Git Bash:
 
 ```
-gh secret set ANDROID_KEYSTORE_BASE64
-gh secret set ANDROID_KEYSTORE_PASSWORD
-gh secret set ANDROID_KEY_ALIAS
-gh secret set ANDROID_KEY_PASSWORD
+bash scripts/cargar-keystore.sh
 ```
 
-Para el primero también sirve `gh secret set ANDROID_KEYSTORE_BASE64 < keystore.b64.txt`.
+Inicia sesión en Expo si hace falta, abre `eas credentials` para bajar las credenciales de EAS a
+`credentials.json`, carga los cuatro secrets con `gh secret set` pasándolos por entrada estándar
+—ninguna contraseña se muestra ni se copia—, borra `credentials.json` y el `.jks` y verifica con
+`gh secret list` que estén los cuatro. Necesita `node` y `gh` con sesión iniciada.
 
-## 4. Disparar la compilación
+### Alternativa manual
+
+1. **Bajar el keystore**: `npx eas-cli credentials` → **Android** → perfil `apk` →
+   **Keystore: Manage everything needed to build your project** → **Download existing keystore**.
+   El CLI guarda un `.jks` y muestra el alias y las dos contraseñas. El `.jks` **no se commitea**:
+   si quedó dentro del repositorio, movelo afuera antes de cualquier `git add`.
+2. **Pasarlo a base64**, porque un secret es texto. Lo más limpio es no pasar por el portapapeles:
+
+   ```
+   base64 -w0 ruta/al/keystore.jks | gh secret set ANDROID_KEYSTORE_BASE64
+   ```
+
+   O generar el archivo y cargarlo con `gh secret set ANDROID_KEYSTORE_BASE64 < archivo`. Con
+   `certutil -encode ruta\al\keystore.jks keystore.b64.txt` también sirve (el workflow tolera sus
+   encabezados y saltos de línea). Con PowerShell,
+   `[Convert]::ToBase64String([IO.File]::ReadAllBytes("ruta\al\keystore.jks")) | Set-Clipboard`
+   lo deja en el portapapeles para pegarlo en la web; después **limpiá el historial del
+   portapapeles** (Win+V → **Borrar todo**), porque el keystore queda guardado ahí.
+3. **Cargar los otros tres**: `gh secret set NOMBRE`, que pide el valor sin mostrarlo, o desde la web
+   en **Settings → Secrets and variables → Actions → New repository secret**.
+4. **Borrar** de la PC el `.jks` y cualquier `keystore.b64.txt`: es el keystore, sólo que en texto.
+
+## 2. Disparar la compilación
 
 El APK se compila en hitos, no en cada push. Hay dos formas:
 
@@ -80,7 +73,7 @@ Antes de compilar, el workflow corre `typecheck` y los tests: un APK roto no lle
 El APK incluye `arm64-v8a` y `armeabi-v7a`: corre en celulares de 64 bits y en los de 32 bits de
 gama baja, pero no en emuladores x86.
 
-## 5. Dónde bajar el APK
+## 3. Dónde bajar el APK
 
 - **Siempre**: en la corrida, sección **Artifacts** al pie, o con `gh run download`. El artefacto se
   llama `calculadora-comunicaciones-v<versión>-<versionCode>` y GitHub lo guarda 90 días.

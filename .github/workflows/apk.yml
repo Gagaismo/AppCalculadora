@@ -54,6 +54,9 @@ jobs:
 
       - name: Clonar repositorio
         uses: actions/checkout@v4
+        with:
+          # El token no queda guardado en .git/config, fuera del alcance de npm y Gradle.
+          persist-credentials: false
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -129,8 +132,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # apksigner viene en las build-tools del SDK preinstalado; se usa la versión más alta.
-          build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -V | tail -n 1)
+          # apksigner viene en las build-tools del SDK preinstalado; se usa la versión estable más
+          # alta. Sólo cuentan los nombres numéricos, para no elegir una preliminar (34.0.0-rc1).
+          build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+            | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -n 1 || true)
           if [ -z "$build_tools" ]; then
             echo "::error::No se encontraron build-tools en $ANDROID_HOME/build-tools."
             exit 1
@@ -184,6 +189,8 @@ jobs:
           name: ${{ steps.firmar.outputs.nombre }}
           path: ${{ steps.firmar.outputs.ruta }}
           if-no-files-found: error
+          # Al re-correr una corrida fallida el artefacto conserva el mismo nombre: se reemplaza.
+          overwrite: true
 
   publicar:
     name: Publicar Release
