@@ -22,29 +22,35 @@ no se compila en cada cambio, se compila en hitos. El desarrollo del día a día
 que no consume nada.
 
 La regla práctica que se desprende: **no poner `eas build` en integración continua**. El workflow de
-GitHub Actions corre typecheck y tests, y nada más. Compilar en cada push quemaría la cuota del mes
-en dos días y no agregaría información que los tests no den ya.
+integración continua corre typecheck y tests, y nada más. Compilar en cada push quemaría la cuota del
+mes en dos días y no agregaría información que los tests no den ya.
+
+Desde entonces el APK tiene un segundo camino que no consume cuota: el workflow
+[`apk.yml`](../../.github/workflows/apk.yml) de GitHub Actions, que compila con `expo prebuild` y
+Gradle en el runner. La regla de los hitos se mantiene igual: corre a mano o con un tag de versión,
+nunca en cada push. Ver [`docs/compilar-apk.md`](../compilar-apk.md).
 
 Con 10 builds simultáneos, tampoco hay riesgo de cola propia: la espera, cuando la hay, es la cola
 compartida del tier gratuito de Expo, no un límite de esta cuenta.
 
 ## El keystore
 
-EAS generó el keystore de Android en la nube, porque la máquina de desarrollo no tiene `keytool`
-—viene con el JDK, que no está instalado porque no hace falta Android Studio—.
+EAS generó el keystore de Android en la nube.
 
 **Ese keystore es el que firma el APK.** Vive en la cuenta de Expo, no en este repositorio. Si se
 pierde el acceso a la cuenta no se puede publicar una actualización de la misma app, así que la
 cuenta `lagueb` es parte de lo que hay que conservar hasta la entrega.
 
+El workflow `apk.yml` firma con ese mismo keystore, descargado de EAS y cargado como secret del
+repositorio. Un APK de Actions se instala encima de uno de EAS; al revés, sólo después de subir el
+contador de EAS por encima del último `versionCode` de Actions (ver
+[`docs/compilar-apk.md`](../compilar-apk.md)).
+
 ## Si alguna vez no alcanzara
 
-La alternativa evaluada es compilar localmente:
+Ya no depende de la cuota: el camino habitual es GitHub Actions, que no la consume, y EAS Build queda
+como alternativa con sus 15 builds por mes.
 
-```
-npx expo run:android --variant release
-```
-
-No consume cuota de EAS, pero exige instalar Android Studio y el SDK de Android en la máquina de
-desarrollo, que es justamente lo que este stack evita. Es un plan de contingencia, no el camino
-habitual.
+Compilar localmente (`npx expo run:android --variant release`) se evaluó y se descartó: exige
+instalar Android Studio y el SDK de Android en la máquina de desarrollo, que es justamente lo que este
+stack evita, y esa máquina no tiene el espacio en disco para hacerlo.
