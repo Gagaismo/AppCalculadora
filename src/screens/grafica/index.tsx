@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Formula, Variable } from '@/dominio/formula';
 import { desdeCanonico } from '@/dominio/multiplos';
 import { Deslizador } from '@/graficas/deslizador';
-import { unidadConMultiplo, type RangoInicial } from '@/graficas/escala';
+import { multiploAdmitido, unidadConMultiplo, type RangoInicial } from '@/graficas/escala';
 import { Lienzo } from '@/graficas/lienzo';
 import { variablesEjeX } from '@/graficas/muestreo';
 import { useOrientacionHorizontal } from '@/graficas/orientacion';
@@ -198,8 +198,10 @@ export function PantallaGrafica({ formula }: { formula: Formula }) {
               </View>
             );
           }
+          // Número y rótulo con el mismo múltiplo: el base si la Unidad de medida no
+          // admite prefijos SI (S7).
           const unidad = unidadConMultiplo(v.unidadDeMedida, multiplo);
-          const numero = formatearNumero(desdeCanonico(valor, multiplo));
+          const numero = formatearNumero(desdeCanonico(valor, multiploAdmitido(v.unidadDeMedida, multiplo)));
           return (
             <Deslizador
               key={v.simbolo}
