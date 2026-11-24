@@ -189,6 +189,30 @@ describe('pantalla de la gráfica', () => {
     },
   );
 
+  // S1, review de PR #24: un valor subnormal o enorme deja un marco log extremo. Ni
+  // las marcas, ni la lectura, ni los deslizadores, ni el resultado llevan
+  // Infinity o NaN, tampoco con B llevado a cada extremo de la pista.
+  it.each([
+    ['B = 5e-324 Hz', '5e-324'],
+    ['B = 1e300 Hz', '1e300'],
+  ])('U05-F17 con %s: el marco log extremo se rotula sin Infinity ni NaN', async (_, b) => {
+    await abrir('U05-F17', { textos: { B: [b], SNR: ['1023'] }, multiplos: { B: '', SNR: '' } });
+    expect(elegido('escala-log')).toBe(true);
+    const revisar = () => {
+      expect(JSON.stringify(screen.toJSON())).not.toMatch(/Infinity|NaN/);
+      expect(noFinitos(screen.toJSON())).toEqual([]);
+    };
+    revisar();
+    for (const sentido of ['increment', 'decrement']) {
+      for (let i = 0; i < 21; i++) {
+        await fireEvent(screen.getByTestId('deslizador-B'), 'accessibilityAction', accion(sentido));
+      }
+      revisar();
+      await fireEvent(screen.getByTestId('lienzo'), 'responderGrant', { nativeEvent: { locationX: 10000 } });
+      revisar();
+    }
+  });
+
   it('no muestra al guía', async () => {
     await abrir('U05-F17', ejemplo07);
     expect(screen.queryByTestId('guia')).toBeNull();

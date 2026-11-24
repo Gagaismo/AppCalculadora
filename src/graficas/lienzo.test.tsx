@@ -254,6 +254,43 @@ describe('Lienzo', () => {
     expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
+  // S1, review de PR #24: el marco log más extremo posible, de MIN_VALUE a MAX, con
+  // valores en los dos bordes. Ni las marcas ni la lectura (en reposo o con la cruz
+  // en cada borde) llevan Infinity o NaN, en ningún múltiplo del campo.
+  it.each(['p', '', 'T'] as const)(
+    'el marco log de MIN_VALUE a MAX con múltiplo «%s» se rotula sin Infinity ni NaN',
+    async (m) => {
+      const formula = buscarFormula('U05-F17')!;
+      const M = Number.MAX_VALUE;
+      const min = Number.MIN_VALUE;
+      const ys = [min, -min, 1, 1e300, M];
+      const segmentos = [[min, 1e-300, 1, 1e300, M].map((x, i) => ({ x, y: ys[i] }))];
+      await render(
+        <Lienzo
+          segmentos={segmentos}
+          rangos={{ x: { min, max: M }, y: rangoY(segmentos, min) }}
+          escala="log"
+          puntoActual={{ x: min, y: min }}
+          variableX={formula.entradas[0]}
+          multiploX={m}
+          salida={formula.salida}
+          leer={(x) => x}
+          ancho={ANCHO}
+          alto={ALTO}
+        />,
+      );
+      const textos = () =>
+        [...textosSvg(), String(screen.getByTestId('lienzo-lectura').props.children)].join(' | ');
+      expect(textos()).not.toMatch(/Infinity|NaN|undefined/);
+      expect(noFinitos(screen.toJSON())).toEqual([]);
+      for (const locationX of [MARGEN.izquierda, ANCHO - MARGEN.derecha]) {
+        await fireEvent(screen.getByTestId('lienzo'), 'responderGrant', { nativeEvent: { locationX } });
+        expect(textos()).not.toMatch(/Infinity|NaN|undefined/);
+        expect(noFinitos(screen.toJSON())).toEqual([]);
+      }
+    },
+  );
+
   it('en log, las marcas llevan su propio múltiplo', async () => {
     await dibujar('U03-F07', 'd', { f: 5.8e9, d: 100 }, { min: 1, max: 1e4 }, 'log');
     expect(textosSvg()).toEqual(expect.arrayContaining(['1 m', '100 m', '1 km', '10 km']));

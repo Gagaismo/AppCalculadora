@@ -1,7 +1,9 @@
+import { MULTIPLOS } from '@/dominio/multiplos';
 import { buscarFormula } from '@/formulas';
 
 import {
   escalaInicial,
+  formatearCifras,
   formatearLectura,
   formatearMarca,
   fraccionEn,
@@ -144,6 +146,72 @@ describe('formatearMarca', () => {
   });
 });
 
+// S1, review de PR #24: ningún rótulo ni lectura lleva Infinity ni NaN para una
+// entrada finita. Antes la mantisa salía de dividir por 10 ** e, que con e = −324
+// es 0 («Infinity·10⁻³²⁴»), y el múltiplo se aplicaba dividiendo, que desborda
+// (MAX en pico) o se va a 0 (MIN_VALUE en tera).
+describe('formatearCifras', () => {
+  it('los extremos del double se escriben con su mantisa y su exponente', () => {
+    expect(formatearCifras(Number.MIN_VALUE, 4)).toBe('4,941·10⁻³²⁴');
+    expect(formatearCifras(-Number.MIN_VALUE, 4)).toBe('−4,941·10⁻³²⁴');
+    expect(formatearCifras(Number.MAX_VALUE, 4)).toBe('1,798·10³⁰⁸');
+    expect(formatearCifras(-Number.MAX_VALUE, 4)).toBe('−1,798·10³⁰⁸');
+  });
+
+  it('una mantisa que redondea a 10 sube de exponente', () => {
+    expect(formatearCifras(999999999, 4)).toBe('1·10⁹');
+    expect(formatearCifras(9999999.6, 4)).toBe('1·10⁷');
+    expect(formatearCifras(0.00099996, 4)).toBe('0,001');
+    expect(formatearCifras(9.9996e-5, 4)).toBe('1·10⁻⁴');
+  });
+
+  it('dentro de [10⁻³, 10⁷) sigue escribiendo el número entero o con coma', () => {
+    expect(formatearCifras(3000, 4)).toBe('3000');
+    expect(formatearCifras(87.70856, 4)).toBe('87,71');
+    expect(formatearCifras(-0.05, 3)).toBe('−0,05');
+    expect(formatearCifras(0, 4)).toBe('0');
+  });
+});
+
+describe('ningún formato escribe Infinity ni NaN', () => {
+  const M = Number.MAX_VALUE;
+  const min = Number.MIN_VALUE;
+  const valores = [
+    min, -min, 1e-323, -1e-323, 1e-320, 2.2e-308, 1e-300, 1e-12, 0.00099996,
+    999999999, 9999999.6, 1e300, 1e308, M, -M,
+  ];
+  const malo = /Infinity|NaN|undefined/;
+
+  it.each([1, 2, 3, 4, 6, 10])('formatearCifras con %i cifras', (cifras) => {
+    for (const v of [...valores, 0]) expect(formatearCifras(v, cifras)).not.toMatch(malo);
+  });
+
+  it.each(MULTIPLOS.map((m) => [m]))('formatearMarca y formatearLectura con el múltiplo «%s»', (m) => {
+    for (const v of valores) {
+      expect(formatearMarca(v, 'V', 'lineal', m)).not.toMatch(malo);
+      expect(formatearMarca(v, 'adimensional', 'lineal', m)).not.toMatch(malo);
+      if (v > 0) {
+        expect(formatearMarca(v, 'V', 'log', m)).not.toMatch(malo);
+        expect(formatearMarca(v, 'adimensional', 'log', m)).not.toMatch(malo);
+      }
+      const texto = formatearLectura({
+        variableX: variable('U05-F17', 'B'),
+        multiploX: m,
+        x: v,
+        salida: variable('U05-F17', 'C'),
+        y: v,
+      });
+      expect(texto).not.toMatch(malo);
+    }
+  });
+
+  it('un valor que no entra en el múltiplo igual se escribe en ese múltiplo', () => {
+    expect(formatearMarca(Number.MAX_VALUE, 'V', 'lineal', 'p')).toBe('1,8·10³²⁰');
+    expect(formatearMarca(Number.MIN_VALUE, 'V', 'lineal', 'T')).toBe('4,94·10⁻³³⁶');
+    expect(formatearMarca(Number.MIN_VALUE, 'Hz', 'log')).toBe('4,94·10⁻³¹² pHz');
+  });
+});
+
 describe('formatearLectura', () => {
   it('x en el múltiplo elegido en el campo; y en el múltiplo que elige el motor', () => {
     expect(
@@ -259,6 +327,36 @@ describe('rangoY', () => {
       expect(f.every((v) => v >= 0 && v <= 1)).toBe(true);
     },
   );
+
+  // S1, review de PR #24: los subnormales. El paso del eje se redondeaba a 0 y la
+  // guarda devolvía [0, 1], que no contiene a −1e-323.
+  const subnormales = [
+    -1e-323, 1e-323, Number.MIN_VALUE, -Number.MIN_VALUE, 1e-320, -1e-310, 3e-308, -2.2e-308,
+  ];
+  it.each(subnormales.flatMap((y) => [[y, 'un punto'], [y, 'plana']] as const))(
+    'serie constante en %p (%s): rango finito, abierto, que la contiene',
+    (y, forma) => {
+      const segmentos = forma === 'plana' ? plana(y) : [[{ x: 1, y }]];
+      for (const actual of [y, null, 0]) {
+        const r = rangoY(segmentos, actual)!;
+        expect(Number.isFinite(r.min)).toBe(true);
+        expect(Number.isFinite(r.max)).toBe(true);
+        expect(r.max).toBeGreaterThan(r.min);
+        expect(r.min).toBeLessThanOrEqual(Math.min(y, actual ?? y));
+        expect(r.max).toBeGreaterThanOrEqual(Math.max(y, actual ?? y));
+        const f = fraccionEn(y, r, 'lineal');
+        expect(f).toBeGreaterThanOrEqual(0);
+        expect(f).toBeLessThanOrEqual(1);
+      }
+    },
+  );
+
+  it('una serie entre dos subnormales distintos también entra', () => {
+    const r = rangoY([[{ x: 0, y: Number.MIN_VALUE }, { x: 1, y: 3 * Number.MIN_VALUE }]])!;
+    expect(r.max).toBeGreaterThan(r.min);
+    expect(r.min).toBeLessThanOrEqual(Number.MIN_VALUE);
+    expect(r.max).toBeGreaterThanOrEqual(3 * Number.MIN_VALUE);
+  });
 
   it('todo en 0: la línea plana queda dentro del eje, no sobre un borde colapsado', () => {
     const r = rangoY(plana(0), 0)!;

@@ -1,5 +1,5 @@
 import type { Variable } from '@/dominio/formula';
-import { desdeCanonico, elegirMultiplo, FACTOR, type Multiplo } from '@/dominio/multiplos';
+import { desdeCanonico, elegirMultiplo, FACTOR, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
 
 import type { Escala, Rango, Segmento } from './tipos';
 
@@ -198,15 +198,25 @@ export function marcas(rango: Rango, escala: Escala): number[] {
  * así que ahí el eje queda a los dos lados del 0. Devuelve `null` si no hay datos.
  */
 export function rangoY(segmentos: readonly Segmento[], yActual?: number | null): Rango | null {
-  const ys = segmentos.flatMap((s) => s.map((p) => p.y)).sort((a, b) => a - b);
-  if (ys.length === 0) return null;
+  const reales = segmentos.flatMap((s) => s.map((p) => p.y)).sort((a, b) => a - b);
+  if (reales.length === 0) return null;
+  // Para dimensionar el eje un subnormal vale 0 (S1): con |y| < 2,2·10⁻³⁰⁸ el paso
+  // del eje se redondea a 0. El eje se abre entonces alrededor del 0 y lo contiene.
+  // Aplanar es monótono, así que `ys` queda ordenado igual que `reales`.
+  const ys = reales.map(aEscala);
   const n = ys.length - 1;
-  const p3 = ys[Math.floor(n * 0.03)];
-  const p97 = ys[Math.ceil(n * 0.97)];
-  let [lo, hi] = ys[n] - ys[0] <= 3 * (p97 - p3) ? [ys[0], ys[n]] : [p3, p97];
+  const i3 = Math.floor(n * 0.03);
+  const i97 = Math.ceil(n * 0.97);
+  const sinPuntas = ys[n] - ys[0] <= 3 * (ys[i97] - ys[i3]);
+  const [a, b] = sinPuntas ? [0, n] : [i3, i97];
+  let [lo, hi] = [ys[a], ys[b]];
+  // Lo que el eje tiene que contener sí o sí, con los valores sin aplanar.
+  let [debeLo, debeHi] = [reales[a], reales[b]];
   if (yActual != null && Number.isFinite(yActual)) {
-    lo = Math.min(lo, yActual);
-    hi = Math.max(hi, yActual);
+    lo = Math.min(lo, aEscala(yActual));
+    hi = Math.max(hi, aEscala(yActual));
+    debeLo = Math.min(debeLo, yActual);
+    debeHi = Math.max(debeHi, yActual);
   }
   // En los extremos del double ensanchar desborda: cada paso se acota a ±MAX y el
   // margen sale de las mitades, que no desbordan (S1, una serie en −1,7·10³⁰⁸).
@@ -218,17 +228,31 @@ export function rangoY(segmentos: readonly Segmento[], yActual?: number | null):
   const margen = (hi / 2 - lo / 2) * 0.12;
   lo = acotar(lo - margen);
   hi = acotar(hi + margen);
-  const nuncaNegativa = ys[0] >= 0;
-  const nuncaPositiva = ys[n] <= 0;
+  // El signo se mira en los valores sin aplanar: −1e-323 nunca es positivo, y
+  // recortar su lado negativo a 0 lo dejaría fuera del eje.
+  const nuncaNegativa = reales[0] >= 0;
+  const nuncaPositiva = reales[n] <= 0;
   if (nuncaNegativa && !nuncaPositiva && lo < 0) lo = 0;
   if (nuncaPositiva && !nuncaNegativa && hi > 0) hi = 0;
   if (lo > 0 && lo < 0.4 * hi) lo = 0;
   const paso = pasoLindo(lo, hi, 5);
-  return rangoDibujable({
+  const rango = rangoDibujable({
     min: borde(Math.floor(lo / paso + 1e-9) * paso),
     max: borde(Math.ceil(hi / paso - 1e-9) * paso),
   });
+  if (rango.min <= debeLo && rango.max >= debeHi) return rango;
+  // Última red: si algo de lo anterior dejó un valor afuera, un eje simétrico que lo
+  // contiene. Finito siempre: el radio se acota a MAX.
+  const radio = Math.max(Math.abs(debeLo), Math.abs(debeHi));
+  const tope = radio < 0.5 ? 1 : acotar(2 * radio);
+  return { min: -tope, max: tope };
 }
+
+/** El menor double normal. Por debajo, los subnormales pierden cifras al operar. */
+const MINIMO_NORMAL = 2.2250738585072014e-308;
+
+/** Un subnormal vale 0 para dimensionar el eje: sólo para eso. */
+const aEscala = (v: number) => (Math.abs(v) < MINIMO_NORMAL ? 0 : v);
 
 /**
  * Un rango con el que se puede dibujar: bordes finitos y max > min.
@@ -271,18 +295,54 @@ const superindice = (n: number) => [...String(n)].map((c) => SUPERINDICES[c]).jo
 /**
  * Un número con coma decimal, signo menos tipográfico y `cifras` significativas.
  * Fuera de [10⁻³, 10⁷) va como mantisa·10ⁿ, antes que como una ristra de ceros.
+ *
+ * Mantisa y exponente salen de `toExponential`, que redondea en decimal sobre el
+ * double exacto (S1). Así no hay división por 10 ** e —que con e = −324 es 0 y daba
+ * «Infinity·10⁻³²⁴»—, y una mantisa que redondea a 10 ya sube de exponente: 999999999
+ * es «1·10⁹» y no «10·10⁸». El rango [10⁻³, 10⁷) se decide con el valor redondeado.
+ * Para cualquier finito el texto es un número; un no finito dice «sin valor».
  */
 export function formatearCifras(valor: number, cifras: number): string {
   if (valor === 0) return '0';
-  const absoluto = Math.abs(valor);
-  let texto: string;
-  if (absoluto >= 1e-3 && absoluto < 1e7) {
-    texto = String(Number(valor.toPrecision(cifras)));
-  } else {
-    const e = Math.floor(Math.log10(absoluto));
-    texto = `${Number((valor / 10 ** e).toPrecision(cifras))}·10${superindice(e)}`;
-  }
+  if (!Number.isFinite(valor)) return 'sin valor';
+  const { mantisa, exponente } = partes(valor, cifras);
+  return componer(mantisa, exponente);
+}
+
+/** La mantisa con `cifras` significativas, como texto, y su exponente decimal. */
+function partes(valor: number, cifras: number) {
+  const digitos = Math.min(100, Math.max(0, Math.round(cifras) - 1));
+  const [mantisa, exponente] = valor.toExponential(digitos).split('e');
+  return { mantisa, exponente: Number(exponente) };
+}
+
+function componer(mantisa: string, exponente: number): string {
+  const texto =
+    exponente >= -3 && exponente < 7
+      ? String(Number(`${mantisa}e${exponente}`))
+      : `${Number(mantisa)}·10${superindice(exponente)}`;
   return texto.replace('.', ',').replace('-', '−');
+}
+
+/** Cuántas potencias de diez corre cada múltiplo: «k» es 3, «p» es −12. */
+const POTENCIA = Object.fromEntries(
+  MULTIPLOS.map((m) => [m, Math.round(Math.log10(FACTOR[m]))]),
+) as Readonly<Record<Multiplo, number>>;
+
+/**
+ * `valor` (canónico) escrito en `multiplo`. Si dividir por el factor desborda —MAX
+ * en pico— o cae en un subnormal —MIN_VALUE en tera—, el múltiplo se aplica
+ * corriendo el exponente decimal en vez de dividir: nunca sale Infinity ni un 0
+ * falso. En los demás casos es exactamente `formatearCifras(desdeCanonico(…))`.
+ */
+function cifrasEnMultiplo(valor: number, multiplo: Multiplo, cifras: number): string {
+  if (valor === 0 || !Number.isFinite(valor)) return formatearCifras(valor, cifras);
+  const escalado = desdeCanonico(valor, multiplo);
+  if (Number.isFinite(escalado) && Math.abs(escalado) >= MINIMO_NORMAL) {
+    return formatearCifras(escalado, cifras);
+  }
+  const { mantisa, exponente } = partes(valor, cifras);
+  return componer(mantisa, exponente - POTENCIA[multiplo]);
 }
 
 /** La Unidad de medida con su múltiplo; un adimensional sólo lleva el múltiplo, si tiene. */
@@ -292,7 +352,7 @@ export function unidadConMultiplo(unidadDeMedida: string, multiplo: Multiplo): s
 
 function conUnidad(valor: number, unidadDeMedida: string, multiplo: Multiplo, cifras: number) {
   const unidad = unidadConMultiplo(unidadDeMedida, multiplo);
-  const numero = formatearCifras(desdeCanonico(valor, multiplo), cifras);
+  const numero = cifrasEnMultiplo(valor, multiplo, cifras);
   return unidad ? `${numero} ${unidad}` : numero;
 }
 
@@ -312,7 +372,9 @@ export function formatearMarca(
   escala: Escala,
   multiplo: Multiplo = '',
 ): string {
-  if (escala === 'lineal') return formatearCifras(desdeCanonico(valor, multiplo), 3);
+  if (escala === 'lineal') return cifrasEnMultiplo(valor, multiplo, 3);
+  // El logaritmo de un valor ≤ 0 o no finito no existe: se escribe el número tal cual.
+  if (!(valor > 0) || !Number.isFinite(valor)) return cifrasEnMultiplo(valor, multiplo, 3);
   if (unidadDeMedida === 'adimensional') {
     const e = Math.round(Math.log10(valor));
     return e >= -2 && e <= 3 ? formatearCifras(10 ** e, 3) : `10${superindice(e)}`;
