@@ -395,8 +395,12 @@ const U08_F09: Formula = {
   confianza: 'alta',
   calcular: ({ V_p, f_p, t }) => {
     const semiciclos = 2 * f_p * t;
-    // sen(k·π) = 0 para todo entero k; en IEEE-754 Math.sin(2·Math.PI) deja residuo ~-2,45e-16.
-    if (Math.abs(semiciclos - Math.round(semiciclos)) <= 1e-12) return 0;
+    // sen(k·π) = 0 para todo entero k ≠ 0; en IEEE-754 Math.sin(2·Math.PI) deja residuo ~-2,45e-16.
+    // Para k = 0, Math.sin(0) ya es exacto (0) y no se aplica tolerancia para no anular t chicos legítimos.
+    const entero = Math.round(semiciclos);
+    if (entero !== 0 && Math.abs(semiciclos - entero) <= 8 * Number.EPSILON * Math.abs(entero)) {
+      return 0;
+    }
     return V_p * Math.sin(Math.PI * semiciclos);
   },
 };

@@ -334,7 +334,7 @@ describe('entradas sin selector de múltiplos y unidades con exponente (S3, S4 y
 
     await fireEvent.press(within(screen.getByTestId('multiplos-p')).getByText('s'));
     await fireEvent.changeText(screen.getByTestId('entrada-p'), '1');
-    await fireEvent.changeText(screen.getByTestId('entrada-ω'), '6,283185307');
+    await fireEvent.changeText(screen.getByTestId('entrada-ω'), String(2 * Math.PI));
 
     expect(screen.getByTestId('resultado')).toHaveTextContent('0 s');
   });

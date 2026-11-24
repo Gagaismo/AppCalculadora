@@ -209,16 +209,8 @@ describe('residuos de punto flotante (S6)', () => {
     expect(diagnostico.valorCanonico).toBe(0);
   });
 
-  it('U02-F27 devuelve 0 s en el Ejemplo de primer cero (ω = 6,283185307 rad/s y 2π)', () => {
+  it('U02-F27 devuelve 0 s en el primer cero exacto (ω = 2π)', () => {
     const formula = buscarFormula('U02-F27')!;
-    const conTextoDeFicha = diagnosticar(
-      formula,
-      { p: ['1'], ω: ['6,283185307'] },
-      { p: '', ω: '' },
-    );
-    expect(conTextoDeFicha.mensaje).toBe('0 s');
-    expect(conTextoDeFicha.valorCanonico).toBe(0);
-
     const conDosPi = diagnosticar(
       formula,
       { p: ['1'], ω: [String(2 * Math.PI)] },
@@ -226,6 +218,35 @@ describe('residuos de punto flotante (S6)', () => {
     );
     expect(conDosPi.mensaje).toBe('0 s');
     expect(conDosPi.valorCanonico).toBe(0);
+  });
+
+  it('conserva valores chicos legítimos cerca de los ceros en U08-F09, U02-F27 y U02-F21', () => {
+    const portadora = buscarFormula('U08-F09')!;
+    const diagPortadora = diagnosticar(
+      portadora,
+      { V_p: ['1'], f_p: ['1'], t: ['0,0000000000001'] },
+      multiplosCanonicos(portadora),
+    );
+    expect(diagPortadora.valorCanonico).toBeCloseTo(6.283185307e-13, 21);
+    expect(diagPortadora.mensaje).not.toBe('0 V');
+
+    const pulsoOmega = buscarFormula('U02-F27')!;
+    const diagPulsoOmega = diagnosticar(
+      pulsoOmega,
+      { p: ['1'], ω: ['6,28318531'] },
+      { p: '', ω: '' },
+    );
+    expect(diagPulsoOmega.valorCanonico).toBeCloseTo(-4.4888e-10, 13);
+    expect(diagPulsoOmega.mensaje).not.toBe('0 s');
+
+    const pulsos = buscarFormula('U02-F21')!;
+    const diagPulsos = diagnosticar(
+      pulsos,
+      { A: ['1'], p: ['1,000000000001'], T: ['2'], n: ['2'] },
+      multiplosCanonicos(pulsos),
+    );
+    expect(diagPulsos.valorCanonico).not.toBe(0);
+    expect(diagPulsos.mensaje).not.toBe('0 V');
   });
 
   it('mantiene intactos los valores chicos legítimos como U03-F10 con T = 290 K', () => {
