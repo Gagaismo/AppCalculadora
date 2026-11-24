@@ -249,6 +249,26 @@ describe('residuos de punto flotante (S6)', () => {
     expect(diagPulsos.mensaje).not.toBe('0 V');
   });
 
+  it('no anula resultados con argumentos enormes cuando la parte fraccionaria es real', () => {
+    const portadora = buscarFormula('U08-F09')!;
+    const diagPortadora = diagnosticar(
+      portadora,
+      { V_p: ['1'], f_p: ['1000000000000000'], t: ['0,5000000000000001'] },
+      { V_p: '', f_p: '', t: '' },
+    );
+    expect(diagPortadora.valorCanonico).not.toBe(0);
+    expect(diagPortadora.mensaje).not.toBe('0 V');
+
+    const pulsos = buscarFormula('U02-F21')!;
+    const diagPulsos = diagnosticar(
+      pulsos,
+      { A: ['1'], p: ['1'], T: ['2'], n: ['2000000000000000,5'] },
+      { A: '', p: '', T: '', n: '' },
+    );
+    expect(diagPulsos.valorCanonico).not.toBe(0);
+    expect(diagPulsos.mensaje).not.toBe('0 V');
+  });
+
   it('mantiene intactos los valores chicos legítimos como U03-F10 con T = 290 K', () => {
     const formula = buscarFormula('U03-F10')!;
     const diagnostico = diagnosticar(formula, { T: ['290'] }, multiplosCanonicos(formula));
