@@ -161,6 +161,34 @@ describe('pantalla de la gráfica', () => {
     expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
+  // S1, review de PR #24: los otros extremos del deslizador. El techo de un marco
+  // lineal y los dos extremos de uno log tampoco dejan números no finitos.
+  it.each([
+    [
+      'U02-F08, eje X «t», A al techo lineal',
+      'U02-F08',
+      { textos: { A: ['2'], f: ['50'], t: ['5'], θ: ['0'] }, multiplos: { A: '', f: '', t: 'm', θ: '' } },
+      't',
+      'A',
+      'increment',
+      /^A4 V/,
+    ],
+    ['U05-F17, B al techo log', 'U05-F17', ejemplo07, 'B', 'B', 'increment', /^B300000 Hz/],
+    ['U05-F17, B al piso log', 'U05-F17', ejemplo07, 'B', 'B', 'decrement', /^B30 Hz/],
+  ] as [string, string, Sesion, string, string, string, RegExp][])(
+    '%s: sin NaN',
+    async (_, id, sesion, ejeX, simbolo, sentido, texto) => {
+      await abrir(id, sesion);
+      await fireEvent.press(screen.getByTestId(`eje-${ejeX}`));
+      for (let i = 0; i < 21; i++) {
+        await fireEvent(screen.getByTestId(`deslizador-${simbolo}`), 'accessibilityAction', accion(sentido));
+      }
+      expect(screen.getByTestId(`deslizador-${simbolo}`)).toHaveTextContent(texto);
+      expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+)+$/);
+      expect(noFinitos(screen.toJSON())).toEqual([]);
+    },
+  );
+
   it('no muestra al guía', async () => {
     await abrir('U05-F17', ejemplo07);
     expect(screen.queryByTestId('guia')).toBeNull();

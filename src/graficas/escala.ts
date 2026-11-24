@@ -61,46 +61,83 @@ export interface RangoInicial {
  *   duplicar, así que se toma un paso del múltiplo de la Variable a cada lado.
  * - Log: de x/100 a x·100, dos décadas a cada lado. El logaritmo de x ≤ 0 no existe:
  *   en ese caso se cae a lineal y se devuelve el aviso para mostrarlo.
+ *
+ * En los extremos del double los bordes se acotan a lo representable (S1): 1e-323/100
+ * se iría a 0, donde log₁₀ no existe, y 1e307·100 a Infinity, donde las marcas no
+ * terminan. El marco deja de estar centrado, pero sigue conteniendo a x.
  */
 export function rangoInicial(valor: number, escala: Escala, multiplo: Multiplo = ''): RangoInicial {
   if (escala === 'log') {
-    if (valor > 0) return { rango: { min: valor / 100, max: valor * 100 }, escala: 'log' };
+    if (valor > 0) {
+      const min = Math.max(valor / 100, Number.MIN_VALUE);
+      return { rango: { min, max: Math.min(valor * 100, MAXIMO) }, escala: 'log' };
+    }
     return {
       ...rangoInicial(valor, 'lineal', multiplo),
       aviso: 'La escala log necesita un valor mayor que cero: se muestra lineal.',
     };
   }
-  if (valor > 0) return { rango: { min: 0, max: 2 * valor }, escala: 'lineal' };
-  if (valor < 0) return { rango: { min: 2 * valor, max: 0 }, escala: 'lineal' };
+  if (valor > 0) return { rango: { min: 0, max: Math.min(2 * valor, MAXIMO) }, escala: 'lineal' };
+  if (valor < 0) return { rango: { min: Math.max(2 * valor, -MAXIMO), max: 0 }, escala: 'lineal' };
   const paso = FACTOR[multiplo];
   return { rango: { min: -paso, max: paso }, escala: 'lineal' };
 }
 
-/** Dónde cae `valor` en el eje, de 0 (borde izquierdo) a 1 (derecho). */
+/** El mayor double finito: el techo de todo borde que se calcula acá. */
+const MAXIMO = Number.MAX_VALUE;
+
+/** Lleva a [−MAX, MAX] un valor que desbordó; un NaN sigue siendo NaN. */
+const acotar = (v: number) => Math.max(-MAXIMO, Math.min(MAXIMO, v));
+
+/**
+ * Dónde cae `valor` en el eje, de 0 (borde izquierdo) a 1 (derecho).
+ *
+ * En lineal, si `max − min` desborda (de −MAX a MAX), la cuenta se rehace con las
+ * mitades, que no desbordan. Sólo en ese caso: el resto no cambia ni en un ulp.
+ */
 export function fraccionEn(valor: number, rango: Rango, escala: Escala): number {
   if (escala === 'log') {
     const a = Math.log10(rango.min);
     return (Math.log10(valor) - a) / (Math.log10(rango.max) - a);
   }
-  return (valor - rango.min) / (rango.max - rango.min);
+  const ancho = rango.max - rango.min;
+  if (Number.isFinite(ancho)) return (valor - rango.min) / ancho;
+  return (valor / 2 - rango.min / 2) / (rango.max / 2 - rango.min / 2);
 }
 
 /** La inversa de `fraccionEn`: qué valor está en esa fracción del eje. */
 export function valorEn(fraccion: number, rango: Rango, escala: Escala): number {
   if (escala === 'log') {
     const a = Math.log10(rango.min);
-    return 10 ** (a + fraccion * (Math.log10(rango.max) - a));
+    const v = 10 ** (a + fraccion * (Math.log10(rango.max) - a));
+    // Cerca de MAX o de MIN_VALUE el redondeo de log₁₀ puede pasarse a Infinity o a 0.
+    return v > 0 && Number.isFinite(v) ? v : Math.min(rango.max, Math.max(rango.min, v));
   }
-  return rango.min + fraccion * (rango.max - rango.min);
+  const ancho = rango.max - rango.min;
+  return Number.isFinite(ancho)
+    ? rango.min + fraccion * ancho
+    : rango.min * (1 - fraccion) + rango.max * fraccion;
 }
 
-/** El escalón 1, 2 o 5 por potencia de diez más cercano a `amplitud / n`. */
-function pasoLindo(amplitud: number, n: number): number {
-  const crudo = amplitud / n;
+/**
+ * El escalón 1, 2 o 5 por potencia de diez más cercano a `(max − min) / n`. Si la
+ * resta desborda se divide antes de restar. Con una amplitud nula o no finita da
+ * NaN: quien lo usa tiene que mirarlo.
+ */
+function pasoLindo(min: number, max: number, n: number): number {
+  let crudo = (max - min) / n;
+  if (!Number.isFinite(crudo)) crudo = max / n - min / n;
+  if (!(crudo > 0) || !Number.isFinite(crudo)) return NaN;
   const decada = 10 ** Math.floor(Math.log10(crudo));
   const f = crudo / decada;
   return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * decada;
 }
+
+/** Un borde redondeado a escalón: si se pasó de lo representable, queda en ±MAX. */
+const borde = (v: number) => (Math.abs(v) >= MAXIMO ? Math.sign(v) * MAXIMO : limpio(v));
+
+/** Tope de marcas por eje: ningún eje legible tiene más, y garantiza que el bucle termine. */
+const MAXIMO_MARCAS = 20;
 
 /** Corrige la basura del punto flotante (0,1 · 3 = 0,30000000000000004) y el −0. */
 function limpio(valor: number): number {
@@ -113,21 +150,37 @@ function limpio(valor: number): number {
  *
  * Lineal: escalones de 1, 2 o 5 por potencia de diez, unas cuatro marcas. Log: una
  * por década; si son más de siete, una cada tantas para que los rótulos no se pisen.
+ *
+ * Termina para cualquier entrada y sólo devuelve números finitos (S1): un borde no
+ * finito o un log con min ≤ 0 no tienen marcas, y el bucle cuenta vueltas en vez de
+ * confiar en que `k++` avance —por encima de 2⁵³, 1e16 + 1 === 1e16—.
  */
 export function marcas(rango: Rango, escala: Escala): number[] {
-  if (!(rango.max > rango.min)) return [rango.min];
+  const { min, max } = rango;
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return [];
+  if (!(max > min)) return [min];
+  const resultado: number[] = [];
+  const agregar = (v: number) => {
+    if (resultado[resultado.length - 1] !== v) resultado.push(v);
+  };
   if (escala === 'log') {
-    const desde = Math.ceil(Math.log10(rango.min) - 1e-9);
-    const hasta = Math.floor(Math.log10(rango.max) + 1e-9);
+    if (!(min > 0)) return [];
+    const desde = Math.ceil(Math.log10(min) - 1e-9);
+    const hasta = Math.floor(Math.log10(max) + 1e-9);
     const salto = Math.max(1, Math.ceil((hasta - desde + 1) / 7));
-    const resultado: number[] = [];
-    for (let e = desde; e <= hasta; e += salto) resultado.push(limpio(10 ** e));
+    for (let i = 0, e = desde; i < MAXIMO_MARCAS && e <= hasta; i++, e += salto) {
+      const v = limpio(10 ** e);
+      if (v > 0 && Number.isFinite(v)) agregar(v);
+    }
     return resultado;
   }
-  const paso = pasoLindo(rango.max - rango.min, 4);
-  const resultado: number[] = [];
-  for (let k = Math.ceil(rango.min / paso - 1e-9); k * paso <= rango.max + paso * 1e-9; k++) {
-    resultado.push(limpio(k * paso));
+  const paso = pasoLindo(min, max, 4);
+  if (!Number.isFinite(paso)) return [min];
+  const desde = Math.ceil(min / paso - 1e-9);
+  for (let i = 0; i < MAXIMO_MARCAS; i++) {
+    const v = (desde + i) * paso;
+    if (!Number.isFinite(v) || v > max + paso * 1e-9) break;
+    agregar(limpio(v));
   }
   return resultado;
 }
@@ -155,23 +208,25 @@ export function rangoY(segmentos: readonly Segmento[], yActual?: number | null):
     lo = Math.min(lo, yActual);
     hi = Math.max(hi, yActual);
   }
+  // En los extremos del double ensanchar desborda: cada paso se acota a ±MAX y el
+  // margen sale de las mitades, que no desbordan (S1, una serie en −1,7·10³⁰⁸).
   if (hi - lo < 1e-9 * Math.max(1, Math.abs(hi))) {
     const d = Math.abs(hi) || 1;
-    lo -= d / 2;
-    hi += d / 2;
+    lo = acotar(lo - d / 2);
+    hi = acotar(hi + d / 2);
   }
-  const margen = (hi - lo) * 0.06;
-  lo -= margen;
-  hi += margen;
+  const margen = (hi / 2 - lo / 2) * 0.12;
+  lo = acotar(lo - margen);
+  hi = acotar(hi + margen);
   const nuncaNegativa = ys[0] >= 0;
   const nuncaPositiva = ys[n] <= 0;
   if (nuncaNegativa && !nuncaPositiva && lo < 0) lo = 0;
   if (nuncaPositiva && !nuncaNegativa && hi > 0) hi = 0;
   if (lo > 0 && lo < 0.4 * hi) lo = 0;
-  const paso = pasoLindo(hi - lo, 5);
+  const paso = pasoLindo(lo, hi, 5);
   return rangoDibujable({
-    min: limpio(Math.floor(lo / paso + 1e-9) * paso),
-    max: limpio(Math.ceil(hi / paso - 1e-9) * paso),
+    min: borde(Math.floor(lo / paso + 1e-9) * paso),
+    max: borde(Math.ceil(hi / paso - 1e-9) * paso),
   });
 }
 
@@ -182,17 +237,30 @@ export function rangoY(segmentos: readonly Segmento[], yActual?: number | null):
  * borde no finito propagaría NaN hasta el `d` del path, que en Android cierra la app.
  * El colapsado se abre medio valor a cada lado —o medio a cada lado del 0, si es 0—;
  * lo que no es finito cae a [0, 1]. Un rango sano vuelve tal cual.
+ *
+ * En log además los bordes tienen que ser positivos: se acotan a [MIN_VALUE, MAX]
+ * (un 0 sube a MIN_VALUE, un Infinity baja a MAX), el colapsado se abre una década
+ * a cada lado y lo que no es un número cae a [1, 10].
  */
-export function rangoDibujable(rango: Rango | null | undefined): Rango {
+export function rangoDibujable(rango: Rango | null | undefined, escala: Escala = 'lineal'): Rango {
+  if (escala === 'log') return rangoLogDibujable(rango);
   if (rango && Number.isFinite(rango.min) && Number.isFinite(rango.max)) {
     if (rango.max > rango.min) return rango;
     const medio = (Math.abs(rango.min) || 1) / 2;
-    const abierto = { min: rango.min - medio, max: rango.max + medio };
-    if (Number.isFinite(abierto.min) && Number.isFinite(abierto.max) && abierto.max > abierto.min) {
-      return abierto;
-    }
+    const abierto = { min: acotar(rango.min - medio), max: acotar(rango.max + medio) };
+    if (abierto.max > abierto.min) return abierto;
   }
   return { min: 0, max: 1 };
+}
+
+function rangoLogDibujable(rango: Rango | null | undefined): Rango {
+  const positivo = (v: number | undefined) =>
+    v === undefined || Number.isNaN(v) ? NaN : Math.min(MAXIMO, Math.max(Number.MIN_VALUE, v));
+  const min = positivo(rango?.min);
+  const max = positivo(rango?.max);
+  if (Number.isNaN(min) || Number.isNaN(max)) return { min: 1, max: 10 };
+  if (max > min) return min === rango!.min && max === rango!.max ? rango! : { min, max };
+  return { min: positivo(min / 10), max: positivo(max * 10) };
 }
 
 const SUPERINDICES: Readonly<Record<string, string>> = {

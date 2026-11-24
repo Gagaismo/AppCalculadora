@@ -194,6 +194,66 @@ describe('Lienzo', () => {
     expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
+  /** Los pares (x, y) de un `d` de la curva. */
+  const coordenadas = (d: string) =>
+    [...d.matchAll(/[ML]([-\d.]+) ([-\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+
+  async function lienzoCon(segmentos: { x: number; y: number }[][], rx: Rango, escala: Escala) {
+    const formula = buscarFormula('U05-F17')!;
+    const p = segmentos[0][0];
+    await render(
+      <Lienzo
+        segmentos={segmentos}
+        rangos={{ x: rx, y: rangoY(segmentos, p.y) }}
+        escala={escala}
+        puntoActual={{ x: p.x, y: p.y }}
+        variableX={formula.entradas[0]}
+        multiploX=""
+        salida={formula.salida}
+        leer={() => p.y}
+        ancho={ANCHO}
+        alto={ALTO}
+      />,
+    );
+    await fireEvent(screen.getByTestId('lienzo'), 'responderGrant', {
+      nativeEvent: { locationX: MARGEN.izquierda + 100 },
+    });
+  }
+
+  // S1, review de PR #24: una serie de un solo punto se dibuja, dentro del área.
+  it.each([
+    ['en 5', 5],
+    ['en 0', 0],
+    ['en −1,7·10³⁰⁸', -1.7e308],
+    ['en 1,7·10³⁰⁸', 1.7e308],
+  ])('una serie de un solo punto %s se dibuja dentro del área', async (_, y) => {
+    await lienzoCon([[{ x: 3000, y }]], { min: 0, max: 6000 }, 'lineal');
+    const d = screen.getByTestId('lienzo-curva-0').props.d as string;
+    expect(d).toMatch(/^M[\d.]+ [\d.]+$/);
+    const [[cx, cy]] = coordenadas(d);
+    expect(cx).toBeGreaterThanOrEqual(MARGEN.izquierda);
+    expect(cx).toBeLessThanOrEqual(ANCHO - MARGEN.derecha);
+    expect(cy).toBeGreaterThanOrEqual(MARGEN.arriba);
+    expect(cy).toBeLessThanOrEqual(ALTO - MARGEN.abajo);
+    expect(screen.getByTestId('lienzo-punto-actual')).toBeTruthy();
+    expect(noFinitos(screen.toJSON())).toEqual([]);
+  });
+
+  // S1, review de PR #24: un marco de X degenerado o inválido no produce NaN ni cuelga
+  // las marcas, en lineal ni en log.
+  it.each([
+    ['lineal colapsado', { min: 3000, max: 3000 }, 'lineal'],
+    ['lineal con NaN', { min: NaN, max: NaN }, 'lineal'],
+    ['log desde 0', { min: 0, max: 1e4 }, 'log'],
+    ['log hasta Infinity', { min: 1e305, max: Infinity }, 'log'],
+    ['log colapsado', { min: 3000, max: 3000 }, 'log'],
+  ] as [string, Rango, Escala][])('un marco de X %s se dibuja sin números no finitos', async (_, rx, escala) => {
+    await lienzoCon([[{ x: 3000, y: 1 }, { x: 3000, y: 2 }]], rx, escala);
+    // Fuera del marco la coordenada puede ser negativa: el recorte la oculta.
+    expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M-?[\d.]+ -?[\d.]+(L-?[\d.]+ -?[\d.]+)*$/);
+    expect(noFinitos(screen.toJSON())).toEqual([]);
+  });
+
   it('en log, las marcas llevan su propio múltiplo', async () => {
     await dibujar('U03-F07', 'd', { f: 5.8e9, d: 100 }, { min: 1, max: 1e4 }, 'log');
     expect(textosSvg()).toEqual(expect.arrayContaining(['1 m', '100 m', '1 km', '10 km']));

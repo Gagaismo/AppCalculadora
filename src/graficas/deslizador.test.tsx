@@ -53,6 +53,26 @@ describe('posicionDe y valorDe', () => {
     expect(valorDe(1.3, 10, 1e8, 'log')).toBe(1e8);
     expect(valorDe(-0.2, 0, 0.2, 'lineal')).toBe(0);
   });
+
+  // S1, review de PR #24: un marco que abarca casi todo el double no desborda.
+  it('con un marco de −MAX a MAX siguen siendo finitos e inversos', () => {
+    const M = Number.MAX_VALUE;
+    expect(valorDe(0.5, -M, M, 'lineal')).toBe(0);
+    expect(posicionDe(0, -M, M, 'lineal')).toBeCloseTo(0.5, 12);
+    expect(valorDe(1, -M, M, 'lineal')).toBe(M);
+    expect(valorDe(0.75, -M, M, 'lineal') / M).toBeCloseTo(0.5, 12);
+    expect(posicionDe(M / 2, -M, M, 'lineal')).toBeCloseTo(0.75, 12);
+  });
+
+  it('en log con un marco de MIN_VALUE a MAX siguen siendo finitos', () => {
+    const min = Number.MIN_VALUE;
+    const M = Number.MAX_VALUE;
+    const v = valorDe(0.5, min, M, 'log');
+    expect(Number.isFinite(v)).toBe(true);
+    expect(v).toBeGreaterThan(min);
+    expect(v).toBeLessThan(M);
+    expect(posicionDe(v, min, M, 'log')).toBeCloseTo(0.5, 6);
+  });
 });
 
 describe('Deslizador', () => {
@@ -106,6 +126,12 @@ describe('Deslizador', () => {
     const onCambiar = await montar({ valor: 1e8 });
     await fireEvent(screen.getByTestId('desl-B'), 'accessibilityAction', accion('increment'));
     expect(onCambiar).toHaveBeenCalledWith(1e8);
+  });
+
+  it('incrementar en el máximo de un marco lineal no sale del rango', async () => {
+    const onCambiar = await montar({ valor: 4, minimo: 0, maximo: 4, escala: 'lineal' });
+    await fireEvent(screen.getByTestId('desl-B'), 'accessibilityAction', accion('increment'));
+    expect(onCambiar).toHaveBeenCalledWith(4);
   });
 
   it('decrementar en el mínimo no sale del rango', async () => {

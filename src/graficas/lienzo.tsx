@@ -82,16 +82,16 @@ export function Lienzo(props: PropsLienzo) {
   const x1 = ancho - MARGEN.derecha;
   const y0 = MARGEN.arriba;
   const y1 = alto - MARGEN.abajo;
-  // Guarda de S1: con un rango colapsado o no finito, px y py darían NaN y el `d`
-  // del path llevaría «NaN», que en Android cierra la app. El log ya garantiza
-  // min > 0 en `rangoInicial`; la guarda lineal no se le aplica.
-  const rx = escala === 'lineal' ? rangoDibujable(rangos.x) : rangos.x;
+  // Guarda de S1: con un rango colapsado, no finito o —en log— con min ≤ 0, px y py
+  // darían NaN y el `d` del path llevaría «NaN», que en Android cierra la app; con
+  // un borde infinito las marcas no terminarían.
+  const rx = rangoDibujable(rangos.x, escala);
   const ry = rangoDibujable(rangos.y);
   const px = (x: number) => x0 + fraccionEn(x, rx, escala) * (x1 - x0);
   // Lejos del área la coordenada se acota: el recorte la oculta igual y SVG no
   // tiene que lidiar con números de 10¹⁵ píxeles cerca de una asíntota.
   const py = (y: number) =>
-    Math.max(-5 * alto, Math.min(6 * alto, y1 - ((y - ry.min) / (ry.max - ry.min)) * (y1 - y0)));
+    Math.max(-5 * alto, Math.min(6 * alto, y1 - fraccionEn(y, ry, 'lineal') * (y1 - y0)));
 
   const lectura = (x: number, y: number | null): LecturaLienzo => ({
     x,

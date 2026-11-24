@@ -44,6 +44,33 @@ describe('rangoInicial (D2)', () => {
     });
     expect(rangoInicial(0, 'log').escala).toBe('lineal');
   });
+
+  // S1, review de PR #24: un valor extremo no deja un marco que no se pueda dibujar.
+  // Con 1e-323 el piso x/100 se iba a 0 y log₁₀(0) = −∞; con 1e307 el techo x·100
+  // era Infinity y el bucle de `marcas` no avanzaba (la app se colgaba).
+  it.each([
+    [1e-323, 'log'],
+    [Number.MIN_VALUE, 'log'],
+    [1e307, 'log'],
+    [Number.MAX_VALUE, 'log'],
+    [1e308, 'lineal'],
+    [-1e308, 'lineal'],
+  ] as const)('con x = %p en %s el marco es finito, válido y contiene a x', (valor, escala) => {
+    const { rango, escala: final } = rangoInicial(valor, escala);
+    expect(final).toBe(escala);
+    expect(Number.isFinite(rango.min)).toBe(true);
+    expect(Number.isFinite(rango.max)).toBe(true);
+    expect(rango.max).toBeGreaterThan(rango.min);
+    if (final === 'log') expect(rango.min).toBeGreaterThan(0);
+    expect(rango.min).toBeLessThanOrEqual(valor);
+    expect(rango.max).toBeGreaterThanOrEqual(valor);
+    const f = fraccionEn(valor, rango, final);
+    expect(f).toBeGreaterThanOrEqual(0);
+    expect(f).toBeLessThanOrEqual(1);
+    const ms = marcas(rango, final);
+    expect(ms.length).toBeGreaterThan(0);
+    expect(ms.every(Number.isFinite)).toBe(true);
+  });
 });
 
 describe('escalaInicial (D3)', () => {
@@ -72,6 +99,27 @@ describe('marcas', () => {
 
   it('log: una marca por década', () => {
     expect(marcas({ min: 30, max: 300000 }, 'log')).toEqual([100, 1000, 10000, 100000]);
+  });
+
+  // S1, review de PR #24: `marcas` termina para cualquier entrada y sólo devuelve
+  // números finitos. Antes, un techo infinito en log o un paso por debajo de la
+  // resolución del double en lineal (1e16 + 1 === 1e16) dejaban el bucle sin avanzar.
+  it.each([
+    ['log hasta Infinity', { min: 1e305, max: Infinity }, 'log'],
+    ['log desde 0', { min: 0, max: 1e4 }, 'log'],
+    ['log con NaN', { min: NaN, max: NaN }, 'log'],
+    ['lineal por debajo de la resolución', { min: 1e16, max: 1e16 + 4 }, 'lineal'],
+    ['lineal de −MAX a MAX', { min: -Number.MAX_VALUE, max: Number.MAX_VALUE }, 'lineal'],
+    ['lineal con NaN', { min: NaN, max: NaN }, 'lineal'],
+    ['lineal hasta Infinity', { min: 0, max: Infinity }, 'lineal'],
+  ] as const)('%s: termina y no devuelve números no finitos', (_, rango, escala) => {
+    const ms = marcas(rango, escala);
+    expect(ms.length).toBeLessThanOrEqual(20);
+    expect(ms.every(Number.isFinite)).toBe(true);
+  });
+
+  it('lineal de −MAX a MAX: igual pone marcas', () => {
+    expect(marcas({ min: -Number.MAX_VALUE, max: Number.MAX_VALUE }, 'lineal').length).toBeGreaterThan(1);
   });
 });
 
@@ -186,6 +234,31 @@ describe('rangoY', () => {
     expect(r.min).toBeLessThanOrEqual(valor);
     expect(r.max).toBeGreaterThanOrEqual(valor);
   });
+
+  // S1, review de PR #24: una serie finita pero extrema no se va fuera del eje. Antes,
+  // ensanchar con el margen desbordaba a Infinity y la guarda devolvía [0, 1].
+  const M = Number.MAX_VALUE;
+  it.each([
+    ['un punto en −1,7·10³⁰⁸', [[{ x: 1, y: -1.7e308 }]], -1.7e308],
+    ['un punto en 1,7·10³⁰⁸', [[{ x: 1, y: 1.7e308 }]], 1.7e308],
+    ['plana en MAX', plana(M), M],
+    ['plana en −MAX', plana(-M), -M],
+    ['de −MAX a MAX', [[{ x: 0, y: -M }, { x: 1, y: M }]], null],
+    ['de 0 a 1,7·10³⁰⁸', [[{ x: 0, y: 0 }, { x: 1, y: 1.7e308 }]], null],
+  ] as [string, Parameters<typeof rangoY>[0], number | null][])(
+    'serie extrema (%s): rango finito que la contiene',
+    (_, segmentos, y) => {
+      const r = rangoY(segmentos, y)!;
+      const ys = segmentos.flat().map((p) => p.y);
+      expect(Number.isFinite(r.min)).toBe(true);
+      expect(Number.isFinite(r.max)).toBe(true);
+      expect(r.max).toBeGreaterThan(r.min);
+      expect(r.min).toBeLessThanOrEqual(Math.min(...ys));
+      expect(r.max).toBeGreaterThanOrEqual(Math.max(...ys));
+      const f = ys.map((v) => fraccionEn(v, r, 'lineal'));
+      expect(f.every((v) => v >= 0 && v <= 1)).toBe(true);
+    },
+  );
 
   it('todo en 0: la línea plana queda dentro del eje, no sobre un borde colapsado', () => {
     const r = rangoY(plana(0), 0)!;
