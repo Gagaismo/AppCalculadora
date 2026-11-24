@@ -116,7 +116,8 @@ export function Lienzo(props: PropsLienzo) {
     cursor !== null ? lectura(cursor, leer(cursor)) : puntoActual && lectura(puntoActual.x, puntoActual.y);
   const textoLectura = enCurso?.texto ?? `Sin punto actual: falta ${variableX.simbolo}`;
 
-  const multiploY = elegirMultiplo(Math.max(Math.abs(ry.min), Math.abs(ry.max)));
+  // El múltiplo del eje Y sigue la regla de S3: «%» o un adimensional no lo llevan (S7).
+  const multiploY = elegirMultiplo(Math.max(Math.abs(ry.min), Math.abs(ry.max)), salida.unidadDeMedida);
   const unidadX = unidadConMultiplo(variableX.unidadDeMedida, multiploX) || 'adimensional';
   const unidadY = unidadConMultiplo(salida.unidadDeMedida, multiploY) || 'adimensional';
   const tituloX =

@@ -213,6 +213,88 @@ describe('pantalla de la gráfica', () => {
     }
   });
 
+  // S7: la regla de S3 también rige la gráfica. Una Unidad de medida que no admite
+  // prefijos SI (%, adimensional) no lleva múltiplo en el título del eje, en las
+  // marcas ni en la lectura, aunque el valor sea grande o chico.
+  describe('sin prefijos indebidos en los ejes (S7)', () => {
+    /** El título del eje Y y las marcas, tal como los dibuja el SVG. */
+    const textosSvg = () => {
+      const textos: string[] = [];
+      const recorrer = (nodo: unknown): void => {
+        if (Array.isArray(nodo)) return nodo.forEach(recorrer);
+        if (!nodo || typeof nodo !== 'object') return;
+        const { type, props, children } = nodo as { type: string; props: { content?: string }; children?: unknown };
+        if (type === 'RNSVGTSpan' && props.content !== undefined) textos.push(props.content);
+        recorrer(children);
+      };
+      recorrer(screen.toJSON());
+      return textos;
+    };
+    const tituloY = () => textosSvg().find((t) => t.endsWith('↑'));
+    /** Una marca es sólo un número: con coma, signo menos o potencia de diez. */
+    const SOLO_NUMERO = /^−?\d+(,\d+)?(·10[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+)?$/;
+    // Las marcas log del eje X llevan su unidad («1 mW») y van aparte: acá, las que no.
+    const marcasY = () => textosSvg().filter((t) => !t.endsWith('↑') && !t.endsWith('→') && !t.includes(' '));
+
+    it.each([
+      [
+        'U04-F08 con H_MAX = 1, H = 0,811',
+        'U04-F08',
+        { textos: { H_MAX: ['1'], H: ['0,811'] }, multiplos: { H_MAX: '', H: '' } },
+        'Rd [%] ↑',
+        'H_MAX = 1 bit/símbolo → Rd = 18,9 %',
+      ],
+      [
+        'U03-F14 con S = 100 mW, N = 0,01 mW',
+        'U03-F14',
+        { textos: { S: ['100'], N: ['0,01'] }, multiplos: { S: 'm', N: 'm' } },
+        'SNR [adimensional] ↑',
+        'S = 100 mW → SNR = 10000',
+      ],
+      [
+        'U06-F01 con N_e = 1 bit, N_t = 1 Mbit',
+        'U06-F01',
+        { textos: { N_e: ['1'], N_t: ['1'] }, multiplos: { N_e: '', N_t: 'M' } },
+        'BER [adimensional] ↑',
+        'N_e = 1 bit → BER = 1·10⁻⁶',
+      ],
+      [
+        'U06-F03 con N = 10 bit',
+        'U06-F03',
+        { textos: { N: ['10'] }, multiplos: { N: '' } },
+        'M [adimensional] ↑',
+        'N = 10 bit → M = 1024',
+      ],
+    ] as [string, string, Sesion, string, string][])('%s', async (_, id, sesion, titulo, textoLectura) => {
+      await abrir(id, sesion);
+      expect(tituloY()).toBe(titulo);
+      expect(lectura()).toHaveTextContent(textoLectura);
+      expect(marcasY().length).toBeGreaterThan(0);
+      for (const m of marcasY()) expect(m).toMatch(SOLO_NUMERO);
+    });
+
+    it('U04-F08: la cruz sobre la asíntota escribe el % sin prefijo', async () => {
+      await abrir('U04-F08', { textos: { H_MAX: ['1'], H: ['0,811'] }, multiplos: { H_MAX: '', H: '' } });
+      // El borde izquierdo de H_MAX está cerca de 0, donde Rd cae a miles de % negativos.
+      await fireEvent(screen.getByTestId('lienzo'), 'responderGrant', { nativeEvent: { locationX: 0 } });
+      expect(lectura()).toHaveTextContent(/→ Rd = (−?[\d,·⁻⁰-⁹]+ %|sin valor)$/);
+      expect(lectura()).not.toHaveTextContent(/[pnµmkMGT]%/);
+    });
+
+    it('el deslizador de una Unidad de medida sin prefijos escribe su forma base', async () => {
+      // Una sesión con un múltiplo que bit/símbolo no admite: 0,001 k = 1 bit/símbolo.
+      await abrir('U04-F08', { textos: { H_MAX: ['0,001'], H: ['0,811'] }, multiplos: { H_MAX: 'k', H: '' } });
+      expect(screen.getByTestId('deslizador-H_MAX')).toHaveTextContent(/^H_MAX1 bit\/símbolo$/);
+      expect(lectura()).toHaveTextContent('H_MAX = 1 bit/símbolo → Rd = 18,9 %');
+    });
+
+    it('una Unidad de medida que admite prefijos los sigue llevando: C [Mbit/s]', async () => {
+      await abrir('U05-F17', ejemplo07);
+      expect(tituloY()).toBe('C [Mbit/s] ↑');
+      expect(lectura()).toHaveTextContent('B = 3000 Hz → C = 30 kbit/s');
+    });
+  });
+
   it('no muestra al guía', async () => {
     await abrir('U05-F17', ejemplo07);
     expect(screen.queryByTestId('guia')).toBeNull();

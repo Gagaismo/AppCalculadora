@@ -10,6 +10,7 @@ import {
   marcas,
   rangoInicial,
   rangoY,
+  unidadConMultiplo,
   valorEn,
 } from './escala';
 
@@ -259,6 +260,53 @@ describe('formatearLectura', () => {
         y: 8e6,
       }),
     ).toBe('SNR = 1023 → C = 8 Mbit/s');
+  });
+});
+
+// S7: la regla de S3 (`admitePrefijo`) también rige títulos, marcas y lectura.
+describe('sin prefijos SI donde la Unidad de medida no los admite (S7)', () => {
+  it('el título no le pone múltiplo a %, dB ni a un adimensional', () => {
+    expect(unidadConMultiplo('%', 'k')).toBe('%');
+    expect(unidadConMultiplo('dB', 'm')).toBe('dB');
+    expect(unidadConMultiplo('adimensional', 'M')).toBe('');
+    expect(unidadConMultiplo('Hz', 'k')).toBe('kHz');
+  });
+
+  it('la lectura escribe y en su forma base: «Rd = −1000 %», «SNR = 10000», «BER = 1·10⁻⁶»', () => {
+    const leer = (id: string, x: string, salida: string, y: number) =>
+      formatearLectura({ variableX: variable(id, x), multiploX: '', x: 1, salida: variable(id, salida), y });
+    expect(leer('U04-F08', 'H_MAX', 'Rd', -1000)).toBe('H_MAX = 1 bit/símbolo → Rd = −1000 %');
+    expect(leer('U03-F14', 'S', 'SNR', 10000)).toBe('S = 1 W → SNR = 10000');
+    expect(leer('U06-F01', 'N_e', 'BER', 1e-6)).toBe('N_e = 1 bit → BER = 1·10⁻⁶');
+    expect(leer('U03-F07', 'd', 'L_0', 0.5)).toBe('d = 1 m → L_0 = 0,5 dB');
+  });
+
+  it('x con un múltiplo que su Unidad de medida no admite se escribe en la forma base', () => {
+    expect(
+      formatearLectura({
+        variableX: variable('U04-F08', 'H'),
+        multiploX: 'k',
+        x: 0.811,
+        salida: variable('U04-F08', 'Rd'),
+        y: 18.9,
+      }),
+    ).toBe('H = 0,811 bit/símbolo → Rd = 18,9 %');
+  });
+
+  it('las marcas log de %, dB o un adimensional no llevan múltiplo', () => {
+    expect(formatearMarca(1000, '%', 'log')).toBe('1000 %');
+    expect(formatearMarca(0.001, 'dB', 'log')).toBe('10⁻³ dB');
+    expect(formatearMarca(1e6, 'adimensional', 'log')).toBe('10⁶');
+  });
+
+  it('las marcas lineales ignoran un múltiplo que la Unidad de medida no admite', () => {
+    expect(formatearMarca(-1000, '%', 'lineal', 'k')).toBe('−1000');
+    expect(formatearMarca(2e6, 'adimensional', 'lineal', 'M')).toBe('2000000');
+  });
+
+  it('las que sí admiten prefijos los siguen llevando', () => {
+    expect(formatearMarca(1000, 'm', 'log')).toBe('1 km');
+    expect(formatearMarca(3000, 'Hz', 'lineal', 'k')).toBe('3');
   });
 });
 

@@ -1,5 +1,12 @@
 import type { Variable } from '@/dominio/formula';
-import { desdeCanonico, elegirMultiplo, FACTOR, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
+import {
+  admitePrefijo,
+  desdeCanonico,
+  elegirMultiplo,
+  FACTOR,
+  MULTIPLOS,
+  type Multiplo,
+} from '@/dominio/multiplos';
 
 import type { Escala, Rango, Segmento } from './tipos';
 
@@ -345,12 +352,28 @@ function cifrasEnMultiplo(valor: number, multiplo: Multiplo, cifras: number): st
   return componer(mantisa, exponente - POTENCIA[multiplo]);
 }
 
-/** La Unidad de medida con su múltiplo; un adimensional sólo lleva el múltiplo, si tiene. */
-export function unidadConMultiplo(unidadDeMedida: string, multiplo: Multiplo): string {
-  return unidadDeMedida === 'adimensional' ? multiplo : `${multiplo}${unidadDeMedida}`;
+/**
+ * El múltiplo con el que se escribe en la gráfica una Unidad de medida (S7): el pedido,
+ * salvo que la Unidad de medida no admita prefijos SI (`admitePrefijo`), y entonces
+ * ninguno. Es la misma regla que el resultado de la pantalla de la Fórmula: «%» nunca
+ * es «k%» ni un adimensional «M». Número y rótulo pasan los dos por acá, así que
+ * nunca queda un número escalado con un rótulo sin escalar.
+ */
+export function multiploAdmitido(unidadDeMedida: string, multiplo: Multiplo): Multiplo {
+  return admitePrefijo(unidadDeMedida) ? multiplo : '';
 }
 
-function conUnidad(valor: number, unidadDeMedida: string, multiplo: Multiplo, cifras: number) {
+/**
+ * La Unidad de medida con su múltiplo; un adimensional no lleva texto. Una Unidad de
+ * medida sin prefijos SI va siempre en su forma base (S7).
+ */
+export function unidadConMultiplo(unidadDeMedida: string, multiplo: Multiplo): string {
+  if (unidadDeMedida === 'adimensional') return '';
+  return `${multiploAdmitido(unidadDeMedida, multiplo)}${unidadDeMedida}`;
+}
+
+function conUnidad(valor: number, unidadDeMedida: string, pedido: Multiplo, cifras: number) {
+  const multiplo = multiploAdmitido(unidadDeMedida, pedido);
   const unidad = unidadConMultiplo(unidadDeMedida, multiplo);
   const numero = cifrasEnMultiplo(valor, multiplo, cifras);
   return unidad ? `${numero} ${unidad}` : numero;
@@ -364,20 +387,26 @@ function conUnidad(valor: number, unidadDeMedida: string, multiplo: Multiplo, ci
  * - Log: cada marca lleva **su propio** múltiplo —«100 m», «1 km»—, porque en tres
  *   décadas un múltiplo común dejaría «0,001» en un extremo o «1000» en el otro. Un
  *   adimensional no tiene múltiplo: va como número entre 0,01 y 1000, y como
- *   potencia de diez fuera de ahí.
+ *   potencia de diez fuera de ahí. Lo mismo cualquier Unidad de medida sin prefijos
+ *   SI —%, dB—, que además lleva su rótulo: «1000 %», «10⁻³ dB» (S7).
+ *
+ * Un múltiplo que la Unidad de medida no admite se ignora (S7).
  */
 export function formatearMarca(
   valor: number,
   unidadDeMedida: string,
   escala: Escala,
-  multiplo: Multiplo = '',
+  pedido: Multiplo = '',
 ): string {
+  const multiplo = multiploAdmitido(unidadDeMedida, pedido);
   if (escala === 'lineal') return cifrasEnMultiplo(valor, multiplo, 3);
   // El logaritmo de un valor ≤ 0 o no finito no existe: se escribe el número tal cual.
   if (!(valor > 0) || !Number.isFinite(valor)) return cifrasEnMultiplo(valor, multiplo, 3);
-  if (unidadDeMedida === 'adimensional') {
+  if (!admitePrefijo(unidadDeMedida)) {
     const e = Math.round(Math.log10(valor));
-    return e >= -2 && e <= 3 ? formatearCifras(10 ** e, 3) : `10${superindice(e)}`;
+    const numero = e >= -2 && e <= 3 ? formatearCifras(10 ** e, 3) : `10${superindice(e)}`;
+    const unidad = unidadConMultiplo(unidadDeMedida, '');
+    return unidad ? `${numero} ${unidad}` : numero;
   }
   return conUnidad(valor, unidadDeMedida, elegirMultiplo(valor), 3);
 }
@@ -398,11 +427,14 @@ export interface Lectura {
  * x va en el múltiplo que eligió quien usa la app en el campo, aunque no sea el más
  * corto: es el que está mirando. y va en el múltiplo que elige el motor para el
  * resultado (`elegirMultiplo`), así la lectura en el punto actual coincide con el
- * resultado de la pantalla. Cuatro cifras significativas en los dos.
+ * resultado de la pantalla. Cuatro cifras significativas en los dos. Una Unidad de
+ * medida sin prefijos SI va en su forma base, en x y en y (S7).
  */
 export function formatearLectura({ variableX, multiploX, x, salida, y }: Lectura): string {
   const textoX = conUnidad(x, variableX.unidadDeMedida, multiploX, 4);
   const textoY =
-    y === null ? 'sin valor' : conUnidad(y, salida.unidadDeMedida, elegirMultiplo(y), 4);
+    y === null
+      ? 'sin valor'
+      : conUnidad(y, salida.unidadDeMedida, elegirMultiplo(y, salida.unidadDeMedida), 4);
   return `${variableX.simbolo} = ${textoX} → ${salida.simbolo} = ${textoY}`;
 }
