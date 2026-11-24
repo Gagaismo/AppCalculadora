@@ -17,11 +17,11 @@ Reparto: Pi (ODD, rama `fix/qa-pi`) y agy gemini-4-neon-medium (worktree propio)
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S1 | Pi worker, rama `fix/qa-pi` | — |
-| T2 | S5 | Pi worker, rama `fix/qa-pi` | — |
-| T3 | S2, S3, S4, S6 | agy gemini-4-neon-medium, worktree `fix-qa-agy` | — |
-| T4 | S7 | Pi worker, después de mergear T3 | — |
-| T5 | — | Review Codex gpt-6.1-terra medium de cada PR, merge, `apk.yml` | — |
+| T1 | S1 | Pi worker, rama `fix/qa-pi` | dd66eae, 66c6222, 676ded0 (PR #24, merge ac9ffc8) |
+| T2 | S5 | Pi worker, rama `fix/qa-pi` | 2a89479 (PR #24) |
+| T3 | S2, S3, S4, S6 | agy gemini-4-neon-medium, worktree `fix-qa-agy` | 4181598, 10c8d13, 3844d93 (PR #25, merge 7196b45) |
+| T4 | S7 | Pi worker, después de mergear T3 | 7a106cb, 144e703 (sync de skills) |
+| T5 | — | Review Codex gpt-6.1-terra medium de cada PR, merge, `apk.yml` | #24 y #25 aprobados tras 3 rondas cada uno |
 
 ## Log
 
