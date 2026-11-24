@@ -12,8 +12,15 @@ import { CampoBits, TecladoBits } from './teclado';
 type Modo = 'emisor' | 'receptor';
 type Campo = 'm' | 'g' | 't';
 
-/** El largo máximo de una cadena: alcanza para un mensaje de 32 bits con CRC-16. */
+/** El largo máximo de M(x) y de G(x). */
 const MAXIMO_BITS = 32;
+
+/**
+ * El largo máximo de T'(x): el mensaje más largo seguido del resto del generador de mayor
+ * grado de la lista (CRC-16 y CRC-CCITT, grado 16), o sea 32 + 16 = 48 bits. Con el tope de
+ * M(x) la trama transmitida no entraría entera y el receptor la verificaría truncada.
+ */
+const MAXIMO_TRAMA = MAXIMO_BITS + Math.max(...GENERADORES.map((gen) => gen.bits.length - 1));
 
 const CATEDRA = GENERADORES[0];
 const TRAMA_CATEDRA = calcularCrc(MENSAJE_CATEDRA, CATEDRA.bits).trama;
@@ -51,7 +58,7 @@ export function PantallaCrc() {
 
   const valores = { m, g, t };
   const editar = (cambio: (valor: string) => string) => {
-    const nuevo = cambio(valores[campo]).slice(0, MAXIMO_BITS);
+    const nuevo = cambio(valores[campo]).slice(0, campo === 't' ? MAXIMO_TRAMA : MAXIMO_BITS);
     ({ m: setM, g: setG, t: setT })[campo](nuevo);
     setAviso(undefined);
   };
