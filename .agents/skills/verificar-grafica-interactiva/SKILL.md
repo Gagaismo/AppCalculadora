@@ -26,9 +26,10 @@ Además hay dos ejemplos fijos que muestran P3 y P5 en la pantalla real
 
 ## Cobertura
 
-Sincronizado con el commit **`ac9ffc855fb19308814ca3e1c8986da4c7994f2d`** (desde el anterior,
+Sincronizado con el commit **`7a106cb922531f0cfdcb750700cd3bef24e16fd9`** (desde el anterior,
 `f1616df`, cambiaron `src/dominio/multiplos.ts`, `src/graficas/deslizador.tsx`,
-`src/graficas/escala.ts` y `src/graficas/lienzo.tsx`; el resultado esperado no se movió).
+`src/graficas/escala.ts`, `src/graficas/lienzo.tsx` y `src/screens/grafica/index.tsx`,
+éste por los ejes sin prefijos indebidos de S7; el resultado esperado no se movió).
 
 | Archivo | Qué cubre | Propiedades |
 |---|---|---|
@@ -47,7 +48,7 @@ suite del proyecto.
 **¿Tu cambio la toca?** Corré:
 
 ```
-git diff --stat ac9ffc855fb19308814ca3e1c8986da4c7994f2d -- src/graficas/deslizador.tsx src/graficas/sesion.tsx src/graficas/lienzo.tsx src/screens/grafica/index.tsx src/graficas/vista-previa.tsx src/graficas/escala.ts src/screens/formula/numeros.ts src/dominio/multiplos.ts
+git diff --stat 7a106cb922531f0cfdcb750700cd3bef24e16fd9 -- src/graficas/deslizador.tsx src/graficas/sesion.tsx src/graficas/lienzo.tsx src/screens/grafica/index.tsx src/graficas/vista-previa.tsx src/graficas/escala.ts src/screens/formula/numeros.ts src/dominio/multiplos.ts
 ```
 
 Si lista algo, corré la verificación y revisá si la tabla de cobertura sigue siendo cierta.
