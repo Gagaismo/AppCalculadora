@@ -77,7 +77,11 @@ corresponda, borrá su `.cfg` de `hallazgos/` y llevá el cambio al modelo.
 
 ## Cobertura
 
-Commit de sincronización: `d8942313af22e499fd8e351863ee17924a10e577`
+Commit de sincronización: `ac9ffc855fb19308814ca3e1c8986da4c7994f2d`
+
+Desde el anterior (`d894231`) sólo cambió en `crc.tsx` el tope de largo de T'(x)
+(`MAXIMO_TRAMA`, 48 bits): no toca `total`, `ir` ni de qué depende el recorrido, y
+`EditarLaEntrada` lo sigue describiendo.
 
 | Código | Parte del modelo |
 |---|---|
