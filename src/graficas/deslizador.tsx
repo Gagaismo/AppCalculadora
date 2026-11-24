@@ -24,14 +24,25 @@ const recortar = (t: number) => Math.min(1, Math.max(0, t));
 const esLog = (minimo: number, maximo: number, escala: Escala) =>
   escala === 'log' && minimo > 0 && maximo > 0;
 
-/** Dónde cae `valor` en la pista, de 0 a 1. Un valor fuera del rango queda en el borde. */
+/**
+ * Dónde cae `valor` en la pista, de 0 a 1. Un valor fuera del rango queda en el borde.
+ *
+ * Si la cuenta directa desborda —un marco de −MAX a MAX, o de MIN_VALUE a MAX en
+ * log— se rehace sin cocientes ni restas que se pasen de lo representable (S1). Sólo
+ * en ese caso: en un marco común el resultado no cambia ni en un ulp.
+ */
 export function posicionDe(valor: number, minimo: number, maximo: number, escala: Escala): number {
   if (maximo === minimo) return 0;
   if (esLog(minimo, maximo, escala)) {
     if (valor <= 0) return 0;
-    return recortar(Math.log10(valor / minimo) / Math.log10(maximo / minimo));
+    const decadas = Math.log10(maximo / minimo);
+    if (Number.isFinite(decadas)) return recortar(Math.log10(valor / minimo) / decadas);
+    const a = Math.log10(minimo);
+    return recortar((Math.log10(valor) - a) / (Math.log10(maximo) - a));
   }
-  return recortar((valor - minimo) / (maximo - minimo));
+  const ancho = maximo - minimo;
+  if (Number.isFinite(ancho)) return recortar((valor - minimo) / ancho);
+  return recortar((valor / 2 - minimo / 2) / (maximo / 2 - minimo / 2));
 }
 
 /** El valor que corresponde a la posición `t` de la pista. Siempre dentro del rango. */
@@ -39,8 +50,14 @@ export function valorDe(t: number, minimo: number, maximo: number, escala: Escal
   const p = recortar(t);
   if (p === 0) return minimo;
   if (p === 1) return maximo;
-  if (esLog(minimo, maximo, escala)) return minimo * (maximo / minimo) ** p;
-  return minimo + p * (maximo - minimo);
+  if (esLog(minimo, maximo, escala)) {
+    const razon = maximo / minimo;
+    if (Number.isFinite(razon)) return minimo * razon ** p;
+    const a = Math.log10(minimo);
+    return Math.min(maximo, Math.max(minimo, 10 ** (a + p * (Math.log10(maximo) - a))));
+  }
+  const ancho = maximo - minimo;
+  return Number.isFinite(ancho) ? minimo + p * ancho : minimo * (1 - p) + maximo * p;
 }
 
 export interface DeslizadorProps {

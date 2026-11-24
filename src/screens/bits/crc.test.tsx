@@ -44,6 +44,46 @@ describe('pantalla CRC', () => {
     expect(screen.getByText(/≠ 0 · hay error/)).toBeTruthy();
   });
 
+  describe('con un mensaje de 32 bits y CRC-16 (S5)', () => {
+    const MENSAJE_32 = '10110111'.repeat(4);
+    const RESTO_16 = '0001010000100010';
+    const TRAMA_48 = MENSAJE_32 + RESTO_16;
+
+    /** Vacía el campo activo y tipea `bits` con el teclado de la pantalla. */
+    async function tipear(bits: string, aBorrar: number) {
+      for (let i = 0; i < aBorrar; i++) await fireEvent.press(screen.getByLabelText('Borrar el último bit'));
+      for (const bit of bits) await fireEvent.press(screen.getByLabelText(`Agregar un ${bit}`));
+    }
+
+    it('el emisor da R = 0001010000100010', async () => {
+      await render(<PantallaCrc />);
+      await fireEvent.press(screen.getByText('CRC-16'));
+      await tipear(MENSAJE_32, 8);
+      expect(screen.getByLabelText(`M(x) · mensaje: ${MENSAJE_32}`)).toBeTruthy();
+
+      await irAlResultado();
+      expect(screen.getByText(`Con r = 16 bits: ${RESTO_16}. Trama a transmitir T(x) = P(x) + R(x):`)).toBeTruthy();
+      expect(screen.getByTestId('crc-trama')).toHaveTextContent(TRAMA_48);
+    });
+
+    it('el receptor acepta los 48 bits de T sin truncarlos y da resto 0 · sin error', async () => {
+      await render(<PantallaCrc />);
+      await fireEvent.press(screen.getByText('Verificar en el receptor'));
+      await fireEvent.press(screen.getByText('CRC-16'));
+      await tipear(TRAMA_48, 13);
+      expect(screen.getByLabelText(`T'(x) · trama recibida: ${TRAMA_48}`)).toBeTruthy();
+
+      await irAlResultado();
+      expect(screen.getByText('Resto 0000000000000000 · sin error')).toBeTruthy();
+    });
+
+    it('M(x) sigue topado en 32 bits', async () => {
+      await render(<PantallaCrc />);
+      await tipear(MENSAJE_32 + '1', 8);
+      expect(screen.getByLabelText(`M(x) · mensaje: ${MENSAJE_32}`)).toBeTruthy();
+    });
+  });
+
   it('con un generador inválido no avanza y explica por qué', async () => {
     await render(<PantallaCrc />);
     await fireEvent.press(screen.getByLabelText(/^G\(x\)/));
