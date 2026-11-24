@@ -1,6 +1,6 @@
 import type { EntradaCargada, Formula } from '@/dominio/formula';
 import { calcular } from '@/dominio/motor';
-import { aCanonico, conMultiplo, type Multiplo } from '@/dominio/multiplos';
+import { aCanonico, admitePrefijo, conMultiplo, type Multiplo } from '@/dominio/multiplos';
 import { formatearNumero, parsearEntrada } from '@/screens/formula/numeros';
 
 /**
@@ -79,11 +79,15 @@ export function diagnosticar(
 
   const resultado = calcular(formula.id, entradas);
   if (resultado.ok) {
+    const valorCanonico = aCanonico(resultado.valor, resultado.multiplo);
+    const permitePrefijo = admitePrefijo(resultado.unidadDeMedida);
+    const multiplo = permitePrefijo ? resultado.multiplo : '';
+    const valorMostrado = permitePrefijo ? resultado.valor : valorCanonico;
     return {
       estado: 'exito',
       simbolos: [],
-      mensaje: `${formatearNumero(resultado.valor)} ${conMultiplo(resultado.multiplo, resultado.unidadDeMedida)}`,
-      valorCanonico: aCanonico(resultado.valor, resultado.multiplo),
+      mensaje: `${formatearNumero(valorMostrado)} ${conMultiplo(multiplo, resultado.unidadDeMedida)}`,
+      valorCanonico,
     };
   }
 

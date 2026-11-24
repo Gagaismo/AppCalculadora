@@ -237,3 +237,105 @@ describe('la pantalla genérica con una Variable de lista', () => {
     expect(screen.getByTestId('resultado')).toHaveTextContent('Falta: P');
   });
 });
+
+describe('línea de resultado canónico (S2)', () => {
+  it('oculta la línea «= …» en U10-F07 cuando coincide con el resultado principal (83,5 MHz)', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 MHz');
+    expect(screen.queryByTestId('resultado-canonico')).toBeNull();
+    expect(screen.queryByText(/= 83500000/)).toBeNull();
+  });
+
+  it('muestra la línea «= …» convertida al múltiplo canónico de salida cuando difiere', async () => {
+    await render(<PantallaFormula formula={formula} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-f_inf'), '2,4');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_sup'), '2,4835');
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_inf')).getByText('MHz'));
+    await fireEvent.press(within(screen.getByTestId('multiplos-f_sup')).getByText('MHz'));
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('83,5 kHz');
+    expect(screen.getByTestId('resultado-canonico')).toHaveTextContent('= 0,0835 MHz');
+  });
+
+  it('oculta la línea «= …» en U02-F03 cuando ya está en mm y la convierte cuando está en m', async () => {
+    const longitudOnda = buscarFormula('U02-F03')!;
+    await render(<PantallaFormula formula={longitudOnda} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-v'), '340');
+    await fireEvent.changeText(screen.getByTestId('entrada-f'), '20');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('17 mm');
+    expect(screen.queryByTestId('resultado-canonico')).toBeNull();
+    expect(screen.queryByText(/= 0,017/)).toBeNull();
+
+    await fireEvent.press(within(screen.getByTestId('multiplos-f')).getByText('Hz'));
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('17 m');
+    expect(screen.getByTestId('resultado-canonico')).toHaveTextContent('= 17000 mm');
+  });
+});
+
+describe('entradas sin selector de múltiplos y unidades con exponente (S3, S4 y S6)', () => {
+  it('no ofrece selector de múltiplos en entradas de dBm o adimensional (S3)', async () => {
+    const margen = buscarFormula('U03-F09')!;
+    await render(<PantallaFormula formula={margen} />);
+
+    expect(screen.queryByTestId('multiplos-RSSI')).toBeNull();
+    expect(screen.getByTestId('unidad-fija-RSSI')).toHaveTextContent('dBm');
+    expect(screen.queryByText('kdBm')).toBeNull();
+
+    const cuadrada = buscarFormula('U02-F15')!;
+    await render(<PantallaFormula formula={cuadrada} />);
+
+    expect(screen.queryByTestId('multiplos-n')).toBeNull();
+    expect(screen.getByTestId('unidad-fija-n')).toHaveTextContent('adimensional');
+    expect(screen.queryByText('madimensional')).toBeNull();
+    expect(screen.queryByText('kadimensional')).toBeNull();
+  });
+
+  it('muestra U02-F29 en s² sin prefijo ni línea redundante (S4)', async () => {
+    const densidad = buscarFormula('U02-F29')!;
+    await render(<PantallaFormula formula={densidad} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-p'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-f'), '0');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('0,000001 s²');
+    expect(screen.queryByTestId('resultado-canonico')).toBeNull();
+  });
+
+  it('muestra 0 V en U02-F21 y U08-F09 y 0 s en U02-F27 (S6)', async () => {
+    const pulsos = buscarFormula('U02-F21')!;
+    await render(<PantallaFormula formula={pulsos} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-A'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-p'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-T'), '2');
+    await fireEvent.changeText(screen.getByTestId('entrada-n'), '2');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('0 V');
+
+    const portadora = buscarFormula('U08-F09')!;
+    await render(<PantallaFormula formula={portadora} />);
+
+    await fireEvent.changeText(screen.getByTestId('entrada-V_p'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-f_p'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-t'), '1');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('0 V');
+
+    const pulsoOmega = buscarFormula('U02-F27')!;
+    await render(<PantallaFormula formula={pulsoOmega} />);
+
+    await fireEvent.press(within(screen.getByTestId('multiplos-p')).getByText('s'));
+    await fireEvent.changeText(screen.getByTestId('entrada-p'), '1');
+    await fireEvent.changeText(screen.getByTestId('entrada-ω'), '6,283185307');
+
+    expect(screen.getByTestId('resultado')).toHaveTextContent('0 s');
+  });
+});

@@ -716,9 +716,13 @@ const U02_F21: Formula = {
   confianza: 'alta',
   calcular: ({ A, p, T, n }) => {
     if (T === 0) return NaN;
-    const x = (n * Math.PI * p) / T;
-    const sinc = x === 0 ? 1 : Math.sin(x) / x;
-    return A * (p / T) * sinc;
+    const k = (n * p) / T;
+    if (k === 0) return A * (p / T);
+    // sen(k·π) = 0 para todo entero k ≠ 0; en IEEE-754 Math.sin(Math.PI) deja residuo ~1,22e-16.
+    const entero = Math.round(k);
+    if (entero !== 0 && Math.abs(k - entero) <= 1e-12) return 0;
+    const x = k * Math.PI;
+    return A * (p / T) * (Math.sin(x) / x);
   },
 };
 
@@ -895,7 +899,14 @@ const U02_F27: Formula = {
   confianza: 'alta',
   calcular: ({ p, ω }) => {
     const x = (ω * p) / 2;
-    return x === 0 ? p : p * (Math.sin(x) / x);
+    if (x === 0) return p;
+    // En ω = 2kπ/p (k entero ≠ 0), sen(ω·p/2) = 0. Se tolera 1e-9 sobre x/π porque el
+    // Ejemplo resuelto se copia con 10 cifras significativas (6,283185307 ≈ 2π), cuya
+    // diferencia respecto de 2π (~2,86e-11) producía 28,58 ps en vez de 0 s.
+    const k = x / Math.PI;
+    const entero = Math.round(k);
+    if (entero !== 0 && Math.abs(k - entero) <= 1e-9) return 0;
+    return p * (Math.sin(x) / x);
   },
 };
 

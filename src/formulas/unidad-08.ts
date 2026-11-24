@@ -393,7 +393,12 @@ const U08_F09: Formula = {
     'El argumento de la función seno se calcula en radianes.',
   paginas: '14, 18, 24',
   confianza: 'alta',
-  calcular: ({ V_p, f_p, t }) => V_p * Math.sin(2 * Math.PI * f_p * t),
+  calcular: ({ V_p, f_p, t }) => {
+    const semiciclos = 2 * f_p * t;
+    // sen(k·π) = 0 para todo entero k; en IEEE-754 Math.sin(2·Math.PI) deja residuo ~-2,45e-16.
+    if (Math.abs(semiciclos - Math.round(semiciclos)) <= 1e-12) return 0;
+    return V_p * Math.sin(Math.PI * semiciclos);
+  },
 };
 
 const U08_F10: Formula = {

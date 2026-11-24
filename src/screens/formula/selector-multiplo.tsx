@@ -1,8 +1,8 @@
 import { Host, Picker } from '@expo/ui';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
-import { colores } from '@/tema';
+import { admitePrefijo, conMultiplo, MULTIPLOS, type Multiplo } from '@/dominio/multiplos';
+import { colores, espacio, fuentes, radio, tipografia } from '@/tema';
 
 export interface SelectorMultiploProps {
   /** El símbolo de la Variable. Identifica al selector en las pruebas. */
@@ -41,6 +41,19 @@ export function SelectorMultiplo({
   elegido,
   onElegir,
 }: SelectorMultiploProps) {
+  if (!admitePrefijo(unidadDeMedida)) {
+    return (
+      <View
+        testID={`unidad-fija-${simbolo}`}
+        accessible
+        accessibilityLabel={unidadDeMedida}
+        style={estilos.unidadFija}
+      >
+        <Text style={estilos.unidadFijaTexto}>{unidadDeMedida}</Text>
+      </View>
+    );
+  }
+
   return (
     // `matchContents` en los dos ejes para que el control mida lo que ocupa y no se
     // estire a todo el ancho de la fila. `colorScheme` fijo en claro porque la app no
@@ -74,5 +87,21 @@ const estilos = StyleSheet.create({
     // Un piso de ancho para que «Hz» y «bit/símbolo» no den controles de tamaños
     // muy distintos en la misma pantalla.
     minWidth: 96,
+  },
+  unidadFija: {
+    minWidth: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm,
+    borderWidth: 1,
+    borderColor: colores.borde,
+    borderRadius: radio.sm,
+    backgroundColor: colores.superficie,
+  },
+  unidadFijaTexto: {
+    ...tipografia.cuerpo,
+    fontFamily: fuentes.nota,
+    color: colores.textoSuave,
   },
 });

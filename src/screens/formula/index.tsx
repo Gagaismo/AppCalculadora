@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Formula } from '@/dominio/formula';
-import { conMultiplo } from '@/dominio/multiplos';
+import { admitePrefijo, conMultiplo, desdeCanonico } from '@/dominio/multiplos';
 import { diagnosticar } from '@/guia/diagnostico';
 import { esGraficable } from '@/graficas/muestreo';
 import { useSesionFormula } from '@/graficas/sesion';
@@ -69,6 +69,15 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
   const valorCanonico = diagnostico.valorCanonico;
   const esExito = diagnostico.estado === 'exito';
   const esError = diagnostico.estado === 'no-numerica' || diagnostico.estado === 'desconocida';
+  const multiploSalida = admitePrefijo(formula.salida.unidadDeMedida)
+    ? formula.salida.multiploCanonico
+    : '';
+  const textoResultadoCanonico =
+    esExito && valorCanonico !== null
+      ? `${formatearNumero(desdeCanonico(valorCanonico, multiploSalida))} ${conMultiplo(multiploSalida, formula.salida.unidadDeMedida)}`
+      : null;
+  const mostrarCanonico =
+    textoResultadoCanonico !== null && textoResultadoCanonico !== mensajeResultado;
 
   const limpiarCampos = () => {
     setTextos(camposIniciales(formula));
@@ -232,9 +241,9 @@ export function PantallaFormula({ formula }: { formula: Formula }) {
           >
             {mensajeResultado}
           </Text>
-          {esExito && valorCanonico !== null && (
-            <Text style={estilos.resultadoCanonico}>
-              {`= ${formatearNumero(valorCanonico)} ${conMultiplo(formula.salida.multiploCanonico, formula.salida.unidadDeMedida)}`}
+          {mostrarCanonico && (
+            <Text testID="resultado-canonico" style={estilos.resultadoCanonico}>
+              {`= ${textoResultadoCanonico}`}
             </Text>
           )}
         </View>
