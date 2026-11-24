@@ -139,7 +139,10 @@ export function marcas(rango: Rango, escala: Escala): number[] {
  * Cerca de una asíntota —el logaritmo de algo que tiende a cero— una sola punta
  * aplastaría toda la curva; si el total supera tres veces el rango entre los
  * percentiles 3 y 97, se descartan las puntas. Una magnitud que nunca baja de cero
- * no estrena un eje negativo por el margen. Devuelve `null` si no hay datos.
+ * no estrena un eje negativo por el margen, y una que nunca sube de cero no estrena
+ * uno positivo. Una curva que vale 0 en todos sus puntos es las dos cosas a la vez:
+ * recortar los dos lados dejaría min = max = 0 y el Lienzo dividiría por cero (S1),
+ * así que ahí el eje queda a los dos lados del 0. Devuelve `null` si no hay datos.
  */
 export function rangoY(segmentos: readonly Segmento[], yActual?: number | null): Rango | null {
   const ys = segmentos.flatMap((s) => s.map((p) => p.y)).sort((a, b) => a - b);
@@ -160,14 +163,36 @@ export function rangoY(segmentos: readonly Segmento[], yActual?: number | null):
   const margen = (hi - lo) * 0.06;
   lo -= margen;
   hi += margen;
-  if (ys[0] >= 0 && lo < 0) lo = 0;
-  if (ys[n] <= 0 && hi > 0) hi = 0;
+  const nuncaNegativa = ys[0] >= 0;
+  const nuncaPositiva = ys[n] <= 0;
+  if (nuncaNegativa && !nuncaPositiva && lo < 0) lo = 0;
+  if (nuncaPositiva && !nuncaNegativa && hi > 0) hi = 0;
   if (lo > 0 && lo < 0.4 * hi) lo = 0;
   const paso = pasoLindo(hi - lo, 5);
-  return {
+  return rangoDibujable({
     min: limpio(Math.floor(lo / paso + 1e-9) * paso),
     max: limpio(Math.ceil(hi / paso - 1e-9) * paso),
-  };
+  });
+}
+
+/**
+ * Un rango con el que se puede dibujar: bordes finitos y max > min.
+ *
+ * Es la guarda de la última línea (S1): un rango colapsado haría `(y − min) / 0` y un
+ * borde no finito propagaría NaN hasta el `d` del path, que en Android cierra la app.
+ * El colapsado se abre medio valor a cada lado —o medio a cada lado del 0, si es 0—;
+ * lo que no es finito cae a [0, 1]. Un rango sano vuelve tal cual.
+ */
+export function rangoDibujable(rango: Rango | null | undefined): Rango {
+  if (rango && Number.isFinite(rango.min) && Number.isFinite(rango.max)) {
+    if (rango.max > rango.min) return rango;
+    const medio = (Math.abs(rango.min) || 1) / 2;
+    const abierto = { min: rango.min - medio, max: rango.max + medio };
+    if (Number.isFinite(abierto.min) && Number.isFinite(abierto.max) && abierto.max > abierto.min) {
+      return abierto;
+    }
+  }
+  return { min: 0, max: 1 };
 }
 
 const SUPERINDICES: Readonly<Record<string, string>> = {

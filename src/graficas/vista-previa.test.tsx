@@ -22,6 +22,32 @@ async function cargar(simbolo: string, texto: string) {
   await fireEvent.changeText(screen.getByTestId(`entrada-${simbolo}`), texto);
 }
 
+/**
+ * Toda prop o texto del árbol dibujado que lleve un número no finito. En Android un
+ * `d` con «NaN» cierra la app (`PathViewManager.setD`): acá tiene que quedar vacío.
+ */
+function noFinitos(arbol: unknown): string[] {
+  const hallados: string[] = [];
+  const malo = (v: unknown) =>
+    (typeof v === 'number' && !Number.isFinite(v)) ||
+    (typeof v === 'string' && /NaN|Infinity/.test(v));
+  const recorrer = (nodo: unknown, camino: string): void => {
+    if (Array.isArray(nodo)) return nodo.forEach((n, i) => recorrer(n, `${camino}[${i}]`));
+    if (malo(nodo)) {
+      hallados.push(`${camino}: ${String(nodo)}`);
+      return;
+    }
+    if (!nodo || typeof nodo !== 'object') return;
+    const { type, props, children } = nodo as { type?: string; props?: object; children?: unknown };
+    for (const [clave, valor] of Object.entries(props ?? {})) {
+      if (malo(valor)) hallados.push(`${camino}${type}.${clave}: ${String(valor)}`);
+    }
+    recorrer(children, `${camino}${type}>`);
+  };
+  recorrer(arbol, '');
+  return hallados;
+}
+
 describe('vista previa de la gráfica', () => {
   it('una Fórmula graficable muestra «Ver gráfica» y la pista de girar el teléfono', async () => {
     await render(<PantallaFormula formula={shannon} />);
@@ -59,6 +85,18 @@ describe('vista previa de la gráfica', () => {
     expect(screen.getByTestId('lienzo-lectura')).toHaveTextContent('B = 3000 Hz → C = 30 kbit/s');
     expect(screen.getByTestId('lienzo-punto-actual')).toBeTruthy();
     expect(screen.getByTestId('lienzo-curva-0')).toBeTruthy();
+  });
+
+  // S1: una curva que da 0 en todos sus puntos no cierra la app.
+  it.each([
+    ['U05-F17 con B = 3000 y SNR = 0', 'U05-F17', { B: '3000', SNR: '0' }],
+    ['U02-F04 con v = 0 y T = 0', 'U02-F04', { v: '0', T: '0' }],
+  ])('%s: dibuja la curva plana sin números no finitos', async (_, id, textos) => {
+    await render(<PantallaFormula formula={buscarFormula(id)!} />);
+    for (const [simbolo, texto] of Object.entries(textos)) await cargar(simbolo, texto);
+    expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+)+$/);
+    expect(screen.getByTestId('lienzo-punto-actual')).toBeTruthy();
+    expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
   it('«Ver gráfica» abre la pantalla horizontal de esa Fórmula', async () => {

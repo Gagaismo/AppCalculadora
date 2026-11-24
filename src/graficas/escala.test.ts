@@ -161,6 +161,37 @@ describe('rangoY', () => {
     expect(r.min).toBeLessThan(5);
     expect(r.max).toBeGreaterThan(5);
   });
+
+  // S1: una serie constante nunca deja min = max ni un borde no finito. Con todo en 0
+  // la cuenta vieja recortaba lo a 0 por «nunca negativa» y hi a 0 por «nunca
+  // positiva», y el Lienzo dividía por cero al dibujar (NaN en el path).
+  const plana = (y: number, n = 50) => [Array.from({ length: n }, (_, i) => ({ x: i, y }))];
+  const casosConstantes: [string, Parameters<typeof rangoY>[0], number | null | undefined][] = [
+    ['todo en 0', plana(0), undefined],
+    ['todo en 0, con el punto actual en 0', plana(0), 0],
+    ['todo en 0, con el punto actual en 5', plana(0), 5],
+    ['todo en 0, con el punto actual en −5', plana(0), -5],
+    ['todo positivo', plana(5), 5],
+    ['todo negativo', plana(-5), -5],
+    ['un solo punto en 0', plana(0, 1), 0],
+    ['un solo punto positivo', plana(3e-21, 1), 3e-21],
+    ['un solo punto negativo', plana(-7, 1), null],
+  ];
+  it.each(casosConstantes)('serie constante (%s): rango finito con altura', (_, segmentos, y) => {
+    const r = rangoY(segmentos, y)!;
+    expect(Number.isFinite(r.min)).toBe(true);
+    expect(Number.isFinite(r.max)).toBe(true);
+    expect(r.max).toBeGreaterThan(r.min);
+    const valor = segmentos[0][0].y;
+    expect(r.min).toBeLessThanOrEqual(valor);
+    expect(r.max).toBeGreaterThanOrEqual(valor);
+  });
+
+  it('todo en 0: la línea plana queda dentro del eje, no sobre un borde colapsado', () => {
+    const r = rangoY(plana(0), 0)!;
+    expect(r.min).toBeLessThanOrEqual(0);
+    expect(r.max).toBeGreaterThan(0);
+  });
 });
 
 describe('posición en el eje', () => {

@@ -64,6 +64,32 @@ function textosSvg(): string[] {
   return textos;
 }
 
+/**
+ * Toda prop o texto del árbol dibujado que lleve un número no finito. En Android un
+ * `d` con «NaN» cierra la app (`PathViewManager.setD`): acá tiene que quedar vacío.
+ */
+function noFinitos(arbol: unknown): string[] {
+  const hallados: string[] = [];
+  const malo = (v: unknown) =>
+    (typeof v === 'number' && !Number.isFinite(v)) ||
+    (typeof v === 'string' && /NaN|Infinity/.test(v));
+  const recorrer = (nodo: unknown, camino: string): void => {
+    if (Array.isArray(nodo)) return nodo.forEach((n, i) => recorrer(n, `${camino}[${i}]`));
+    if (malo(nodo)) {
+      hallados.push(`${camino}: ${String(nodo)}`);
+      return;
+    }
+    if (!nodo || typeof nodo !== 'object') return;
+    const { type, props, children } = nodo as { type?: string; props?: object; children?: unknown };
+    for (const [clave, valor] of Object.entries(props ?? {})) {
+      if (malo(valor)) hallados.push(`${camino}${type}.${clave}: ${String(valor)}`);
+    }
+    recorrer(children, `${camino}${type}>`);
+  };
+  recorrer(arbol, '');
+  return hallados;
+}
+
 const shannon = () =>
   dibujar('U05-F17', 'B', { B: 3000, SNR: 1023 }, { min: 0, max: 6000 }, 'lineal', jest.fn());
 
@@ -127,6 +153,45 @@ describe('Lienzo', () => {
     );
     await fireEvent(lienzo, 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
     expect(screen.getByTestId('lienzo-lectura')).toHaveTextContent('B = 3300 Hz → C = 33 kbit/s');
+  });
+
+  // S1: una curva plana en 0 se dibuja sin NaN en ningún path ni etiqueta.
+  it('U05-F17 con SNR = 0: la curva plana en 0 se dibuja sin números no finitos', async () => {
+    await dibujar('U05-F17', 'B', { B: 3000, SNR: 0 }, { min: 0, max: 6000 }, 'lineal');
+    expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+)+$/);
+    expect(screen.getByTestId('lienzo-punto-actual')).toBeTruthy();
+    expect(noFinitos(screen.toJSON())).toEqual([]);
+  });
+
+  // S1, guarda defensiva: aunque le llegue un rango Y colapsado o no finito, el
+  // Lienzo no emite un path con NaN ni Infinity.
+  it.each([
+    ['colapsado en 0', { min: 0, max: 0 }],
+    ['colapsado en 5', { min: 5, max: 5 }],
+    ['con NaN', { min: NaN, max: NaN }],
+    ['con Infinity', { min: -Infinity, max: Infinity }],
+  ])('un rango Y %s no produce números no finitos', async (_, ry) => {
+    const formula = buscarFormula('U05-F17')!;
+    const segmentos = [[0, 3000, 6000].map((x) => ({ x, y: ry.min === 5 ? 5 : 0 }))];
+    await render(
+      <Lienzo
+        segmentos={segmentos}
+        rangos={{ x: { min: 0, max: 6000 }, y: ry }}
+        escala="lineal"
+        puntoActual={{ x: 3000, y: segmentos[0][1].y }}
+        variableX={formula.entradas[0]}
+        multiploX=""
+        salida={formula.salida}
+        leer={() => 0}
+        ancho={ANCHO}
+        alto={ALTO}
+      />,
+    );
+    await fireEvent(screen.getByTestId('lienzo'), 'responderGrant', {
+      nativeEvent: { locationX: MARGEN.izquierda + 100 },
+    });
+    expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+)+$/);
+    expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
   it('en log, las marcas llevan su propio múltiplo', async () => {

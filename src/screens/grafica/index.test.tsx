@@ -35,6 +35,32 @@ const ejemplo07: Sesion = { textos: { B: ['3000'], SNR: ['1023'] }, multiplos: {
 /** U03-F01 con P_i negativo: P_o / P_i < 0 y el logaritmo no existe en ningún punto. */
 const piNegativo: Sesion = { textos: { P_o: ['79,81'], P_i: ['-4'] }, multiplos: { P_o: 'm', P_i: 'm' } };
 
+/**
+ * Toda prop o texto del árbol dibujado que lleve un número no finito. En Android un
+ * `d` con «NaN» cierra la app (`PathViewManager.setD`): acá tiene que quedar vacío.
+ */
+function noFinitos(arbol: unknown): string[] {
+  const hallados: string[] = [];
+  const malo = (v: unknown) =>
+    (typeof v === 'number' && !Number.isFinite(v)) ||
+    (typeof v === 'string' && /NaN|Infinity/.test(v));
+  const recorrer = (nodo: unknown, camino: string): void => {
+    if (Array.isArray(nodo)) return nodo.forEach((n, i) => recorrer(n, `${camino}[${i}]`));
+    if (malo(nodo)) {
+      hallados.push(`${camino}: ${String(nodo)}`);
+      return;
+    }
+    if (!nodo || typeof nodo !== 'object') return;
+    const { type, props, children } = nodo as { type?: string; props?: object; children?: unknown };
+    for (const [clave, valor] of Object.entries(props ?? {})) {
+      if (malo(valor)) hallados.push(`${camino}${type}.${clave}: ${String(valor)}`);
+    }
+    recorrer(children, `${camino}${type}>`);
+  };
+  recorrer(arbol, '');
+  return hallados;
+}
+
 const lectura = () => screen.getByTestId('lienzo-lectura');
 const elegido = (testID: string) => screen.getByTestId(testID).props.accessibilityState?.selected;
 
@@ -103,6 +129,36 @@ describe('pantalla de la gráfica', () => {
       'La escala log necesita un valor mayor que cero: se muestra lineal.',
     );
     expect(elegido('escala-lineal')).toBe(true);
+  });
+
+  // S1: llevar un deslizador lineal a su extremo izquierdo, que vale 0, deja la curva
+  // en 0 en todos sus puntos. Antes el rango Y colapsaba y el path llevaba NaN.
+  it.each([
+    [
+      'U02-F08 con A = 2, f = 50, t = 5 ms, θ = 0, eje X «t», A al piso',
+      'U02-F08',
+      { textos: { A: ['2'], f: ['50'], t: ['5'], θ: ['0'] }, multiplos: { A: '', f: '', t: 'm', θ: '' } },
+      't',
+      'A',
+    ],
+    [
+      'U02-F03 con v = 300, f = 1000 kHz, eje X «f», v al piso',
+      'U02-F03',
+      { textos: { v: ['300'], f: ['1000'] }, multiplos: { v: '', f: 'k' } },
+      'f',
+      'v',
+    ],
+  ] as [string, string, Sesion, string, string][])('%s: curva plana sin NaN', async (_, id, sesion, ejeX, piso) => {
+    await abrir(id, sesion);
+    await fireEvent.press(screen.getByTestId(`eje-${ejeX}`));
+    expect(elegido(`eje-${ejeX}`)).toBe(true);
+    // Veinte pasos recorren la pista entera; uno más confirma que queda en el borde.
+    for (let i = 0; i < 21; i++) {
+      await fireEvent(screen.getByTestId(`deslizador-${piso}`), 'accessibilityAction', accion('decrement'));
+    }
+    expect(screen.getByTestId(`deslizador-${piso}`)).toHaveTextContent(new RegExp(`^${piso}0 `));
+    expect(screen.getByTestId('lienzo-curva-0').props.d).toMatch(/^M[\d.]+ [\d.]+(L[\d.]+ [\d.]+)+$/);
+    expect(noFinitos(screen.toJSON())).toEqual([]);
   });
 
   it('no muestra al guía', async () => {

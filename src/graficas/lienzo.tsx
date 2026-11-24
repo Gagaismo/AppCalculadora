@@ -21,6 +21,7 @@ import {
   formatearMarca,
   fraccionEn,
   marcas,
+  rangoDibujable,
   unidadConMultiplo,
   valorEn,
 } from './escala';
@@ -81,8 +82,11 @@ export function Lienzo(props: PropsLienzo) {
   const x1 = ancho - MARGEN.derecha;
   const y0 = MARGEN.arriba;
   const y1 = alto - MARGEN.abajo;
-  const rx = rangos.x;
-  const ry = rangos.y ?? { min: 0, max: 1 };
+  // Guarda de S1: con un rango colapsado o no finito, px y py darían NaN y el `d`
+  // del path llevaría «NaN», que en Android cierra la app. El log ya garantiza
+  // min > 0 en `rangoInicial`; la guarda lineal no se le aplica.
+  const rx = escala === 'lineal' ? rangoDibujable(rangos.x) : rangos.x;
+  const ry = rangoDibujable(rangos.y);
   const px = (x: number) => x0 + fraccionEn(x, rx, escala) * (x1 - x0);
   // Lejos del área la coordenada se acota: el recorte la oculta igual y SVG no
   // tiene que lidiar con números de 10¹⁵ píxeles cerca de una asíntota.
@@ -119,6 +123,13 @@ export function Lienzo(props: PropsLienzo) {
     escala === 'log' ? `${variableX.simbolo} → · escala log` : `${variableX.simbolo} [${unidadX}] →`;
 
   const dentro = (x: number) => x >= rx.min && x <= rx.max;
+  /** El `d` de un Segmento. Un punto que no cae en un número finito se saltea. */
+  const trazo = (s: Segmento) =>
+    s
+      .map((p) => [px(p.x), py(p.y)])
+      .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b))
+      .map(([a, b], j) => `${j ? 'L' : 'M'}${a.toFixed(1)} ${b.toFixed(1)}`)
+      .join('');
   const sinCurva = segmentos.length === 0;
 
   return (
@@ -212,7 +223,7 @@ export function Lienzo(props: PropsLienzo) {
               <Path
                 key={`c${i}`}
                 testID={`lienzo-curva-${i}`}
-                d={s.map((p, j) => `${j ? 'L' : 'M'}${px(p.x).toFixed(1)} ${py(p.y).toFixed(1)}`).join('')}
+                d={trazo(s)}
                 fill="none"
                 stroke={colores.accion}
                 strokeWidth={2.5}
