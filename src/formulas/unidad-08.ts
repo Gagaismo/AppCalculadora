@@ -393,7 +393,17 @@ const U08_F09: Formula = {
     'El argumento de la función seno se calcula en radianes.',
   paginas: '14, 18, 24',
   confianza: 'alta',
-  calcular: ({ V_p, f_p, t }) => V_p * Math.sin(2 * Math.PI * f_p * t),
+  calcular: ({ V_p, f_p, t }) => {
+    const semiciclos = 2 * f_p * t;
+    // sen(k·π) = 0 para todo entero k ≠ 0; en IEEE-754 Math.sin(2·Math.PI) deja residuo ~-2,45e-16.
+    // Para k = 0, Math.sin(0) ya es exacto (0) y no se aplica tolerancia para no anular t chicos legítimos.
+    const entero = Math.round(semiciclos);
+    const tolerancia = Math.min(8 * Number.EPSILON * Math.abs(entero), 1e-9);
+    if (entero !== 0 && Math.abs(semiciclos - entero) <= tolerancia) {
+      return 0;
+    }
+    return V_p * Math.sin(Math.PI * semiciclos);
+  },
 };
 
 const U08_F10: Formula = {
